@@ -22,7 +22,9 @@ workflows:
           npx cap sync ios
       - name: Install CocoaPods
         script: |
-          cd ios/App && pod install
+          cd ios/App
+          rm -rf Pods Podfile.lock
+          pod install --repo-update
       - name: Build iOS app
         script: |
           xcodebuild build -workspace "$XCODE_WORKSPACE" \
