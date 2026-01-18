@@ -7,7 +7,7 @@ workflows:
       vars:
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
         XCODE_SCHEME: "App"
-      node: 18
+      node: 22
       xcode: latest
       cocoapods: default
     scripts:
@@ -43,7 +43,7 @@ workflows:
     environment:
       vars:
         JAVA_HOME: /usr/lib/jvm/java-21-openjdk-amd64
-      node: 18
+      node: 22
       java: 21
     scripts:
       - name: Install dependencies
