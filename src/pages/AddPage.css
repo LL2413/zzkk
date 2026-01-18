@@ -1,0 +1,168 @@
+.add-page {
+  padding-bottom: 100px;
+}
+
+.add-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.form-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* 类型选择网格 */
+.type-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.type-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 8px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.type-item:hover {
+  border-color: var(--primary-light);
+}
+
+.type-item.selected {
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.1) 0%, rgba(247, 197, 159, 0.1) 100%);
+  border-color: var(--primary);
+}
+
+.type-icon {
+  font-size: 28px;
+}
+
+.type-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+/* 提醒时间选项 */
+.reminder-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.reminder-btn {
+  padding: 10px 16px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.reminder-btn:hover {
+  border-color: var(--primary-light);
+  color: var(--primary);
+}
+
+.reminder-btn.selected {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.custom-reminder {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.custom-reminder .form-input {
+  width: 120px;
+}
+
+.custom-unit {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* 输入框 */
+.form-input {
+  padding: 14px 16px;
+  background: var(--bg-secondary);
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+}
+
+.form-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.1);
+}
+
+.form-input::placeholder {
+  color: var(--text-muted);
+}
+
+.form-textarea {
+  padding: 14px 16px;
+  background: var(--bg-secondary);
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  color: var(--text-primary);
+  resize: none;
+  transition: all 0.2s ease;
+}
+
+.form-textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.1);
+}
+
+.form-textarea::placeholder {
+  color: var(--text-muted);
+}
+
+/* 提交按钮 */
+.submit-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px 24px;
+  background: var(--primary-gradient);
+  border-radius: var(--radius-lg);
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  box-shadow: var(--shadow-md), 0 4px 15px rgba(255, 107, 53, 0.3);
+  margin-top: 8px;
+}
+
+.submit-btn:hover {
+  box-shadow: var(--shadow-lg), 0 6px 20px rgba(255, 107, 53, 0.4);
+}
+
+.btn-icon {
+  font-size: 18px;
+}

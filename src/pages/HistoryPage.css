@@ -1,0 +1,72 @@
+.history-page {
+  padding-bottom: 100px;
+}
+
+/* 筛选标签 */
+.filter-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  padding: 4px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  overflow-x: auto;
+}
+
+.filter-tab {
+  flex: 1;
+  padding: 10px 16px;
+  background: transparent;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.filter-tab:hover {
+  color: var(--primary);
+}
+
+.filter-tab.active {
+  background: var(--primary);
+  color: white;
+}
+
+/* 历史列表 */
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.date-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.date-header {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  padding-left: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.date-header::before {
+  content: '';
+  width: 4px;
+  height: 4px;
+  background: var(--primary);
+  border-radius: 50%;
+}
+
+.items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}

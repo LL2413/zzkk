@@ -1,0 +1,65 @@
+workflows:
+  ios-workflow:
+    name: iOS Build
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      vars:
+        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        XCODE_SCHEME: "App"
+      node: 18
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Install dependencies
+        script: |
+          npm install -g pnpm
+          pnpm install
+      - name: Build web assets
+        script: |
+          pnpm build
+      - name: Update iOS project
+        script: |
+          npx cap sync ios
+      - name: Install CocoaPods
+        script: |
+          cd ios/App && pod install
+      - name: Build iOS app
+        script: |
+          xcodebuild build -workspace "$XCODE_WORKSPACE" \
+            -scheme "$XCODE_SCHEME" \
+            -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' \
+            -allowProvisioningUpdates \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+    artifacts:
+      - ios/App/build/**/*.app
+      - ios/App/build/**/*.ipa
+
+  android-workflow:
+    name: Android Build
+    max_build_duration: 60
+    instance_type: linux_x2
+    environment:
+      vars:
+        JAVA_HOME: /usr/lib/jvm/java-21-openjdk-amd64
+      node: 18
+      java: 21
+    scripts:
+      - name: Install dependencies
+        script: |
+          npm install -g pnpm
+          pnpm install
+      - name: Build web assets
+        script: |
+          pnpm build
+      - name: Update Android project
+        script: |
+          npx cap sync android
+      - name: Build Android APK
+        script: |
+          cd android && ./gradlew assembleDebug
+    artifacts:
+      - android/app/build/outputs/**/*.apk

@@ -1,0 +1,147 @@
+.borrow-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--bg-secondary);
+  padding: 18px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s ease;
+}
+
+.borrow-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.borrow-card.urgent {
+  background: linear-gradient(135deg, #FFF5F5 0%, #FFFFFF 100%);
+  border: 1px solid rgba(231, 76, 60, 0.2);
+}
+
+.borrow-card.returned {
+  opacity: 0.7;
+  background: var(--bg-primary);
+}
+
+.card-icon {
+  width: 58px;
+  height: 58px;
+  background: var(--primary-gradient);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  flex-shrink: 0;
+}
+
+.borrow-card.urgent .card-icon {
+  background: linear-gradient(135deg, #E74C3C 0%, #F39C12 100%);
+  animation: pulse 2s infinite;
+}
+
+.borrow-card.returned .card-icon {
+  background: linear-gradient(135deg, #2ECC71 0%, #27AE60 100%);
+}
+
+.card-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.card-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.time-badge {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.time-badge.normal {
+  background: rgba(255, 107, 53, 0.1);
+  color: var(--primary);
+}
+
+.time-badge.urgent {
+  background: rgba(243, 156, 18, 0.15);
+  color: var(--warning);
+}
+
+.time-badge.overdue {
+  background: rgba(231, 76, 60, 0.15);
+  color: var(--danger);
+}
+
+.time-badge.returned {
+  background: rgba(46, 204, 113, 0.15);
+  color: var(--success);
+}
+
+.card-note {
+  font-size: 15px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-meta {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.meta-item {
+  font-size: 14px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.action-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: bold;
+  transition: all 0.2s ease;
+}
+
+.return-btn {
+  background: var(--success);
+  color: white;
+}
+
+.delete-btn {
+  background: var(--bg-primary);
+  color: var(--text-muted);
+}
+
+.delete-btn:hover {
+  background: var(--danger);
+  color: white;
+}

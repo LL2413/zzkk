@@ -1,0 +1,80 @@
+.tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border);
+  padding: 8px 20px 24px;
+  z-index: 100;
+}
+
+.tab-bar-inner {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+}
+
+.tab-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 16px;
+  background: transparent;
+  color: var(--text-muted);
+  transition: color 0.2s ease;
+  position: relative;
+}
+
+.tab-item:not(.main-tab):hover {
+  color: var(--primary-light);
+}
+
+.tab-item.active:not(.main-tab) {
+  color: var(--primary);
+}
+
+.tab-icon {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.tab-label {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.tab-indicator {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 3px;
+  background: var(--primary);
+  border-radius: 2px;
+}
+
+/* 主要按钮（添加） */
+.main-tab {
+  margin-top: -30px;
+}
+
+.main-tab-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  background: var(--primary-gradient);
+  border-radius: 50%;
+  box-shadow: var(--shadow-md), 0 4px 15px rgba(255, 107, 53, 0.4);
+}
+
+.main-tab .tab-icon {
+  font-size: 26px;
+  filter: brightness(0) invert(1);
+}

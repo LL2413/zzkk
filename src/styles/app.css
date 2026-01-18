@@ -1,0 +1,69 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+  max-width: 480px;
+  margin: 0 auto;
+  background: var(--bg-primary);
+  position: relative;
+}
+
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: calc(90px + var(--safe-area-bottom, 0px));
+}
+
+/* 页面通用样式 */
+.page {
+  padding: 24px;
+  min-height: 100%;
+}
+
+.page-header {
+  margin-bottom: 28px;
+  padding-top: calc(var(--safe-area-top, 24px) + 10px);
+}
+
+.page-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.page-subtitle {
+  font-size: 16px;
+  color: var(--text-secondary);
+}
+
+/* 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 100px;
+  margin-bottom: 24px;
+  opacity: 0.8;
+}
+
+.empty-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+
+.empty-description {
+  font-size: 16px;
+  color: var(--text-secondary);
+  max-width: 280px;
+  line-height: 1.5;
+}

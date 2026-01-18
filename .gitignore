@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Android
+android/.gradle/
+android/app/build/
+android/build/
+android/captures/
+android/.idea/
+*.apk
+*.aab
+*.keystore
+!android/app/debug.keystore
+
+# iOS
+ios/App/Pods/
+ios/App/App.xcworkspace/xcuserdata/
+ios/App/App.xcodeproj/xcuserdata/
+ios/DerivedData/
+*.ipa
+
+# Capacitor
+capacitor.config.json.bak
