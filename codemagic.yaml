@@ -5,11 +5,10 @@ workflows:
     instance_type: mac_mini_m2
     environment:
       vars:
-        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
       node: 22
       xcode: latest
-      cocoapods: default
     scripts:
       - name: Install dependencies
         script: |
@@ -23,12 +22,12 @@ workflows:
           rm -rf ios
           npx cap add ios
           npx cap sync ios
-          cd ios/App
-          pod install --repo-update
       - name: Build iOS app
         script: |
-          xcodebuild build -workspace "$XCODE_WORKSPACE" \
-            -scheme "$XCODE_SCHEME" \
+          cd ios/App
+          xcodebuild -resolvePackageDependencies -project App.xcodeproj -scheme App
+          xcodebuild build -project App.xcodeproj \
+            -scheme App \
             -configuration Debug \
             -destination 'generic/platform=iOS Simulator' \
             CODE_SIGN_IDENTITY="" \
