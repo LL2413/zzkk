@@ -13,11 +13,10 @@ workflows:
     scripts:
       - name: Install dependencies
         script: |
-          npm install -g pnpm
-          pnpm install
+          npm install
       - name: Build web assets
         script: |
-          pnpm build
+          npm run build
       - name: Update iOS project
         script: |
           npx cap sync ios
@@ -30,7 +29,6 @@ workflows:
             -scheme "$XCODE_SCHEME" \
             -configuration Debug \
             -destination 'generic/platform=iOS Simulator' \
-            -allowProvisioningUpdates \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO
@@ -50,11 +48,10 @@ workflows:
     scripts:
       - name: Install dependencies
         script: |
-          npm install -g pnpm
-          pnpm install
+          npm install
       - name: Build web assets
         script: |
-          pnpm build
+          npm run build
       - name: Update Android project
         script: |
           npx cap sync android
