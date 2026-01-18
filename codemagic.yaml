@@ -17,13 +17,13 @@ workflows:
       - name: Build web assets
         script: |
           npm run build
-      - name: Update iOS project
+      - name: Setup iOS project
         script: |
+          # Remove existing iOS project and regenerate
+          rm -rf ios
+          npx cap add ios
           npx cap sync ios
-      - name: Install CocoaPods
-        script: |
           cd ios/App
-          rm -rf Pods Podfile.lock
           pod install --repo-update
       - name: Build iOS app
         script: |
