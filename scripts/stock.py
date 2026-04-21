@@ -164,11 +164,12 @@ def fetch_sentiment(symbol: str, _force: bool = False) -> dict:
     if err:
         out["errors"]["fund_flow"] = err
 
-    lhb, err = safe(ak.stock_lhb_stock_detail_em, symbol=symbol,
+    lhb, err = safe(ak.stock_lhb_detail_em,
                     start_date=(datetime.now().replace(month=max(1, datetime.now().month - 3))).strftime("%Y%m%d"),
                     end_date=today_tag())
-    if isinstance(lhb, pd.DataFrame):
-        out["lhb_recent_3m"] = df_to_records(lhb)
+    if isinstance(lhb, pd.DataFrame) and len(lhb):
+        mask = lhb.astype(str).apply(lambda r: symbol in r.values, axis=1)
+        out["lhb_recent_3m"] = df_to_records(lhb[mask])
     if err:
         out["errors"]["lhb"] = err
 
@@ -180,7 +181,7 @@ def fetch_sentiment(symbol: str, _force: bool = False) -> dict:
     if err:
         out["errors"]["margin"] = err
 
-    north, err = safe(ak.stock_hsgt_individual_em, stock=symbol)
+    north, err = safe(ak.stock_hsgt_individual_em, symbol=symbol)
     if isinstance(north, pd.DataFrame):
         out["northbound_holdings_recent"] = df_to_records(north.tail(20))
     if err:
