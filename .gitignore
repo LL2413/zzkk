@@ -45,3 +45,9 @@ ios/DerivedData/
 
 # Capacitor
 capacitor.config.json.bak
+
+# Python (stock analysis skill)
+.venv/
+__pycache__/
+*.pyc
+.cache/

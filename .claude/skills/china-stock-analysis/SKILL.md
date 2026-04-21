@@ -91,10 +91,44 @@ A 股特有因素必须纳入：**注册制、退市新规、分红新规、北�
    - 如果是个股，识别出 6 位股票代码与交易所前缀（沪 SH6/9、深 SZ0/3、北 BJ8/4）。
    - 如果是板块，确定口径（申万 / 中信 / 概念）。
 
-2. **选择数据源并拉数**
-   - Python 环境优先用 `akshare`（开源、覆盖全）。次选 `baostock`、`tushare`（需 token）、`efinance`。
-   - 无 Python 环境时用网页数据源（东方财富、同花顺、雪球、巨潮资讯），并标明"网页数据，可能滞后"。
-   - 关键脚本见 `references/akshare_cookbook.md`。
+2. **拉数据（首选本地脚本）**
+
+   本仓库提供封装脚本 `scripts/stock.py`，基于 akshare，含日度缓存。**优先用它**：
+
+   ```bash
+   # 首次使用（一次性）
+   python3 -m venv .venv && .venv/bin/pip install akshare pandas
+
+   # 三维一次性拉取（默认命令）
+   .venv/bin/python scripts/stock.py snapshot 002281 --json
+
+   # 单维度
+   .venv/bin/python scripts/stock.py fundamentals 002281 --json
+   .venv/bin/python scripts/stock.py sentiment   002281 --json
+   .venv/bin/python scripts/stock.py sector      002281 --json
+   .venv/bin/python scripts/stock.py market                --json   # 大盘
+
+   # 强制刷新（跳过当日缓存）
+   .venv/bin/python scripts/stock.py snapshot 002281 --force --json
+
+   # 清缓存
+   .venv/bin/python scripts/stock.py clear-cache
+   ```
+
+   - 缓存路径：`.cache/stock/<symbol>_<kind>_<YYYYMMDD>.json`，按交易日 key。
+   - 输出结构：顶层带 `as_of` 时间戳，失败字段收敛到 `errors` 对象，**永不抛异常中断**。
+   - 每个维度输出包含 `errors` 时，报告必须把缺失字段显式列入"数据缺口"。
+   - 脚本首行使用 `env python3`，可执行权限已就位。
+
+   **降级策略**（脚本不可用时）：
+   1. 若 `akshare` 未装，安装命令给到用户，不要静默跳过。
+   2. 若沙箱无外网（curl 403 / akshare JSONDecodeError 等），用 WebSearch + WebFetch 取网页数据，优先站点：cninfo.com.cn（官方披露）、stcn.com（证券时报）、sina 财经、10jqka.basic 同花顺 F10。
+   3. 任何网页来源的数字在报告里必须标"网页数据，可能滞后"并给出链接。
+
+3. **三维度并行填充**
+   - 基本面：`fundamentals` 命令；额外财务细项见 `references/akshare_cookbook.md`。
+   - 热度：`sentiment` 命令覆盖资金流、龙虎榜、两融、北向、近月价格。
+   - 板块：`sector` 命令覆盖所属行业、板块近 3 月价格、板块今日资金流、申万一级快照。
 
 3. **三维度并行填充**
    - 基本面：调财报接口 + 估值接口。
@@ -167,6 +201,7 @@ A 股特有因素必须纳入：**注册制、退市新规、分红新规、北�
 
 需要更深一层的分析时，参考：
 
+- `../../../scripts/stock.py` — akshare 数据抓取 + 日度缓存 CLI（首选执行入口）
 - `references/akshare_cookbook.md` — 常用 akshare 接口速查与示例代码
 - `references/fundamental_checklist.md` — 基本面分析完整清单（含杜邦分析、现金流拆解）
 - `references/sentiment_indicators.md` — A 股情绪与资金面指标全解
