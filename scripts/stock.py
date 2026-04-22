@@ -104,6 +104,143 @@ def safe(fn, *args, **kwargs) -> tuple[Any, str | None]:
         return None, f"{type(e).__name__}: {e}"
 
 
+def safe_retry(fn, *args, retries: int = 2, delay: float = 1.0, **kwargs) -> tuple[Any, str | None]:
+    """Call safe() with up to `retries` extra attempts on transient network errors."""
+    last_err = None
+    for i in range(retries + 1):
+        result, err = safe(fn, *args, **kwargs)
+        if err is None:
+            return result, None
+        last_err = err
+        transient = any(k in err for k in ("SSLError", "ConnectionError", "Timeout", "RemoteDisconnected"))
+        if not transient or i == retries:
+            break
+        time.sleep(delay * (i + 1))
+    return None, last_err
+
+
+def parse_cn_amount(v: Any) -> float | None:
+    """Parse '14.15亿' / '5488.68万' / '39.03%' / 123.45 → float. None on failure."""
+    if v is None or v is False:
+        return None
+    if isinstance(v, (int, float)):
+        try:
+            if v != v:  # NaN
+                return None
+        except Exception:
+            pass
+        return float(v)
+    s = str(v).strip()
+    if not s or s in ("--", "False", "None", "nan", "NaN", "null"):
+        return None
+    if s.endswith("%"):
+        try:
+            return float(s[:-1])
+        except ValueError:
+            return None
+    mult = 1.0
+    for suf, m in (("万亿", 1e12), ("亿", 1e8), ("万", 1e4), ("千", 1e3)):
+        if s.endswith(suf):
+            mult = m
+            s = s[: -len(suf)]
+            break
+    try:
+        return float(s) * mult
+    except ValueError:
+        return None
+
+
+def _normalize_ths_record(rec: dict) -> dict:
+    """Clean a THS record: False/'--' → None, Chinese-scaled strings → floats."""
+    out: dict = {}
+    for k, v in rec.items():
+        if k == "报告期":
+            out[k] = str(v)[:10] if v not in (None, False) else None
+            continue
+        if v is False or v is None:
+            out[k] = None
+            continue
+        if isinstance(v, str) and v.strip() in ("", "--", "False", "None", "nan", "NaN"):
+            out[k] = None
+            continue
+        if isinstance(v, (int, float)):
+            if isinstance(v, float) and v != v:
+                out[k] = None
+            else:
+                out[k] = float(v)
+            continue
+        parsed = parse_cn_amount(v)
+        out[k] = parsed if parsed is not None else v
+    return out
+
+
+def compute_consistency(sina_records: list[dict], ths_records: list[dict], basic_info: dict | None) -> dict:
+    """Cross-check Sina 扣非EPS × 总股本 against THS 扣非净利润. Flags suspicious deltas."""
+    result: dict = {"status": "skipped", "notes": []}
+    if not sina_records or not ths_records:
+        result["reason"] = "missing source"
+        return result
+    total_shares = None
+    if basic_info:
+        total_shares = parse_cn_amount(basic_info.get("总股本"))
+    if not total_shares or total_shares < 1e5:
+        result["reason"] = "total_shares unavailable"
+        return result
+
+    sina_by = {str(r.get("日期", ""))[:10]: r for r in sina_records if r.get("日期")}
+    ths_by = {str(r.get("报告期", ""))[:10]: r for r in ths_records if r.get("报告期")}
+    common = sorted(set(sina_by) & set(ths_by))
+    if not common:
+        result["reason"] = "no overlapping periods"
+        return result
+
+    latest = common[-1]
+    sina_r, ths_r = sina_by[latest], ths_by[latest]
+    result.update({"status": "ok", "latest_period": latest, "total_shares": total_shares})
+
+    def _delta(derived, actual):
+        if derived is None or actual is None or actual == 0:
+            return None
+        return (derived - actual) / actual * 100.0
+
+    sina_kf_eps = sina_r.get("扣除非经常性损益后的每股收益(元)")
+    ths_kf = ths_r.get("扣非净利润")
+    if sina_kf_eps and ths_kf:
+        derived = sina_kf_eps * total_shares
+        d = _delta(derived, ths_kf)
+        result["sina_kf_eps"] = sina_kf_eps
+        result["ths_kf_netprofit"] = ths_kf
+        result["sina_kf_netprofit_derived"] = derived
+        result["kf_delta_pct"] = round(d, 2) if d is not None else None
+        if d is not None and abs(d) > 5:
+            result["status"] = "suspicious"
+            result["notes"].append(f"扣非净利润: Sina 推算与 THS 披露差 {d:+.1f}% (>5%)")
+
+    sina_eps = sina_r.get("摊薄每股收益(元)")
+    ths_np = ths_r.get("净利润")
+    if sina_eps and ths_np:
+        derived = sina_eps * total_shares
+        d = _delta(derived, ths_np)
+        result["sina_eps_diluted"] = sina_eps
+        result["ths_netprofit"] = ths_np
+        result["reported_delta_pct"] = round(d, 2) if d is not None else None
+        if d is not None and abs(d) > 5 and result["status"] == "ok":
+            result["status"] = "suspicious"
+            result["notes"].append(f"净利润: Sina 推算与 THS 披露差 {d:+.1f}% (>5%)")
+
+    if ths_np and ths_kf and ths_np > 0:
+        nonrec_pct = (ths_np - ths_kf) / ths_np * 100
+        result["non_recurring_pct"] = round(nonrec_pct, 1)
+        if nonrec_pct > 50:
+            result["notes"].append(
+                f"⚠️ 非经常损益占净利润 {nonrec_pct:.1f}% (>50%)，报告净利润增长可能被一次性收益掩盖，应以扣非为准"
+            )
+            if result["status"] == "ok":
+                result["status"] = "warn_non_recurring"
+
+    return result
+
+
 # ---------- dim 1: fundamentals ----------
 
 def fetch_fundamentals(symbol: str, _force: bool = False) -> dict:
@@ -116,30 +253,44 @@ def fetch_fundamentals(symbol: str, _force: bool = False) -> dict:
 
     out: dict = {"symbol": symbol, "as_of": datetime.now().isoformat(timespec="seconds"), "errors": {}}
 
-    info, err = safe(ak.stock_individual_info_em, symbol=symbol)
+    # basic_info: needed for 总股本 → consistency_check. EM's endpoint flakes on SSL occasionally, retry.
+    info, err = safe_retry(ak.stock_individual_info_em, symbol=symbol)
     if isinstance(info, pd.DataFrame):
         out["basic_info"] = dict(zip(info["item"], info["value"]))
     if err:
         out["errors"]["basic_info"] = err
 
-    # Primary: Sina's stock_financial_analysis_indicator. Newer akshare builds
-    # require start_year; without it the endpoint silently returns an empty frame.
+    # Sina: ratios (每股 / 盈利能力 / 周转 / 偿债 / 现金流比率 等 80+ 字段).
+    # Newer akshare builds require start_year; without it the endpoint silently returns empty.
     start_year = str(datetime.now().year - 4)
     ind, err = safe(ak.stock_financial_analysis_indicator, symbol=symbol, start_year=start_year)
     if isinstance(ind, pd.DataFrame) and len(ind) > 0:
         out["financial_indicators_recent"] = df_to_records(ind.tail(8))
+        out["financial_indicators_source"] = "sina_indicator"
     else:
+        out["financial_indicators_recent"] = []
         if err:
             out["errors"]["financial_indicators"] = err
-        # Fallback: THS abstract (more reliable coverage for recent reports).
-        ths, err2 = safe(ak.stock_financial_abstract_ths, symbol=symbol, indicator="按报告期")
-        if isinstance(ths, pd.DataFrame) and len(ths) > 0:
-            out["financial_indicators_recent"] = df_to_records(ths.head(8))
-            out["financial_indicators_source"] = "ths_abstract"
-        elif err2:
-            out["errors"]["financial_indicators_ths"] = err2
-        else:
-            out.setdefault("financial_indicators_recent", [])
+
+    # THS: absolute amounts (营收 / 净利 / 扣非 / 经营现金流 / 总资产 / 毛利率).
+    # Fetched independently — NOT as fallback — so we can cross-check against Sina.
+    ths, err = safe(ak.stock_financial_abstract_ths, symbol=symbol, indicator="按报告期")
+    if isinstance(ths, pd.DataFrame) and len(ths) > 0:
+        recent = ths.tail(8) if len(ths) >= 8 else ths
+        out["financials_absolute_recent"] = [_normalize_ths_record(r) for r in df_to_records(recent)]
+        out["financials_absolute_source"] = "ths_abstract"
+    else:
+        out["financials_absolute_recent"] = []
+        if err:
+            out["errors"]["financials_absolute"] = err
+
+    # Cross-source consistency: Sina 扣非EPS × 总股本 vs THS 扣非净利润.
+    # Flags non-recurring ratio > 50% and absolute delta > 5%.
+    out["consistency_check"] = compute_consistency(
+        out.get("financial_indicators_recent", []),
+        out.get("financials_absolute_recent", []),
+        out.get("basic_info"),
+    )
 
     val, err = safe(ak.stock_value_em, symbol=symbol)
     if isinstance(val, pd.DataFrame):
@@ -339,11 +490,55 @@ def render_human(payload: dict) -> str:
         for k, v in fund["valuation_latest"][0].items():
             lines.append(f"  {k}: {v}")
 
-    if "financial_indicators_recent" in fund and fund["financial_indicators_recent"]:
-        lines.append("\n[财务指标最近 4 期]")
+    if fund.get("consistency_check"):
+        cc = fund["consistency_check"]
+        icon = {"ok": "✓", "suspicious": "⚠️", "warn_non_recurring": "⚠️",
+                "skipped": "·"}.get(cc.get("status"), "?")
+        lines.append(f"\n[数据一致性] {icon} {cc.get('status')}")
+        if cc.get("latest_period"):
+            lines.append(f"  对比期: {cc['latest_period']}")
+        if cc.get("kf_delta_pct") is not None:
+            lines.append(
+                f"  扣非净利润 Sina推算 {cc.get('sina_kf_netprofit_derived', 0)/1e8:.2f}亿 "
+                f"vs THS披露 {cc.get('ths_kf_netprofit', 0)/1e8:.2f}亿 "
+                f"(差 {cc['kf_delta_pct']:+.1f}%)"
+            )
+        if cc.get("non_recurring_pct") is not None:
+            lines.append(f"  非经常损益占净利润: {cc['non_recurring_pct']:.1f}%")
+        for note in cc.get("notes", []):
+            lines.append(f"  · {note}")
+
+    if fund.get("financials_absolute_recent"):
+        lines.append("\n[主干金额近 4 期 · 同花顺]")
+        def _fmt(v):
+            if v is None: return "—"
+            if isinstance(v, (int, float)):
+                if abs(v) >= 1e8: return f"{v/1e8:.2f}亿"
+                if abs(v) >= 1e4: return f"{v/1e4:.2f}万"
+                return f"{v:.2f}"
+            return str(v)
+        for row in fund["financials_absolute_recent"][-4:]:
+            period = row.get("报告期", "?")
+            rev = row.get("营业总收入")
+            netp = row.get("净利润")
+            kf = row.get("扣非净利润")
+            lines.append(f"  {period}  营收 {_fmt(rev):>9} | 净利 {_fmt(netp):>9} | 扣非 {_fmt(kf):>9}")
+
+    if fund.get("financial_indicators_recent"):
+        lines.append("\n[关键比率近 4 期 · 新浪]")
         for row in fund["financial_indicators_recent"][-4:]:
-            head_key = next(iter(row))
-            lines.append(f"  {head_key}: {row[head_key]}")
+            period = str(row.get("日期", ""))[:10]
+            roe = row.get("加权净资产收益率(%)")
+            gm = row.get("销售毛利率(%)")
+            nm = row.get("销售净利率(%)")
+            dr = row.get("资产负债率(%)")
+            kf_eps = row.get("扣除非经常性损益后的每股收益(元)")
+            def _v(x, suf=""):
+                return f"{x:.2f}{suf}" if isinstance(x, (int, float)) else "—"
+            lines.append(
+                f"  {period}  ROE {_v(roe, '%'):>7} | 毛利 {_v(gm, '%'):>7} | "
+                f"净利率 {_v(nm, '%'):>7} | 负债 {_v(dr, '%'):>7} | 扣非EPS {_v(kf_eps):>6}"
+            )
 
     sent = payload.get("sentiment", {})
     if sent.get("fund_flow_recent_20d"):
