@@ -233,7 +233,7 @@ def compute_consistency(sina_records: list[dict], ths_records: list[dict], basic
         result["non_recurring_pct"] = round(nonrec_pct, 1)
         if nonrec_pct > 50:
             result["notes"].append(
-                f"⚠️ 非经常损益占净利润 {nonrec_pct:.1f}% (>50%)，报告净利润增长可能被一次性收益掩盖，应以扣非为准"
+                f"[WARN] 非经常损益占净利润 {nonrec_pct:.1f}% (>50%)，报告净利润增长可能被一次性收益掩盖，应以扣非为准"
             )
             if result["status"] == "ok":
                 result["status"] = "warn_non_recurring"
@@ -492,8 +492,8 @@ def render_human(payload: dict) -> str:
 
     if fund.get("consistency_check"):
         cc = fund["consistency_check"]
-        icon = {"ok": "✓", "suspicious": "⚠️", "warn_non_recurring": "⚠️",
-                "skipped": "·"}.get(cc.get("status"), "?")
+        icon = {"ok": "[OK]", "suspicious": "[WARN]", "warn_non_recurring": "[WARN]",
+                "skipped": "[--]"}.get(cc.get("status"), "[?]")
         lines.append(f"\n[数据一致性] {icon} {cc.get('status')}")
         if cc.get("latest_period"):
             lines.append(f"  对比期: {cc['latest_period']}")
