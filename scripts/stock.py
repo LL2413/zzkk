@@ -122,11 +122,24 @@ def fetch_fundamentals(symbol: str, _force: bool = False) -> dict:
     if err:
         out["errors"]["basic_info"] = err
 
-    ind, err = safe(ak.stock_financial_analysis_indicator, symbol=symbol)
-    if isinstance(ind, pd.DataFrame):
+    # Primary: Sina's stock_financial_analysis_indicator. Newer akshare builds
+    # require start_year; without it the endpoint silently returns an empty frame.
+    start_year = str(datetime.now().year - 4)
+    ind, err = safe(ak.stock_financial_analysis_indicator, symbol=symbol, start_year=start_year)
+    if isinstance(ind, pd.DataFrame) and len(ind) > 0:
         out["financial_indicators_recent"] = df_to_records(ind.tail(8))
-    if err:
-        out["errors"]["financial_indicators"] = err
+    else:
+        if err:
+            out["errors"]["financial_indicators"] = err
+        # Fallback: THS abstract (more reliable coverage for recent reports).
+        ths, err2 = safe(ak.stock_financial_abstract_ths, symbol=symbol, indicator="按报告期")
+        if isinstance(ths, pd.DataFrame) and len(ths) > 0:
+            out["financial_indicators_recent"] = df_to_records(ths.head(8))
+            out["financial_indicators_source"] = "ths_abstract"
+        elif err2:
+            out["errors"]["financial_indicators_ths"] = err2
+        else:
+            out.setdefault("financial_indicators_recent", [])
 
     val, err = safe(ak.stock_value_em, symbol=symbol)
     if isinstance(val, pd.DataFrame):
