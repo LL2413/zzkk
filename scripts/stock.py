@@ -174,15 +174,58 @@ def _normalize_ths_record(rec: dict) -> dict:
     return out
 
 
-def compute_consistency(sina_records: list[dict], ths_records: list[dict], basic_info: dict | None) -> dict:
-    """Cross-check Sina 扣非EPS × 总股本 against THS 扣非净利润. Flags suspicious deltas."""
+def fetch_total_shares(symbol: str, basic_info: dict | None) -> tuple[float | None, str]:
+    """Resolve 总股本 (raw share count). Returns (shares, source_tag).
+
+    Priority: 1) basic_info 总股本 from EM, 2) Xueqiu basic info, 3) derive from
+    all-A spot 总市值 / 最新价. Used when EM's endpoint fails (SSL flakes).
+    """
+    if basic_info:
+        v = parse_cn_amount(basic_info.get("总股本"))
+        if v and v > 1e5:
+            return float(v), "em_basic_info"
+
+    # Fallback 1: Xueqiu (different backend, SSL failures independent from EM)
+    xq_fn = getattr(ak, "stock_individual_basic_info_xq", None)
+    if xq_fn:
+        xq_sym = market_prefix(symbol).upper() + symbol
+        res, _ = safe_retry(xq_fn, symbol=xq_sym)
+        if isinstance(res, pd.DataFrame) and len(res):
+            kv = dict(zip(res.iloc[:, 0].astype(str), res.iloc[:, 1]))
+            for key in ("总股本", "total_shares", "total_share"):
+                v = parse_cn_amount(kv.get(key))
+                if v and v > 1e5:
+                    return float(v), "xueqiu_basic"
+
+    # Fallback 2: derive from 总市值 / 最新价 via all-A spot (heavy but reliable)
+    spot, _ = safe_retry(ak.stock_zh_a_spot_em)
+    if isinstance(spot, pd.DataFrame) and "代码" in spot.columns:
+        row = spot[spot["代码"].astype(str) == symbol]
+        if len(row):
+            mcap = parse_cn_amount(row.iloc[0].get("总市值"))
+            price = parse_cn_amount(row.iloc[0].get("最新价"))
+            if mcap and price and price > 0:
+                return float(mcap / price), "em_spot_derived"
+
+    return None, "unavailable"
+
+
+def compute_consistency(sina_records: list[dict], ths_records: list[dict],
+                        total_shares: float | None, shares_source: str = "unknown") -> dict:
+    """Cross-check Sina 扣非EPS × 总股本 against THS 扣非净利润. Flags anomalies.
+
+    Thresholds:
+    - |delta| > 8% between Sina-derived and THS absolute → "suspicious"
+    - |non-recurring| > 50% of reported net profit → "warn_non_recurring"
+      (sign-aware: distinguishes 一次性收益掩盖 vs 一次性损失拖累)
+    """
+    DELTA_THRESHOLD = 8.0  # raised from 5% to tolerate Sina EPS 2-digit precision + shares-base drift
+    NONREC_THRESHOLD = 50.0
+
     result: dict = {"status": "skipped", "notes": []}
     if not sina_records or not ths_records:
         result["reason"] = "missing source"
         return result
-    total_shares = None
-    if basic_info:
-        total_shares = parse_cn_amount(basic_info.get("总股本"))
     if not total_shares or total_shares < 1e5:
         result["reason"] = "total_shares unavailable"
         return result
@@ -196,45 +239,69 @@ def compute_consistency(sina_records: list[dict], ths_records: list[dict], basic
 
     latest = common[-1]
     sina_r, ths_r = sina_by[latest], ths_by[latest]
-    result.update({"status": "ok", "latest_period": latest, "total_shares": total_shares})
+    result.update({
+        "status": "ok",
+        "latest_period": latest,
+        "total_shares": total_shares,
+        "shares_source": shares_source,
+    })
 
     def _delta(derived, actual):
         if derived is None or actual is None or actual == 0:
             return None
         return (derived - actual) / actual * 100.0
 
+    # Always surface the raw inputs, independent of cross-check branches
     sina_kf_eps = sina_r.get("扣除非经常性损益后的每股收益(元)")
+    sina_eps = sina_r.get("摊薄每股收益(元)")
     ths_kf = ths_r.get("扣非净利润")
+    ths_np = ths_r.get("净利润")
+    result["sina_kf_eps"] = sina_kf_eps
+    result["sina_eps_diluted"] = sina_eps
+    result["ths_kf_netprofit"] = ths_kf
+    result["ths_netprofit"] = ths_np
+
+    # Cross-check 1: 扣非
     if sina_kf_eps and ths_kf:
         derived = sina_kf_eps * total_shares
         d = _delta(derived, ths_kf)
-        result["sina_kf_eps"] = sina_kf_eps
-        result["ths_kf_netprofit"] = ths_kf
         result["sina_kf_netprofit_derived"] = derived
         result["kf_delta_pct"] = round(d, 2) if d is not None else None
-        if d is not None and abs(d) > 5:
+        if d is not None and abs(d) > DELTA_THRESHOLD:
             result["status"] = "suspicious"
-            result["notes"].append(f"扣非净利润: Sina 推算与 THS 披露差 {d:+.1f}% (>5%)")
+            result["notes"].append(
+                f"扣非净利润口径不一致: Sina 推算 {derived/1e8:.2f}亿 vs THS 披露 {ths_kf/1e8:.2f}亿 (差 {d:+.1f}%, >{DELTA_THRESHOLD:.0f}%)"
+            )
 
-    sina_eps = sina_r.get("摊薄每股收益(元)")
-    ths_np = ths_r.get("净利润")
+    # Cross-check 2: 摊薄 / 报告净利润
     if sina_eps and ths_np:
         derived = sina_eps * total_shares
         d = _delta(derived, ths_np)
-        result["sina_eps_diluted"] = sina_eps
-        result["ths_netprofit"] = ths_np
         result["reported_delta_pct"] = round(d, 2) if d is not None else None
-        if d is not None and abs(d) > 5 and result["status"] == "ok":
+        if d is not None and abs(d) > DELTA_THRESHOLD and result["status"] == "ok":
             result["status"] = "suspicious"
-            result["notes"].append(f"净利润: Sina 推算与 THS 披露差 {d:+.1f}% (>5%)")
-
-    if ths_np and ths_kf and ths_np > 0:
-        nonrec_pct = (ths_np - ths_kf) / ths_np * 100
-        result["non_recurring_pct"] = round(nonrec_pct, 1)
-        if nonrec_pct > 50:
             result["notes"].append(
-                f"[WARN] 非经常损益占净利润 {nonrec_pct:.1f}% (>50%)，报告净利润增长可能被一次性收益掩盖，应以扣非为准"
+                f"报告净利润口径不一致: Sina 推算 {derived/1e8:.2f}亿 vs THS 披露 {ths_np/1e8:.2f}亿 (差 {d:+.1f}%, >{DELTA_THRESHOLD:.0f}%)"
             )
+
+    # Non-recurring check — sign-aware
+    if ths_np and ths_kf and ths_np > 0:
+        nonrec_amt = ths_np - ths_kf  # >0: one-time gains lifted reported profit
+        nonrec_pct = nonrec_amt / ths_np * 100
+        result["non_recurring_pct"] = round(nonrec_pct, 1)
+        result["non_recurring_amount"] = nonrec_amt
+        if abs(nonrec_pct) > NONREC_THRESHOLD:
+            if nonrec_amt > 0:
+                msg = (
+                    f"[WARN] 非经常性收益 {nonrec_amt/1e8:.2f}亿 占净利润 {nonrec_pct:.1f}%，"
+                    f"报告净利润被一次性收益放大，应以扣非 {ths_kf/1e8:.2f}亿 为主业真实水平"
+                )
+            else:
+                msg = (
+                    f"[WARN] 非经常性损失 {-nonrec_amt/1e8:.2f}亿 拖累报告净利润，"
+                    f"扣非 {ths_kf/1e8:.2f}亿 反而高于报告 {ths_np/1e8:.2f}亿，主业比账面更好"
+                )
+            result["notes"].append(msg)
             if result["status"] == "ok":
                 result["status"] = "warn_non_recurring"
 
@@ -285,11 +352,15 @@ def fetch_fundamentals(symbol: str, _force: bool = False) -> dict:
             out["errors"]["financials_absolute"] = err
 
     # Cross-source consistency: Sina 扣非EPS × 总股本 vs THS 扣非净利润.
-    # Flags non-recurring ratio > 50% and absolute delta > 5%.
+    # 总股本 is resolved through a fallback chain (EM → Xueqiu → derive from 总市值/价).
+    total_shares, shares_source = fetch_total_shares(symbol, out.get("basic_info"))
+    out["total_shares"] = total_shares
+    out["total_shares_source"] = shares_source
     out["consistency_check"] = compute_consistency(
         out.get("financial_indicators_recent", []),
         out.get("financials_absolute_recent", []),
-        out.get("basic_info"),
+        total_shares,
+        shares_source,
     )
 
     val, err = safe(ak.stock_value_em, symbol=symbol)

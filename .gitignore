@@ -52,3 +52,5 @@ __pycache__/
 *.pyc
 .cache/
 data/
+logs/
+patch_stock.py

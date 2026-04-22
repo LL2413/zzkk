@@ -120,6 +120,21 @@ A 股特有因素必须纳入：**注册制、退市新规、分红新规、北�
    - 每个维度输出包含 `errors` 时，报告必须把缺失字段显式列入"数据缺口"。
    - 脚本首行使用 `env python3`，可执行权限已就位。
 
+   **fundamentals 输出包含双数据源 + 一致性校验**：
+   - `financial_indicators_recent`（新浪 `stock_financial_analysis_indicator`）：80+ 比率字段（ROE / 毛利率 / 周转率 / 负债率 / 各类每股）
+   - `financials_absolute_recent`（同花顺 `stock_financial_abstract_ths`）：营收 / 净利润 / 扣非净利润 / 营业总收入等**绝对金额**，中文单位（14.15亿）已解析为 float
+   - `consistency_check`：自动交叉验证两源
+     - `status: ok` —— 可信
+     - `status: suspicious` —— Sina 推算与 THS 金额差 >8%，**报告必须标注**
+     - `status: warn_non_recurring` —— 非经常损益占净利润 >50%，**必须以扣非数据作为主业真实水平**，不能用报告 EPS / 净利润增长率误导读者
+     - `status: skipped` —— 总股本取不到，无法验证
+   - **报告中遇到 status != ok 时**：必须在基本面章节显式引用 `consistency_check.notes` 的警告文案，并用 `ths_kf_netprofit` / `sina_kf_eps` 作为主业判断依据。
+
+   **批量 / 自动化**：
+   - Linux/macOS：`./scripts/fetch_all.sh [symbols...]` —— 默认水位线 6 只
+   - Windows：`pwsh scripts\fetch_all.ps1 [-Refresh]`
+   - 每日自动刷新（Windows 任务计划）：`pwsh scripts\daily_refresh.ps1` —— 含 pull / fetch / commit / push，周末自动跳过
+
    **降级策略**（脚本不可用时）：
    1. 若 `akshare` 未装，安装命令给到用户，不要静默跳过。
    2. 若沙箱无外网（curl 403 / akshare JSONDecodeError 等），用 WebSearch + WebFetch 取网页数据，优先站点：cninfo.com.cn（官方披露）、stcn.com（证券时报）、sina 财经、10jqka.basic 同花顺 F10。
