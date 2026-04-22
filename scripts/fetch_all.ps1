@@ -23,7 +23,11 @@ param(
   [string]$WatchlistFile = $null
 )
 
-$ErrorActionPreference = 'Stop'
+# PowerShell 5.1 treats ANY stderr output from native commands as a terminating
+# error under 'Stop'. akshare / urllib3 routinely emit FutureWarning etc. to
+# stderr; we want to capture those in the manifest, not abort the batch.
+$ErrorActionPreference = 'Continue'
+$ProgressPreference    = 'SilentlyContinue'
 $root = Split-Path -Parent $PSScriptRoot
 Set-Location $root
 
