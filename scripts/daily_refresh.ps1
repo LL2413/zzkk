@@ -83,15 +83,17 @@ Log "fetch_all exit=$fetchExit"
 $dateTag = Get-Date -Format 'yyyyMMdd'
 $dataDir = "data\$dateTag"
 
-$status = git status --porcelain -- $dataDir 2>&1
-if (-not $status) {
-  Log "no data changes — nothing to commit"
+# data/ is in .gitignore, so `git status --porcelain` won't list changes there
+# unless we stage with -f first. Stage, then inspect the index.
+git add -f $dataDir 2>&1 | Out-Null
+$staged = @(git diff --cached --name-only -- $dataDir)
+if ($staged.Count -eq 0) {
+  Log "no data changes in $dataDir — nothing to commit"
   Log "=== daily_refresh done (no-op) ==="
   exit 0
 }
 
-Log "data changes detected, committing..."
-git add -f $dataDir 2>&1 | Out-Null
+Log "$($staged.Count) file(s) staged, committing..."
 $msg = "Daily data refresh $dateTag"
 git commit -m $msg 2>&1 | ForEach-Object { Log "  $_" }
 if ($LASTEXITCODE -ne 0) {
