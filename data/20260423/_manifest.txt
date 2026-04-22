@@ -1,0 +1,23 @@
+﻿
+[00:32:29] python:  C:\Users\computer\.venv\Scripts\python.exe
+[00:32:29] out_dir: C:\Users\computer\zzkk\data\20260423
+[00:32:29] refresh: False
+[00:32:29] symbols: 002281 000988 688008 603986 688728 688332
+[00:32:29] 
+[00:32:29] fetch market ...
+[00:32:30]   ok  37560 bytes -> C:\Users\computer\zzkk\data\20260423\market.json
+[00:32:30] fetch 002281 ...
+[00:32:31]   ok  131838 bytes -> C:\Users\computer\zzkk\data\20260423\002281_snapshot.json
+[00:32:31] fetch 000988 ...
+[00:32:33]   ok  125798 bytes -> C:\Users\computer\zzkk\data\20260423\000988_snapshot.json
+[00:32:33] fetch 688008 ...
+[00:32:34]   ok  124262 bytes -> C:\Users\computer\zzkk\data\20260423\688008_snapshot.json
+[00:32:34] fetch 603986 ...
+[00:32:35]   ok  125248 bytes -> C:\Users\computer\zzkk\data\20260423\603986_snapshot.json
+[00:32:35] fetch 688728 ...
+[00:32:37]   ok  120580 bytes -> C:\Users\computer\zzkk\data\20260423\688728_snapshot.json
+[00:32:37] fetch 688332 ...
+[00:32:38]   ok  120910 bytes -> C:\Users\computer\zzkk\data\20260423\688332_snapshot.json
+[00:32:38] 
+[00:32:38] done: ok=6 fail=0 total=6
+[00:32:38] inspect: Get-ChildItem C:\Users\computer\zzkk\data\20260423
