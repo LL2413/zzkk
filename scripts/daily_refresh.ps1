@@ -67,8 +67,7 @@ function Invoke-WithRetry {
 Log "git pull origin $Branch ..."
 $pullOk = Invoke-WithRetry -Label 'pull' -Action { git pull origin $Branch 2>&1 | ForEach-Object { Add-Content -Path $logFile -Value "  $_" -Encoding UTF8; $_ } | Out-Null }
 if (-not $pullOk) {
-  Log "FATAL: git pull failed after retries. Aborting."
-  exit 2
+  Log "WARN: git pull failed after retries. Continuing with local code; any commit will stay local until next successful push."
 }
 
 # --- fetch all ---
