@@ -49,7 +49,21 @@ function Resolve-Python {
 $py = Resolve-Python -explicit $Python
 
 # --- resolve watchlist ---
-$default = @('002281','000988','688008','603986','688728','688332')
+$default = @(
+  '002281',  # 光迅科技
+  '000988',  # 华工科技
+  '688008',  # 澜起科技
+  '603986',  # 兆易创新
+  '688728',  # 格科微
+  '688332',  # 中科蓝讯
+  '688046',  # 药康生物
+  '688380',  # 中微半导
+  '688123',  # 聚辰股份 (XD)
+  '688550',  # 瑞联新材
+  '688208',  # 道通科技
+  '002475',  # 立讯精密
+  '300458'   # 全志科技
+)
 if ($Symbols.Count -gt 0) {
   $watchlist = $Symbols
 } elseif ($WatchlistFile -and (Test-Path $WatchlistFile)) {

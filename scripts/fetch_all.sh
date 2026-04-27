@@ -34,12 +34,19 @@ fi
 
 # --- resolve watchlist ---
 DEFAULT_WATCHLIST=(
-  "002281"   # 光迅科技   Accelink
-  "000988"   # 华工科技   HGTech
-  "688008"   # 澜起科技   Montage
-  "603986"   # 兆易创新   GigaDevice
-  "688728"   # 格科微     GalaxyCore
-  "688332"   # 中科蓝讯   Bluetrum
+  "002281"   # 光迅科技   Accelink (光模块)
+  "000988"   # 华工科技   HGTech (激光+光模块)
+  "688008"   # 澜起科技   Montage (DDR 接口芯片)
+  "603986"   # 兆易创新   GigaDevice (存储)
+  "688728"   # 格科微     GalaxyCore (CIS 图像传感器)
+  "688332"   # 中科蓝讯   Bluetrum (蓝牙 SoC)
+  "688046"   # 药康生物   GemPharmatech (模式动物/CRO)
+  "688380"   # 中微半导   AME-Semi (模拟芯片)
+  "688123"   # 聚辰股份   Giantec (EEPROM 存储)
+  "688550"   # 瑞联新材   Valiant (OLED/液晶材料)
+  "688208"   # 道通科技   Autel (汽车诊断/充电桩)
+  "002475"   # 立讯精密   Luxshare (消费电子代工)
+  "300458"   # 全志科技   Allwinner (AIoT SoC)
 )
 
 if [[ $# -gt 0 ]]; then
