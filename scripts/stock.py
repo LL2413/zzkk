@@ -27,7 +27,7 @@ import sys
 import time
 import traceback
 from dataclasses import asdict, dataclass, field
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from pathlib import Path
 from typing import Any, Callable
 
@@ -112,7 +112,9 @@ def safe_retry(fn, *args, retries: int = 2, delay: float = 1.0, **kwargs) -> tup
         if err is None:
             return result, None
         last_err = err
-        transient = any(k in err for k in ("SSLError", "ConnectionError", "Timeout", "RemoteDisconnected"))
+        transient = any(k in err for k in ("SSLError", "ConnectionError", "Timeout",
+                                            "RemoteDisconnected", "ChunkedEncodingError",
+                                            "ProtocolError", "ReadTimeout"))
         if not transient or i == retries:
             break
         time.sleep(delay * (i + 1))
@@ -393,38 +395,47 @@ def fetch_sentiment(symbol: str, _force: bool = False) -> dict:
     out: dict = {"symbol": symbol, "as_of": datetime.now().isoformat(timespec="seconds"), "errors": {}}
     mkt = market_prefix(symbol)
 
-    flow, err = safe(ak.stock_individual_fund_flow, stock=symbol, market=mkt)
+    flow, err = safe_retry(ak.stock_individual_fund_flow, stock=symbol, market=mkt)
     if isinstance(flow, pd.DataFrame):
         out["fund_flow_recent_20d"] = df_to_records(flow.tail(20))
     if err:
         out["errors"]["fund_flow"] = err
 
-    lhb, err = safe(ak.stock_lhb_detail_em,
-                    start_date=(datetime.now().replace(month=max(1, datetime.now().month - 3))).strftime("%Y%m%d"),
-                    end_date=today_tag())
+    lhb, err = safe_retry(ak.stock_lhb_detail_em,
+                          start_date=(datetime.now().replace(month=max(1, datetime.now().month - 3))).strftime("%Y%m%d"),
+                          end_date=today_tag())
     if isinstance(lhb, pd.DataFrame) and len(lhb):
         mask = lhb.astype(str).apply(lambda r: symbol in r.values, axis=1)
         out["lhb_recent_3m"] = df_to_records(lhb[mask])
     if err:
         out["errors"]["lhb"] = err
 
-    margin, err = safe(ak.stock_margin_detail_szse if mkt == "sz" else ak.stock_margin_detail_sse,
-                       date=today_tag())
-    if isinstance(margin, pd.DataFrame):
+    # Margin: SSE/SZSE often haven't published today's data when called early evening,
+    # producing either SSL errors or akshare's "Length mismatch" (empty frame, columns
+    # assigned to nothing). Try today first, fall back to yesterday on failure.
+    margin_fn = ak.stock_margin_detail_szse if mkt == "sz" else ak.stock_margin_detail_sse
+    margin = None
+    err = None
+    for try_date in (today_tag(), (date.today() - timedelta(days=1)).strftime("%Y%m%d")):
+        margin, err = safe_retry(margin_fn, date=try_date)
+        if isinstance(margin, pd.DataFrame) and len(margin) > 0:
+            out["margin_trading_date"] = try_date
+            break
+    if isinstance(margin, pd.DataFrame) and len(margin) > 0:
         row = margin[margin.astype(str).apply(lambda r: symbol in r.values, axis=1)]
         out["margin_trading_today"] = df_to_records(row)
-    if err:
+    elif err:
         out["errors"]["margin"] = err
 
-    north, err = safe(ak.stock_hsgt_individual_em, symbol=symbol)
+    north, err = safe_retry(ak.stock_hsgt_individual_em, symbol=symbol)
     if isinstance(north, pd.DataFrame):
         out["northbound_holdings_recent"] = df_to_records(north.tail(20))
     if err:
         out["errors"]["northbound"] = err
 
-    hist, err = safe(ak.stock_zh_a_hist, symbol=symbol, period="daily",
-                     start_date=(date.today().replace(day=1)).strftime("%Y%m%d"),
-                     end_date=today_tag(), adjust="qfq")
+    hist, err = safe_retry(ak.stock_zh_a_hist, symbol=symbol, period="daily",
+                           start_date=(date.today().replace(day=1)).strftime("%Y%m%d"),
+                           end_date=today_tag(), adjust="qfq")
     if isinstance(hist, pd.DataFrame):
         out["price_recent"] = df_to_records(hist.tail(20))
     if err:
@@ -446,7 +457,7 @@ def fetch_sector(symbol: str, _force: bool = False) -> dict:
 
     out: dict = {"symbol": symbol, "as_of": datetime.now().isoformat(timespec="seconds"), "errors": {}}
 
-    info, err = safe(ak.stock_individual_info_em, symbol=symbol)
+    info, err = safe_retry(ak.stock_individual_info_em, symbol=symbol)
     industry = None
     if isinstance(info, pd.DataFrame):
         row = info[info["item"] == "行业"]
@@ -457,24 +468,24 @@ def fetch_sector(symbol: str, _force: bool = False) -> dict:
         out["errors"]["industry_lookup"] = err
 
     if industry:
-        hist, err = safe(ak.stock_board_industry_hist_em,
-                         symbol=industry,
-                         start_date=(date.today().replace(month=max(1, date.today().month - 3))).strftime("%Y%m%d"),
-                         end_date=today_tag(),
-                         period="daily", adjust="")
+        hist, err = safe_retry(ak.stock_board_industry_hist_em,
+                               symbol=industry,
+                               start_date=(date.today().replace(month=max(1, date.today().month - 3))).strftime("%Y%m%d"),
+                               end_date=today_tag(),
+                               period="daily", adjust="")
         if isinstance(hist, pd.DataFrame):
             out["sector_price_recent"] = df_to_records(hist.tail(20))
         if err:
             out["errors"]["sector_history"] = err
 
-        flow, err = safe(ak.stock_sector_fund_flow_rank, indicator="今日", sector_type="行业资金流")
+        flow, err = safe_retry(ak.stock_sector_fund_flow_rank, indicator="今日", sector_type="行业资金流")
         if isinstance(flow, pd.DataFrame):
             row = flow[flow.astype(str).apply(lambda r: industry in r.values, axis=1)]
             out["sector_fund_flow_today"] = df_to_records(row)
         if err:
             out["errors"]["sector_fund_flow"] = err
 
-    sw, err = safe(ak.sw_index_first_info)
+    sw, err = safe_retry(ak.sw_index_first_info)
     if isinstance(sw, pd.DataFrame):
         out["sw_index_first_snapshot"] = df_to_records(sw)
     if err:
