@@ -72,8 +72,11 @@ if (-not $pullOk) {
 
 # --- fetch all ---
 Log "running fetch_all.ps1 -Refresh ..."
-$fetchArgs = @('-Refresh')
-if ($Python) { $fetchArgs += @('-Python', $Python) }
+# Use hashtable splat so the [switch] -Refresh parameter binds correctly.
+# Array splat `@('-Refresh')` would bind '-Refresh' as a positional string
+# (to $Symbols), leaving $Refresh = $false and stock.py reading today's cache.
+$fetchArgs = @{ Refresh = $true }
+if ($Python) { $fetchArgs.Python = $Python }
 & (Join-Path $PSScriptRoot 'fetch_all.ps1') @fetchArgs
 $fetchExit = $LASTEXITCODE
 Log "fetch_all exit=$fetchExit"
