@@ -104,7 +104,7 @@ def safe(fn, *args, **kwargs) -> tuple[Any, str | None]:
         return None, f"{type(e).__name__}: {e}"
 
 
-def safe_retry(fn, *args, retries: int = 2, delay: float = 1.0, **kwargs) -> tuple[Any, str | None]:
+def safe_retry(fn, *args, retries: int = 3, delay: float = 1.5, **kwargs) -> tuple[Any, str | None]:
     """Call safe() with up to `retries` extra attempts on transient network errors."""
     last_err = None
     for i in range(retries + 1):
@@ -436,10 +436,25 @@ def fetch_sentiment(symbol: str, _force: bool = False) -> dict:
     hist, err = safe_retry(ak.stock_zh_a_hist, symbol=symbol, period="daily",
                            start_date=(date.today().replace(day=1)).strftime("%Y%m%d"),
                            end_date=today_tag(), adjust="qfq")
-    if isinstance(hist, pd.DataFrame):
+    if isinstance(hist, pd.DataFrame) and len(hist) > 0:
         out["price_recent"] = df_to_records(hist.tail(20))
-    if err:
-        out["errors"]["price_history"] = err
+        out["price_recent_source"] = "em_kline"
+    else:
+        if err:
+            out["errors"]["price_history"] = err
+        # Fallback: Tencent kline (different backend) when EM consistently times out.
+        tx_fn = getattr(ak, "stock_zh_a_hist_tx", None)
+        if tx_fn:
+            tx_sym = market_prefix(symbol) + symbol
+            hist2, err2 = safe_retry(tx_fn, symbol=tx_sym,
+                                     start_date=(date.today().replace(day=1)).strftime("%Y%m%d"),
+                                     end_date=today_tag(), adjust="qfq")
+            if isinstance(hist2, pd.DataFrame) and len(hist2) > 0:
+                out["price_recent"] = df_to_records(hist2.tail(20))
+                out["price_recent_source"] = "tencent_kline"
+                out["errors"].pop("price_history", None)
+            elif err2:
+                out["errors"]["price_history_tx"] = err2
 
     path.write_text(json.dumps(out, ensure_ascii=False, default=str, indent=2))
     return out
@@ -464,7 +479,25 @@ def fetch_sector(symbol: str, _force: bool = False) -> dict:
         if len(row):
             industry = str(row["value"].iloc[0])
             out["industry_em"] = industry
-    if err:
+
+    # Fallback: Xueqiu basic info (different backend, immune to EM SSL/RemoteDisconnected)
+    if not industry:
+        xq_fn = getattr(ak, "stock_individual_basic_info_xq", None)
+        if xq_fn:
+            xq_sym = market_prefix(symbol).upper() + symbol
+            xq_res, xq_err = safe_retry(xq_fn, symbol=xq_sym)
+            if isinstance(xq_res, pd.DataFrame) and len(xq_res):
+                kv = dict(zip(xq_res.iloc[:, 0].astype(str), xq_res.iloc[:, 1]))
+                for key in ("所属行业", "行业", "industry"):
+                    v = kv.get(key)
+                    if v and str(v).strip() not in ("", "--", "None"):
+                        industry = str(v)
+                        out["industry_xq"] = industry
+                        break
+            elif xq_err and not err:
+                err = xq_err
+
+    if err and not industry:
         out["errors"]["industry_lookup"] = err
 
     if industry:
