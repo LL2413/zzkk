@@ -97,12 +97,17 @@ Log ""
 # --- market overview ---
 Log "fetch market ..."
 $marketFile = Join-Path $outDir 'market.json'
-& $py scripts\stock.py market @forceFlag --json > $marketFile 2>> $manifest
+if ($Refresh) {
+  & $py scripts\stock.py market --force --json > $marketFile 2>> $manifest
+} else {
+  & $py scripts\stock.py market --json > $marketFile 2>> $manifest
+}
 if ($LASTEXITCODE -eq 0 -and (Test-Path $marketFile)) {
   $bytes = (Get-Item $marketFile).Length
   Log "  ok  $bytes bytes -> $marketFile"
 } else {
   Log "  FAIL (exit=$LASTEXITCODE) see manifest"
+  Remove-Item $marketFile -Force -ErrorAction SilentlyContinue
 }
 
 # --- per-symbol snapshots ---
@@ -110,13 +115,21 @@ $ok = 0; $fail = 0
 foreach ($sym in $watchlist) {
   Log "fetch $sym ..."
   $outFile = Join-Path $outDir "${sym}_snapshot.json"
-  & $py scripts\stock.py snapshot $sym @forceFlag --json > $outFile 2>> $manifest
+  # Inline the conditional to avoid PowerShell 5.1's splat-on-string bug:
+  # `$forceFlag = @('--force')` then `@forceFlag` was being splat as 7 chars.
+  if ($Refresh) {
+    & $py scripts\stock.py snapshot $sym --force --json > $outFile 2>> $manifest
+  } else {
+    & $py scripts\stock.py snapshot $sym --json > $outFile 2>> $manifest
+  }
   if ($LASTEXITCODE -eq 0 -and (Test-Path $outFile) -and (Get-Item $outFile).Length -gt 1024) {
     $bytes = (Get-Item $outFile).Length
     Log "  ok  $bytes bytes -> $outFile"
     $ok++
   } else {
     Log "  FAIL (exit=$LASTEXITCODE) see manifest"
+    # Delete truncated/empty output so next run doesn't trip on JSONDecodeError
+    Remove-Item $outFile -Force -ErrorAction SilentlyContinue
     $fail++
   }
 }
