@@ -114,7 +114,8 @@ def safe_retry(fn, *args, retries: int = 3, delay: float = 1.5, **kwargs) -> tup
         last_err = err
         transient = any(k in err for k in ("SSLError", "ConnectionError", "Timeout",
                                             "RemoteDisconnected", "ChunkedEncodingError",
-                                            "ProtocolError", "ReadTimeout"))
+                                            "ProtocolError", "ReadTimeout",
+                                            "JSONDecodeError"))
         if not transient or i == retries:
             break
         time.sleep(delay * (i + 1))
@@ -474,13 +475,15 @@ def fetch_sector(symbol: str, _force: bool = False) -> dict:
 
     info, err = safe_retry(ak.stock_individual_info_em, symbol=symbol)
     industry = None
+    em_err = err
+    xq_err = None
     if isinstance(info, pd.DataFrame):
         row = info[info["item"] == "行业"]
         if len(row):
             industry = str(row["value"].iloc[0])
             out["industry_em"] = industry
 
-    # Fallback: Xueqiu basic info (different backend, immune to EM SSL/RemoteDisconnected)
+    # Fallback 1: Xueqiu basic info (different backend)
     if not industry:
         xq_fn = getattr(ak, "stock_individual_basic_info_xq", None)
         if xq_fn:
@@ -494,11 +497,30 @@ def fetch_sector(symbol: str, _force: bool = False) -> dict:
                         industry = str(v)
                         out["industry_xq"] = industry
                         break
-            elif xq_err and not err:
-                err = xq_err
 
-    if err and not industry:
-        out["errors"]["industry_lookup"] = err
+    # Fallback 2: hardcoded watchlist mapping. Used when both EM and Xueqiu fail
+    # (EM often returns empty body → JSONDecodeError; Xueqiu often missing 'data' key).
+    # Names use EM industry vocabulary so stock_board_industry_hist_em can consume them.
+    WATCHLIST_INDUSTRY_FALLBACK = {
+        "002281": "通信设备", "000988": "通信设备",
+        "688008": "半导体",   "603986": "半导体",   "688728": "半导体",
+        "688332": "半导体",   "688380": "半导体",   "688123": "半导体",
+        "688046": "医疗服务",
+        "688550": "化学制品",
+        "688208": "计算机设备",
+        "002475": "消费电子",
+        "300458": "半导体",
+    }
+    if not industry and symbol in WATCHLIST_INDUSTRY_FALLBACK:
+        industry = WATCHLIST_INDUSTRY_FALLBACK[symbol]
+        out["industry_hardcoded"] = industry
+
+    if not industry:
+        errs_combined = []
+        if em_err: errs_combined.append(f"em: {em_err}")
+        if xq_err: errs_combined.append(f"xq: {xq_err}")
+        if errs_combined:
+            out["errors"]["industry_lookup"] = "; ".join(errs_combined)
 
     if industry:
         hist, err = safe_retry(ak.stock_board_industry_hist_em,
