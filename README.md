@@ -1,68 +1,44 @@
-# 还了吗 ⏰
+# 中国股市市场分析项目
 
-> 再也不会忘记归还借用的物品！
+这个仓库当前的主要用途是维护和运行 Claude skill：
 
-一款帮助你记录和提醒归还借用物品的应用。无论是共享充电宝、共享单车还是图书馆借书，都能及时提醒你按时归还。
+`C:\Users\computer\zzkk\.claude\skills\china-stock-analysis`
 
-## ✨ 功能特点
+它用于分析中国 A 股市场，覆盖三个维度：
 
-- 🔋 **多种借用类型** - 支持充电宝、共享单车、雨伞、图书、汽车等
-- ⏰ **智能提醒** - 自定义提醒时间，浏览器通知及时提醒
-- 📍 **位置记录** - 记录借用地点，方便找到归还点
-- 📊 **数据统计** - 一目了然查看待归还和已归还数量
-- 💾 **本地存储** - 数据保存在本地，隐私安全
+- 公司盈利发展：财报、扣非净利润、ROE、利润率、估值和数据一致性
+- 市场热度：资金流、北向、两融、龙虎榜、涨跌停和价格走势
+- 板块行情：行业分类、板块走势、板块资金和轮动线索
 
-## 🚀 快速开始
+## 主要入口
 
-### 安装依赖
+- Skill 说明：`.claude/skills/china-stock-analysis/SKILL.md`
+- 数据抓取：`scripts/stock.py`
+- 批量刷新：`scripts/fetch_all.ps1`
+- 每日自动刷新：`scripts/daily_refresh.ps1`
+- 数据体检：`.claude/skills/china-stock-analysis/scripts/validate_data.py`
+- 每日快照：`data/YYYYMMDD/*.json`
 
-```bash
-npm install
+## 常用命令
+
+单只股票三维快照：
+
+```powershell
+C:\Users\computer\.venv\Scripts\python.exe scripts\stock.py snapshot 002281 --json
 ```
 
-### 启动开发服务器
+强制刷新默认股票池：
 
-```bash
-npm run dev
+```powershell
+pwsh scripts\fetch_all.ps1 -Refresh
 ```
 
-访问 http://localhost:3000 查看应用
+检查某天数据完整性：
 
-### 构建生产版本
-
-```bash
-npm run build
+```powershell
+C:\Users\computer\.venv\Scripts\python.exe .claude\skills\china-stock-analysis\scripts\validate_data.py --data-dir data\20260429
 ```
 
-## 📱 转换为小程序/App
+## 注意
 
-本项目使用 React 开发，可以通过以下方式转换：
-
-### 微信小程序
-- 使用 [Taro](https://taro.jd.com/) 转换
-- 或使用 [uni-app](https://uniapp.dcloud.net.cn/) 重写
-
-### 移动端 App
-- 使用 [Capacitor](https://capacitorjs.com/) 打包为 iOS/Android App
-- 或使用 PWA (Progressive Web App) 技术
-
-## 🛠 技术栈
-
-- **React 18** - 用户界面
-- **Vite** - 构建工具
-- **Zustand** - 状态管理
-- **Framer Motion** - 动画效果
-- **date-fns** - 日期处理
-
-## 📝 后续计划
-
-- [ ] 添加声音/震动提醒
-- [ ] 支持微信小程序
-- [ ] 添加数据云同步
-- [ ] 支持重复借用模板
-- [ ] 添加费用计算功能
-- [ ] 多设备同步
-
-## 📄 许可
-
-MIT License
+本项目只做公开数据整理和分析辅助，不提供买入、卖出、持有评级，也不提供目标价。所有报告都应明确数据日期、数据来源、缺失字段和接口错误。

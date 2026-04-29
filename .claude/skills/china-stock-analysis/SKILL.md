@@ -1,230 +1,137 @@
 ---
 name: china-stock-analysis
-description: 分析中国 A 股市场的技能，覆盖三个维度：公司盈利发展（财报驱动的基本面）、市场热度（资金/情绪/交易行为）、板块行情（行业与概念轮动）。当用户提到 A 股、沪深、创业板、科创板、北交所、上证指数、深证成指、具体 A 股代码（6 位数字，以 6/0/3/8/4 开头）、行业/概念板块，或者要求"分析股票/板块/大盘/财报/资金流向"时触发。
+description: Analyze China A-share stocks, sectors, and broad market conditions with a three-part framework: fundamentals, market sentiment/funds, and sector rotation. Use when the user mentions A股, 沪深, 创业板, 科创板, 北交所, 上证指数, 深证成指, a 6-digit A-share code, an A-share company/sector/concept, or asks to analyze 股票, 板块, 大盘, 财报, 资金流, 估值, or 市场热度.
 ---
 
-# China Stock Market Analysis 中国股市分析
+# China Stock Market Analysis
 
-一个结构化的 A 股分析框架，产出一份从**基本面、资金面、行业面**三位一体的研究报告。不做投资建议，只做事实与数据陈述，并明确不确定性。
+Use this skill to produce structured A-share analysis from local data and public sources. The canonical project entry is this folder plus the repo-level scripts under `../../../scripts/`; ignore stale app files unless the user explicitly asks about the old React/Capacitor app.
 
-## 使用时机
+## Canonical Layout
 
-当用户请求以下任一类型时启动本技能：
+- Skill guide: `.claude/skills/china-stock-analysis/SKILL.md`
+- Data fetcher: `scripts/stock.py`
+- Batch refresh: `scripts/fetch_all.ps1`, `scripts/fetch_all.sh`
+- Scheduled refresh: `scripts/daily_refresh.ps1`
+- Daily snapshots: `data/YYYYMMDD/*.json`
+- Cache: `.cache/stock/*.json`
+- Logs: `logs/*.log`
+- Data health check: `.claude/skills/china-stock-analysis/scripts/validate_data.py`
 
-- **个股分析**：给定股票代码或名称（如 `600519`、`贵州茅台`、`宁德时代 300750`），分析其财务与市场表现。
-- **板块分析**：给定申万/中信行业、概念板块（如 `白酒`、`半导体`、`光伏`、`AI 算力`）。
-- **大盘/市场分析**：对上证指数、深证成指、创业板指、科创 50、北证 50 的整体判断。
-- **财报季复盘**：一季报 / 中报 / 三季报 / 年报发布期的业绩扫描。
+## Non-Negotiables
 
-## 核心分析三维度
+- Do not provide buy/sell/hold ratings, target prices, or point forecasts.
+- Always state the data date, source, and known missing fields.
+- Treat every `errors` object in fetched JSON as material context, not noise.
+- If `consistency_check.status != "ok"`, quote or summarize `consistency_check.notes` and use扣非口径 as the primary operating-profit lens.
+- If `financials_absolute_recent` is missing, do not make strong claims about revenue/profit scale.
+- If `price_recent` is missing, do not make short-term momentum claims.
+- If industry is hardcoded (`industry_hardcoded`), say the industry classification was a fallback.
+- When the user asks for "latest/current/today", force refresh or verify the latest local snapshot date first.
 
-分析必须同时涵盖以下三个维度；如果数据缺失某一维度，**必须显式说明缺失**，不要静默跳过。
+## Workflow
 
-### 维度 1 · 公司盈利发展（基本面）
+1. Identify the target.
+   - Stock: normalize to a 6-digit code and infer exchange prefix: `6/9 -> SH`, `0/3 -> SZ`, `4/8 -> BJ`.
+   - Sector/concept: clarify whether the口径 is industry, concept, or broad market.
+   - Broad market: use `market` plus relevant index/sector context.
 
-目标：判断"这家公司/这个板块赚钱能力的趋势"。
+2. Fetch or select data.
+   - Prefer local snapshots in `data/YYYYMMDD` when the requested date matches the latest available data.
+   - Use `--force` for current-day refreshes or when the cache may be stale.
 
-必查指标：
-
-| 类别 | 指标 | 关注点 |
-| --- | --- | --- |
-| 盈利规模 | 营业收入、归母净利润、扣非净利润 | 最近 4~8 个季度 TTM 与同比 / 环比 |
-| 盈利质量 | 毛利率、净利率、ROE、ROIC | 是否持续 > 行业中位数 |
-| 成长性 | 营收 YoY、净利润 YoY、扣非 YoY | 警惕"增收不增利"与非经常性损益粉饰 |
-| 现金流 | 经营性现金流 / 净利润 | <0.8 视为盈利质量警示 |
-| 资产负债 | 资产负债率、有息负债、商誉 / 净资产 | 商誉 > 30% 净资产要标红 |
-| 估值 | PE-TTM、PB、PS、PEG、股息率 | 与自身历史分位数 + 同行对比 |
-| 分红 | 分红率、近 3 年股利支付率 | 高股息策略必查 |
-
-**数据来源优先级**：同花顺 iFinD > Wind > 东方财富 Choice > 公开披露的定期报告 > 雪球/东方财富网页数据。若只能拿到网页数据，必须提示数据滞后与口径风险。
-
-输出一张 **"盈利发展卡"**，包含最近 4 个季度的营收/净利润走势、同比、毛利率、ROE、经营现金流 / 净利润 比值。
-
-### 维度 2 · 市场热度（资金与情绪）
-
-目标：判断"现在有多少钱、多猛的情绪在这支股票 / 这个板块上"。
-
-必查指标：
-
-| 类别 | 指标 | 关注点 |
-| --- | --- | --- |
-| 成交 | 成交额、成交量、换手率 | 换手率与 20 日均值对比 |
-| 资金流 | 主力净流入、超大单 / 大单净额 | 连续 3 日方向 |
-| 北向 | 北向资金持股变动、陆股通净买入 | 周度 / 月度持仓变化 |
-| 两融 | 融资余额、融资买入额占比 | 占流通市值比例与变化率 |
-| 涨跌停 | 涨停家数、连板高度、炸板率 | 判断市场风险偏好 |
-| 情绪指标 | 破净股数、创新高/新低家数、赚钱效应 | A 股特有的情绪温度计 |
-| 大宗与龙虎榜 | 机构席位 / 游资席位上榜 | 分辨资金性质 |
-| 新股打新 | 新股首日涨幅、破发率 | 一级市场情绪 |
-
-额外参考：Wind 全 A 风险溢价、股债性价比、融资余额 / 自由流通市值比值。
-
-输出一张 **"热度卡"**，用 1-5 星标记：资金面、情绪面、北向态度、杠杆强度。
-
-### 维度 3 · 板块行情（行业与概念轮动）
-
-目标：判断"这支股票所在的赛道/板块当前在什么位置"。
-
-必查指标：
-
-| 类别 | 指标 | 关注点 |
-| --- | --- | --- |
-| 行业分类 | 申万一级 / 二级、中信行业、证监会行业 | 以申万为默认口径 |
-| 板块涨跌 | 近 1 日 / 5 日 / 20 日 / YTD 涨跌幅 | 与沪深 300 比较超额收益 |
-| 板块估值 | 板块 PE / PB 历史分位数 | 用 5 年和 10 年两个窗口 |
-| 板块资金 | 板块主力净流入、北向持仓占比 | 连续性比单日更重要 |
-| 龙头股 | 市值前 5 / 题材龙头 | 龙头是否创新高 / 放量 |
-| 轮动 | 与上游/下游板块的涨跌背离 | 判断产业链传导 |
-| 概念 | 同花顺概念板块、东财概念 | 区分基本面概念 vs 纯炒作概念 |
-| 政策与催化 | 产业政策、补贴、招投标、新产品发布 | 催化剂的时效性与力度 |
-
-A 股特有因素必须纳入：**注册制、退市新规、分红新规、北交所扩容、中特估、高股息央企、红利低波、并购重组、国企改革**。
-
-输出一张 **"板块卡"**，包含：所处行业位置、近期涨跌对比沪深 300、估值分位、龙头股状态、主要催化。
-
-## 执行流程（Playbook）
-
-按顺序执行；任一步骤失败必须显式报告。
-
-1. **识别目标**
-   - 判断用户要分析的是个股 / 板块 / 大盘。
-   - 如果是个股，识别出 6 位股票代码与交易所前缀（沪 SH6/9、深 SZ0/3、北 BJ8/4）。
-   - 如果是板块，确定口径（申万 / 中信 / 概念）。
-
-2. **拉数据（首选本地脚本）**
-
-   本仓库提供封装脚本 `scripts/stock.py`，基于 akshare，含日度缓存。**优先用它**：
-
-   ```bash
-   # 首次使用（一次性）
-   python3 -m venv .venv && .venv/bin/pip install akshare pandas
-
-   # 三维一次性拉取（默认命令）
-   .venv/bin/python scripts/stock.py snapshot 002281 --json
-
-   # 单维度
-   .venv/bin/python scripts/stock.py fundamentals 002281 --json
-   .venv/bin/python scripts/stock.py sentiment   002281 --json
-   .venv/bin/python scripts/stock.py sector      002281 --json
-   .venv/bin/python scripts/stock.py market                --json   # 大盘
-
-   # 强制刷新（跳过当日缓存）
-   .venv/bin/python scripts/stock.py snapshot 002281 --force --json
-
-   # 清缓存
-   .venv/bin/python scripts/stock.py clear-cache
+   Windows:
+   ```powershell
+   C:\Users\computer\.venv\Scripts\python.exe scripts\stock.py snapshot 002281 --json
+   C:\Users\computer\.venv\Scripts\python.exe scripts\stock.py snapshot 002281 --force --json
+   C:\Users\computer\.venv\Scripts\python.exe scripts\stock.py market --json
+   pwsh scripts\fetch_all.ps1 -Refresh
    ```
 
-   - 缓存路径：`.cache/stock/<symbol>_<kind>_<YYYYMMDD>.json`，按交易日 key。
-   - 输出结构：顶层带 `as_of` 时间戳，失败字段收敛到 `errors` 对象，**永不抛异常中断**。
-   - 每个维度输出包含 `errors` 时，报告必须把缺失字段显式列入"数据缺口"。
-   - 脚本首行使用 `env python3`，可执行权限已就位。
+   macOS/Linux:
+   ```bash
+   python scripts/stock.py snapshot 002281 --json
+   python scripts/stock.py snapshot 002281 --force --json
+   python scripts/stock.py market --json
+   ./scripts/fetch_all.sh
+   ```
 
-   **fundamentals 输出包含双数据源 + 一致性校验**：
-   - `financial_indicators_recent`（新浪 `stock_financial_analysis_indicator`）：80+ 比率字段（ROE / 毛利率 / 周转率 / 负债率 / 各类每股）
-   - `financials_absolute_recent`（同花顺 `stock_financial_abstract_ths`）：营收 / 净利润 / 扣非净利润 / 营业总收入等**绝对金额**，中文单位（14.15亿）已解析为 float
-   - `consistency_check`：自动交叉验证两源
-     - `status: ok` —— 可信
-     - `status: suspicious` —— Sina 推算与 THS 金额差 >8%，**报告必须标注**
-     - `status: warn_non_recurring` —— 非经常损益占净利润 >50%，**必须以扣非数据作为主业真实水平**，不能用报告 EPS / 净利润增长率误导读者
-     - `status: skipped` —— 总股本取不到，无法验证
-   - **报告中遇到 status != ok 时**：必须在基本面章节显式引用 `consistency_check.notes` 的警告文案，并用 `ths_kf_netprofit` / `sina_kf_eps` 作为主业判断依据。
+3. Run data health checks before analysis.
 
-   **批量 / 自动化**：
-   - Linux/macOS：`./scripts/fetch_all.sh [symbols...]` —— 默认水位线 6 只
-   - Windows：`pwsh scripts\fetch_all.ps1 [-Refresh]`
-   - 每日自动刷新（Windows 任务计划）：`pwsh scripts\daily_refresh.ps1` —— 含 pull / fetch / commit / push，周末自动跳过
+   ```powershell
+   C:\Users\computer\.venv\Scripts\python.exe .claude\skills\china-stock-analysis\scripts\validate_data.py --data-dir data\20260429
+   ```
 
-   **降级策略**（脚本不可用时）：
-   1. 若 `akshare` 未装，安装命令给到用户，不要静默跳过。
-   2. 若沙箱无外网（curl 403 / akshare JSONDecodeError 等），用 WebSearch + WebFetch 取网页数据，优先站点：cninfo.com.cn（官方披露）、stcn.com（证券时报）、sina 财经、10jqka.basic 同花顺 F10。
-   3. 任何网页来源的数字在报告里必须标"网页数据，可能滞后"并给出链接。
+   Treat critical failures as blockers. Warnings can still be analyzed, but the report must list them in "数据缺口".
 
-3. **三维度并行填充**
-   - 基本面：`fundamentals` 命令；额外财务细项见 `references/akshare_cookbook.md`。
-   - 热度：`sentiment` 命令覆盖资金流、龙虎榜、两融、北向、近月价格。
-   - 板块：`sector` 命令覆盖所属行业、板块近 3 月价格、板块今日资金流、申万一级快照。
+4. Fill the three cards.
+   - Fundamentals: revenue, net profit,扣非净利润, ROE, gross/net margin, debt ratio, dividends, valuation, and cross-source consistency.
+   - Sentiment/funds: price trend, turnover when available, main fund flow, margin data, northbound holdings, LHB, limit-up/limit-down market context.
+   - Sector: industry classification, recent sector price, sector fund flow, broad sector snapshot, and whether the classification came from EM/Xueqiu/hardcoded fallback.
 
-3. **三维度并行填充**
-   - 基本面：调财报接口 + 估值接口。
-   - 热度：调资金流 + 龙虎榜 + 涨跌停统计 + 北向 + 两融。
-   - 板块：调行业分类 + 行业涨跌 + 行业估值 + 行业资金。
+5. Compare before judging.
+   - Avoid saying "cheap/expensive/hot/cold" without a benchmark: own history, industry median, HS300/CSI broad market, or clearly stated fallback.
+   - Use 前复权 data for price history comparisons.
+   - Do not mix 申万/中信/概念口径 without saying so.
 
-4. **对标与分位**
-   - 与行业中位数、沪深 300、自身 3/5/10 年历史分位对比。
-   - 一切"高 / 低 / 贵 / 便宜"的定性描述都必须附带对标口径。
+6. Produce a concise report.
+   - Start with one sentence of data-backed conclusion.
+   - Include the three cards, risks/catalysts, data gaps, and compliance statement.
 
-5. **产出报告**
-   - 使用下方「报告模板」。
-   - 先结论后数据，控制在 800~1500 字主报告 + 三张卡。
-   - 结尾必须有「已知数据缺口」与「关键风险/催化」两节。
+## Automation Health Rules
 
-6. **合规声明**
-   - 每份报告末尾附："本分析仅为信息整理，不构成投资建议。A 股市场风险提示：政策风险、流动性风险、业绩变脸风险、退市风险。"
+- Before scheduled refresh, require a clean tracked worktree. If `git pull --rebase` fails, stop; do not fetch, commit, or push on top of stale code.
+- Write new JSON outputs as UTF-8. Legacy UTF-16 snapshots may be read, but should not be produced going forward.
+- Validate generated `data/YYYYMMDD` before staging. Empty or unreadable snapshots must fail the run.
+- Do not stage scratch files such as ad hoc audits unless the user asks.
 
-## 报告模板
+## Report Template
 
 ```markdown
-# {标的名称} ({代码}) · A 股分析报告
-> 数据截至 {YYYY-MM-DD}，数据源：{来源列表}
+# {name} ({code}) A股分析
+> 数据截至 {date}; 数据源: {sources}; 本分析仅为信息整理，不构成投资建议。
 
 ## 一句话结论
-{一句话定性 + 核心数据支撑}
+{data-backed conclusion with uncertainty}
 
-## 1. 盈利发展卡（基本面）
-- 最近 4 季营收 / 归母净利润 / 扣非 / 毛利率 / ROE / 经营现金流 比值
-- 与行业中位数对比
-- 估值分位（PE-TTM / PB，5 年 & 10 年）
-- 盈利质量评分（⭐~⭐⭐⭐⭐⭐）
+## 盈利发展卡
+- 最近 4-8 期: 营收 / 净利润 / 扣非 / ROE / 毛利率 / 负债率
+- 一致性: {consistency_check.status + notes if any}
+- 估值: PE/PB/股息率及对标口径
 
-## 2. 热度卡（市场情绪）
-- 近 5 / 20 日换手率及均值对比
-- 主力资金、北向资金、融资余额 3 条曲线的方向
-- 龙虎榜上榜次数与席位性质
-- 热度评分（⭐~⭐⭐⭐⭐⭐）
+## 热度卡
+- 价格与成交: {price_recent summary}
+- 资金: 主力资金 / 北向 / 两融 / 龙虎榜
+- 市场情绪: 涨跌停、赚钱效应、风险偏好
 
-## 3. 板块卡（行业）
-- 申万一级 / 二级所属
-- 近 20 日板块涨跌 vs 沪深 300 超额
-- 板块估值分位
-- 龙头股状态
-- 主要政策/催化
+## 板块卡
+- 行业/板块: {classification source}
+- 近期表现: 板块 vs 大盘
+- 板块资金与催化
 
-## 4. 风险与催化
-- 近 3 个可证实的催化（时间 + 来源）
-- 近 3 个关键风险（业绩 / 解禁 / 商誉 / 监管 / 竞争）
+## 风险与催化
+- {verified risks and catalysts}
 
-## 5. 数据缺口
-- 明确列出本次分析中未能获取的数据与原因
+## 数据缺口
+- {missing fields, endpoint errors, fallback sources}
 
 ## 合规声明
-{标准声明}
+本分析仅为信息整理，不构成投资建议。A股市场存在政策风险、流动性风险、业绩变脸风险与退市风险。
 ```
 
-## 常见坑与反模式
+## References
 
-- ❌ **只看 PE 不看 PE 分位**：A 股估值中枢迁移大，必须比历史分位而非绝对值。
-- ❌ **混用申万/中信分类却不说明**：两套行业分类的成分股不一致，结论会错位。
-- ❌ **把"主力资金净流入"当因果**：这是逐笔单撮合推算，不是真实席位数据，仅作情绪参考。
-- ❌ **忽略停牌/ST/退市风险警示板**：在分析前必须检查股票状态，`*ST`、退市整理期股票的财务数据几乎不可用。
-- ❌ **用未复权价做历史对比**：回测与分位计算必须用**前复权**。
-- ❌ **财报数据用更新日而非报告期**：同比必须对齐报告期（Q1/Q2/Q3/Q4）。
-- ❌ **把游资席位当机构推荐**："一机构专用席位 + 四个营业部"往往是游资对倒，不是机构加仓。
-- ❌ **忽略新会计准则切换影响**：如新金融工具准则（IFRS 9 等效）、新收入准则引起的同比不可比。
+Read only the reference needed for the current request:
 
-## 进阶话题
+- `references/akshare_cookbook.md`: akshare endpoint notes.
+- `references/fundamental_checklist.md`: deep fundamental checklist.
+- `references/sentiment_indicators.md`: fund flow and sentiment interpretation.
+- `references/sector_rotation.md`: sector rotation and industry口径.
 
-需要更深一层的分析时，参考：
+## Common Traps
 
-- `../../../scripts/stock.py` — akshare 数据抓取 + 日度缓存 CLI（首选执行入口）
-- `references/akshare_cookbook.md` — 常用 akshare 接口速查与示例代码
-- `references/fundamental_checklist.md` — 基本面分析完整清单（含杜邦分析、现金流拆解）
-- `references/sentiment_indicators.md` — A 股情绪与资金面指标全解
-- `references/sector_rotation.md` — 申万行业口径、轮动模型、中特估 / 红利 / 科创口径
-
-## 不做什么
-
-- ❌ 不给出"买入/卖出/持有"评级。
-- ❌ 不给出目标价与点位预测。
-- ❌ 不复制卖方研报结论（可以引用并标注来源）。
-- ❌ 不对未公开信息、小道消息、传闻做基于"可能"的推断。
+- Do not treat "主力资金净流入" as causal truth; it is an estimate from transaction classification.
+- Do not use report update date as the financial period date.
+- Do not infer institutional endorsement from mixed LHB seats.
+- Do not ignore ST, delisting-warning, major restructuring, accounting-policy changes, or non-standard audit opinions.
+- Do not silently skip failed endpoints; surface them as data gaps.

@@ -74,8 +74,6 @@ if ($Symbols.Count -gt 0) {
   $watchlist = $default
 }
 
-$forceFlag = if ($Refresh) { @('--force') } else { @() }
-
 $dateTag = Get-Date -Format 'yyyyMMdd'
 $outDir  = Join-Path $root "data\$dateTag"
 New-Item -ItemType Directory -Force -Path $outDir | Out-Null
@@ -88,6 +86,22 @@ function Log([string]$msg) {
   Add-Content -Path $manifest -Value $line -Encoding UTF8
 }
 
+function Invoke-StockJson {
+  param(
+    [string[]]$CommandArgs,
+    [string]$OutFile
+  )
+
+  # PowerShell 5.1 writes native-command redirection (`>`) as UTF-16.
+  # Capture stdout and write it explicitly as UTF-8 so JSON stays portable.
+  $stdout = & $py @CommandArgs 2>> $manifest
+  $exitCode = $LASTEXITCODE
+  if ($exitCode -eq 0) {
+    $stdout | Set-Content -Path $OutFile -Encoding UTF8
+  }
+  return $exitCode
+}
+
 Log "python:  $py"
 Log "out_dir: $outDir"
 Log "refresh: $([bool]$Refresh)"
@@ -98,15 +112,15 @@ Log ""
 Log "fetch market ..."
 $marketFile = Join-Path $outDir 'market.json'
 if ($Refresh) {
-  & $py scripts\stock.py market --force --json > $marketFile 2>> $manifest
+  $marketExit = Invoke-StockJson -CommandArgs @('scripts\stock.py', 'market', '--force', '--json') -OutFile $marketFile
 } else {
-  & $py scripts\stock.py market --json > $marketFile 2>> $manifest
+  $marketExit = Invoke-StockJson -CommandArgs @('scripts\stock.py', 'market', '--json') -OutFile $marketFile
 }
-if ($LASTEXITCODE -eq 0 -and (Test-Path $marketFile)) {
+if ($marketExit -eq 0 -and (Test-Path $marketFile)) {
   $bytes = (Get-Item $marketFile).Length
   Log "  ok  $bytes bytes -> $marketFile"
 } else {
-  Log "  FAIL (exit=$LASTEXITCODE) see manifest"
+  Log "  FAIL (exit=$marketExit) see manifest"
   Remove-Item $marketFile -Force -ErrorAction SilentlyContinue
 }
 
@@ -118,16 +132,16 @@ foreach ($sym in $watchlist) {
   # Inline the conditional to avoid PowerShell 5.1's splat-on-string bug:
   # `$forceFlag = @('--force')` then `@forceFlag` was being splat as 7 chars.
   if ($Refresh) {
-    & $py scripts\stock.py snapshot $sym --force --json > $outFile 2>> $manifest
+    $stockExit = Invoke-StockJson -CommandArgs @('scripts\stock.py', 'snapshot', $sym, '--force', '--json') -OutFile $outFile
   } else {
-    & $py scripts\stock.py snapshot $sym --json > $outFile 2>> $manifest
+    $stockExit = Invoke-StockJson -CommandArgs @('scripts\stock.py', 'snapshot', $sym, '--json') -OutFile $outFile
   }
-  if ($LASTEXITCODE -eq 0 -and (Test-Path $outFile) -and (Get-Item $outFile).Length -gt 1024) {
+  if ($stockExit -eq 0 -and (Test-Path $outFile) -and (Get-Item $outFile).Length -gt 1024) {
     $bytes = (Get-Item $outFile).Length
     Log "  ok  $bytes bytes -> $outFile"
     $ok++
   } else {
-    Log "  FAIL (exit=$LASTEXITCODE) see manifest"
+    Log "  FAIL (exit=$stockExit) see manifest"
     # Delete truncated/empty output so next run doesn't trip on JSONDecodeError
     Remove-Item $outFile -Force -ErrorAction SilentlyContinue
     $fail++

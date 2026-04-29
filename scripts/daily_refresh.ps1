@@ -44,6 +44,23 @@ function Log([string]$msg) {
 Log "=== daily_refresh start ==="
 Log "cwd: $root"
 
+function Resolve-Python {
+  param([string]$explicit)
+  if ($explicit -and (Test-Path $explicit)) { return $explicit }
+  $candidates = @(
+    (Join-Path $root '.venv\Scripts\python.exe'),
+    "$env:USERPROFILE\.venv\Scripts\python.exe",
+    "$env:USERPROFILE\.venv\Scripts\python"
+  )
+  foreach ($p in $candidates) { if (Test-Path $p) { return $p } }
+  $which = Get-Command python -ErrorAction SilentlyContinue
+  if ($which) { return $which.Source }
+  throw "No Python interpreter found. Create a venv: python -m venv .venv; .venv\Scripts\pip install akshare pandas"
+}
+
+$py = Resolve-Python -explicit $Python
+Log "python: $py"
+
 # --- weekend skip ---
 $dow = (Get-Date).DayOfWeek
 if (-not $Force -and ($dow -eq 'Saturday' -or $dow -eq 'Sunday')) {
@@ -64,10 +81,18 @@ function Invoke-WithRetry {
   return $false
 }
 
+$dirtyTracked = @(git status --porcelain --untracked-files=no)
+if ($dirtyTracked.Count -gt 0) {
+  Log "abort: tracked working tree has uncommitted changes. Commit/stash before daily refresh."
+  $dirtyTracked | ForEach-Object { Log "  $_" }
+  exit 2
+}
+
 Log "git pull --rebase origin $Branch ..."
 $pullOk = Invoke-WithRetry -Label 'pull' -Action { git pull --rebase origin $Branch 2>&1 | ForEach-Object { Add-Content -Path $logFile -Value "  $_" -Encoding UTF8; $_ } | Out-Null }
 if (-not $pullOk) {
-  Log "WARN: git pull failed after retries. Continuing with local code; any commit will stay local until next successful push."
+  Log "abort: git pull failed after retries. Not fetching or committing on stale code."
+  exit 2
 }
 
 # --- fetch all ---
@@ -76,14 +101,30 @@ Log "running fetch_all.ps1 -Refresh ..."
 # Array splat `@('-Refresh')` would bind '-Refresh' as a positional string
 # (to $Symbols), leaving $Refresh = $false and stock.py reading today's cache.
 $fetchArgs = @{ Refresh = $true }
-if ($Python) { $fetchArgs.Python = $Python }
+if ($py) { $fetchArgs.Python = $py }
 & (Join-Path $PSScriptRoot 'fetch_all.ps1') @fetchArgs
 $fetchExit = $LASTEXITCODE
 Log "fetch_all exit=$fetchExit"
+if ($fetchExit -ne 0) {
+  Log "abort: fetch_all failed. Not committing partial data."
+  exit 5
+}
 
 # --- commit changed data ---
 $dateTag = Get-Date -Format 'yyyyMMdd'
 $dataDir = "data\$dateTag"
+
+$validator = Join-Path $root '.claude\skills\china-stock-analysis\scripts\validate_data.py'
+if (Test-Path $validator) {
+  Log "validating $dataDir ..."
+  & $py $validator --data-dir $dataDir 2>&1 | ForEach-Object { Log "  $_" }
+  if ($LASTEXITCODE -ne 0) {
+    Log "abort: data validation failed. Not committing bad snapshots."
+    exit 6
+  }
+} else {
+  Log "WARN: data validator missing: $validator"
+}
 
 # data/ is in .gitignore, so `git status --porcelain` won't list changes there
 # unless we stage with -f first. Stage, then inspect the index.
