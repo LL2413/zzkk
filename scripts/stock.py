@@ -177,11 +177,50 @@ def _normalize_ths_record(rec: dict) -> dict:
     return out
 
 
-def fetch_total_shares(symbol: str, basic_info: dict | None) -> tuple[float | None, str]:
+# EM industry name → 申万一级 index code. Used as fallback when EM's industry-board
+# history endpoint (stock_board_industry_hist_em) keeps failing with SSL/timeouts.
+# 申万一级 codes are stable and the corresponding indices are available via
+# index_zh_a_hist. Less granular than EM boards but more reliable.
+SECTOR_TO_SW_LEVEL1 = {
+    "半导体": "801080",      # 电子
+    "消费电子": "801080",    # 电子
+    "通信设备": "801770",    # 通信
+    "化学制品": "801030",    # 基础化工
+    "医疗服务": "801150",    # 医药生物
+    "计算机设备": "801750",  # 计算机
+    "电子元件": "801080",
+    "电子": "801080",
+    "通信": "801770",
+    "化工": "801030",
+    "医药生物": "801150",
+    "计算机": "801750",
+}
+
+
+def _coerce_float(v: Any) -> float | None:
+    """Best-effort float coercion. Returns None for None/empty/NaN/non-numeric."""
+    if v is None or v is False:
+        return None
+    try:
+        if isinstance(v, float) and v != v:  # NaN
+            return None
+        f = float(v)
+        return f
+    except (ValueError, TypeError):
+        return None
+
+
+def fetch_total_shares(symbol: str, basic_info: dict | None,
+                       valuation_recent: list[dict] | None = None) -> tuple[float | None, str]:
     """Resolve 总股本 (raw share count). Returns (shares, source_tag).
 
-    Priority: 1) basic_info 总股本 from EM, 2) Xueqiu basic info, 3) derive from
-    all-A spot 总市值 / 最新价. Used when EM's endpoint fails (SSL flakes).
+    Priority:
+      1) basic_info 总股本 from EM (canonical, matches report-date if recent)
+      2) Xueqiu basic info (different backend, immune to EM SSL flakes)
+      3) Derive from 总市值 / 最新价 via all-A spot
+      4) valuation_recent[-1]['总股本'] from EM stock_value_em (CURRENT shares;
+         may differ from report-date if there were buybacks / issuances after,
+         so consistency_check should treat this source more leniently).
     """
     if basic_info:
         v = parse_cn_amount(basic_info.get("总股本"))
@@ -210,6 +249,15 @@ def fetch_total_shares(symbol: str, basic_info: dict | None) -> tuple[float | No
             if mcap and price and price > 0:
                 return float(mcap / price), "em_spot_derived"
 
+    # Fallback 3: valuation_recent (already fetched, no extra network call)
+    if valuation_recent:
+        try:
+            v = _coerce_float(valuation_recent[-1].get("总股本"))
+            if v and v > 1e5:
+                return float(v), "em_valuation_current"
+        except (KeyError, IndexError, TypeError):
+            pass
+
     return None, "unavailable"
 
 
@@ -222,7 +270,10 @@ def compute_consistency(sina_records: list[dict], ths_records: list[dict],
     - |non-recurring| > 50% of reported net profit → "warn_non_recurring"
       (sign-aware: distinguishes 一次性收益掩盖 vs 一次性损失拖累)
     """
-    DELTA_THRESHOLD = 8.0  # raised from 5% to tolerate Sina EPS 2-digit precision + shares-base drift
+    # Default 8% tolerates Sina EPS 2-digit precision + minor weighted-vs-period-end shares drift.
+    # When shares come from "em_valuation_current" (current snapshot, may differ from
+    # report-date shares due to buybacks/issuances after period close), loosen to 15%.
+    DELTA_THRESHOLD = 15.0 if shares_source == "em_valuation_current" else 8.0
     NONREC_THRESHOLD = 50.0
 
     result: dict = {"status": "skipped", "notes": []}
@@ -354,9 +405,45 @@ def fetch_fundamentals(symbol: str, _force: bool = False) -> dict:
         if err:
             out["errors"]["financials_absolute"] = err
 
+    # Fallback: EM 利润表 (stock_profit_sheet_by_report_em) when THS yields nothing.
+    # EM uses different field names — DEDUCT_PARENT_NETPROFIT is 扣非归母净利润, etc.
+    if not out["financials_absolute_recent"]:
+        em_sym = market_prefix(symbol).upper() + symbol  # SH/SZ/BJ + 6-digit
+        em_pl, err_em = safe_retry(ak.stock_profit_sheet_by_report_em, symbol=em_sym)
+        if isinstance(em_pl, pd.DataFrame) and len(em_pl) > 0:
+            # Map EM fields to our format
+            recent_em = em_pl.head(8)  # EM is sorted newest-first
+            normalized = []
+            for _, row in recent_em.iterrows():
+                rd = row.get("REPORT_DATE")
+                normalized.append({
+                    "报告期": str(rd)[:10] if rd is not None else None,
+                    "净利润": _coerce_float(row.get("PARENT_NETPROFIT") or row.get("NETPROFIT")),
+                    "扣非净利润": _coerce_float(row.get("DEDUCT_PARENT_NETPROFIT")),
+                    "营业总收入": _coerce_float(row.get("TOTAL_OPERATE_INCOME") or row.get("OPERATE_INCOME")),
+                })
+            # Sort oldest-first to match THS convention
+            out["financials_absolute_recent"] = list(reversed(normalized))
+            out["financials_absolute_source"] = "em_profit_sheet"
+            out["errors"].pop("financials_absolute", None)
+        elif err_em:
+            out["errors"]["financials_absolute_em"] = err_em
+
+    # Valuation BEFORE total_shares so it can be a 4th fallback for shares.
+    val, err = safe(ak.stock_value_em, symbol=symbol)
+    if isinstance(val, pd.DataFrame):
+        out["valuation_recent"] = df_to_records(val.tail(20))
+        out["valuation_latest"] = df_to_records(val.tail(1))
+    if err:
+        out["errors"]["valuation"] = err
+
     # Cross-source consistency: Sina 扣非EPS × 总股本 vs THS 扣非净利润.
-    # 总股本 is resolved through a fallback chain (EM → Xueqiu → derive from 总市值/价).
-    total_shares, shares_source = fetch_total_shares(symbol, out.get("basic_info"))
+    # 总股本 is resolved through a fallback chain (EM basic_info → Xueqiu → spot-derive
+    # → valuation_recent). Note valuation's 总股本 is *current* shares, may differ from
+    # report-date shares if there were buybacks/issuances after the report.
+    total_shares, shares_source = fetch_total_shares(
+        symbol, out.get("basic_info"), out.get("valuation_recent"),
+    )
     out["total_shares"] = total_shares
     out["total_shares_source"] = shares_source
     out["consistency_check"] = compute_consistency(
@@ -365,13 +452,6 @@ def fetch_fundamentals(symbol: str, _force: bool = False) -> dict:
         total_shares,
         shares_source,
     )
-
-    val, err = safe(ak.stock_value_em, symbol=symbol)
-    if isinstance(val, pd.DataFrame):
-        out["valuation_recent"] = df_to_records(val.tail(20))
-        out["valuation_latest"] = df_to_records(val.tail(1))
-    if err:
-        out["errors"]["valuation"] = err
 
     divd, err = safe(ak.stock_history_dividend_detail, symbol=symbol, indicator="分红")
     if isinstance(divd, pd.DataFrame):
@@ -528,10 +608,27 @@ def fetch_sector(symbol: str, _force: bool = False) -> dict:
                                start_date=(date.today().replace(month=max(1, date.today().month - 3))).strftime("%Y%m%d"),
                                end_date=today_tag(),
                                period="daily", adjust="")
-        if isinstance(hist, pd.DataFrame):
+        if isinstance(hist, pd.DataFrame) and len(hist) > 0:
             out["sector_price_recent"] = df_to_records(hist.tail(20))
-        if err:
-            out["errors"]["sector_history"] = err
+            out["sector_price_source"] = "em_industry_board"
+        else:
+            if err:
+                out["errors"]["sector_history"] = err
+            # Fallback: 申万一级行业指数 history. EM industry boards 经常 SSL 超时,
+            # 申万指数走 stock_zh_a_hist 接口 (通过 index_zh_a_hist), 更稳定。
+            sw_code = SECTOR_TO_SW_LEVEL1.get(industry)
+            if sw_code:
+                sw_hist, sw_err = safe_retry(
+                    ak.index_zh_a_hist, symbol=sw_code, period="daily",
+                    start_date=(date.today().replace(month=max(1, date.today().month - 3))).strftime("%Y%m%d"),
+                    end_date=today_tag(),
+                )
+                if isinstance(sw_hist, pd.DataFrame) and len(sw_hist) > 0:
+                    out["sector_price_recent"] = df_to_records(sw_hist.tail(20))
+                    out["sector_price_source"] = f"sw_level1_{sw_code}"
+                    out["errors"].pop("sector_history", None)
+                elif sw_err:
+                    out["errors"]["sector_history_sw"] = sw_err
 
         flow, err = safe_retry(ak.stock_sector_fund_flow_rank, indicator="今日", sector_type="行业资金流")
         if isinstance(flow, pd.DataFrame):
