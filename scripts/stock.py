@@ -515,7 +515,7 @@ def fetch_sentiment(symbol: str, _force: bool = False) -> dict:
         out["errors"]["northbound"] = err
 
     hist, err = safe_retry(ak.stock_zh_a_hist, symbol=symbol, period="daily",
-                           start_date=(date.today().replace(day=1)).strftime("%Y%m%d"),
+                           start_date=(date.today() - timedelta(days=60)).strftime("%Y%m%d"),
                            end_date=today_tag(), adjust="qfq")
     if isinstance(hist, pd.DataFrame) and len(hist) > 0:
         out["price_recent"] = df_to_records(hist.tail(20))
@@ -528,7 +528,7 @@ def fetch_sentiment(symbol: str, _force: bool = False) -> dict:
         if tx_fn:
             tx_sym = market_prefix(symbol) + symbol
             hist2, err2 = safe_retry(tx_fn, symbol=tx_sym,
-                                     start_date=(date.today().replace(day=1)).strftime("%Y%m%d"),
+                                     start_date=(date.today() - timedelta(days=60)).strftime("%Y%m%d"),
                                      end_date=today_tag(), adjust="qfq")
             if isinstance(hist2, pd.DataFrame) and len(hist2) > 0:
                 out["price_recent"] = df_to_records(hist2.tail(20))
@@ -614,15 +614,31 @@ def fetch_sector(symbol: str, _force: bool = False) -> dict:
         else:
             if err:
                 out["errors"]["sector_history"] = err
-            # Fallback: 申万一级行业指数 history. EM industry boards 经常 SSL 超时,
-            # 申万指数走 stock_zh_a_hist 接口 (通过 index_zh_a_hist), 更稳定。
+            # Fallback: 申万一级行业指数. akshare's sw_index_daily_indicator
+            # supports SW codes (801080, 801770, ...). index_zh_a_hist does NOT.
             sw_code = SECTOR_TO_SW_LEVEL1.get(industry)
             if sw_code:
-                sw_hist, sw_err = safe_retry(
-                    ak.index_zh_a_hist, symbol=sw_code, period="daily",
-                    start_date=(date.today().replace(month=max(1, date.today().month - 3))).strftime("%Y%m%d"),
-                    end_date=today_tag(),
-                )
+                sw_start = (date.today() - timedelta(days=120)).strftime("%Y%m%d")
+                sw_end = today_tag()
+                sw_hist = None
+                sw_err = None
+
+                # Try 1: stock_zh_index_daily — works for 上证/深证/沪深300, may not for SW
+                # Try 2: sw_index_daily_indicator (date range, preferred)
+                fn = getattr(ak, "sw_index_daily_indicator", None)
+                if fn:
+                    sw_hist, sw_err = safe_retry(fn, symbol=sw_code,
+                                                  start_date=sw_start, end_date=sw_end,
+                                                  data_type="Day")
+
+                # Try 3: sw_index_daily (no date range, take tail)
+                if not (isinstance(sw_hist, pd.DataFrame) and len(sw_hist) > 0):
+                    fn2 = getattr(ak, "sw_index_daily", None)
+                    if fn2:
+                        sw_hist, sw_err = safe_retry(fn2, symbol=sw_code)
+                        if isinstance(sw_hist, pd.DataFrame) and len(sw_hist) > 0:
+                            sw_hist = sw_hist.tail(60)
+
                 if isinstance(sw_hist, pd.DataFrame) and len(sw_hist) > 0:
                     out["sector_price_recent"] = df_to_records(sw_hist.tail(20))
                     out["sector_price_source"] = f"sw_level1_{sw_code}"
