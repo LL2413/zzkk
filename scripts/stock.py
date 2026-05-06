@@ -196,6 +196,25 @@ SECTOR_TO_SW_LEVEL1 = {
     "计算机": "801750",
 }
 
+# Industry → 代表 ETF 代码. Used as second-level fallback for sector_price_recent
+# when EM industry-board endpoint fails. ETF tracks the broad sector index and
+# is stable via akshare fund_etf_hist_em. Only used if SW history endpoints
+# don't exist in the running akshare version (true for 1.18.56).
+SECTOR_TO_ETF_PROXY = {
+    "半导体": "512760",       # 国泰半导体ETF (broad chip exposure)
+    "消费电子": "159732",     # 国泰消费电子ETF
+    "通信设备": "515880",     # 国泰通信ETF
+    "通信": "515880",
+    "化学制品": "159870",     # 鹏华化工ETF
+    "化工": "159870",
+    "医疗服务": "159929",     # 汇添富医药ETF
+    "医药生物": "159929",
+    "计算机设备": "159998",   # 华夏计算机ETF
+    "计算机": "159998",
+    "电子": "512760",
+    "电子元件": "512760",
+}
+
 
 def _coerce_float(v: Any) -> float | None:
     """Best-effort float coercion. Returns None for None/empty/NaN/non-numeric."""
@@ -614,37 +633,26 @@ def fetch_sector(symbol: str, _force: bool = False) -> dict:
         else:
             if err:
                 out["errors"]["sector_history"] = err
-            # Fallback: 申万一级行业指数. akshare's sw_index_daily_indicator
-            # supports SW codes (801080, 801770, ...). index_zh_a_hist does NOT.
-            sw_code = SECTOR_TO_SW_LEVEL1.get(industry)
-            if sw_code:
-                sw_start = (date.today() - timedelta(days=120)).strftime("%Y%m%d")
-                sw_end = today_tag()
-                sw_hist = None
-                sw_err = None
-
-                # Try 1: stock_zh_index_daily — works for 上证/深证/沪深300, may not for SW
-                # Try 2: sw_index_daily_indicator (date range, preferred)
-                fn = getattr(ak, "sw_index_daily_indicator", None)
-                if fn:
-                    sw_hist, sw_err = safe_retry(fn, symbol=sw_code,
-                                                  start_date=sw_start, end_date=sw_end,
-                                                  data_type="Day")
-
-                # Try 3: sw_index_daily (no date range, take tail)
-                if not (isinstance(sw_hist, pd.DataFrame) and len(sw_hist) > 0):
-                    fn2 = getattr(ak, "sw_index_daily", None)
-                    if fn2:
-                        sw_hist, sw_err = safe_retry(fn2, symbol=sw_code)
-                        if isinstance(sw_hist, pd.DataFrame) and len(sw_hist) > 0:
-                            sw_hist = sw_hist.tail(60)
-
-                if isinstance(sw_hist, pd.DataFrame) and len(sw_hist) > 0:
-                    out["sector_price_recent"] = df_to_records(sw_hist.tail(20))
-                    out["sector_price_source"] = f"sw_level1_{sw_code}"
-                    out["errors"].pop("sector_history", None)
-                elif sw_err:
-                    out["errors"]["sector_history_sw"] = sw_err
+            # Fallback: 申万一级行业指数 + ETF 代理.
+            # akshare 1.18 没有 sw_index_daily / sw_index_daily_indicator (那些
+            # sw_* 函数都是 info/cons 类的现状快照, 不是历史K线).
+            # 退而求其次: 用每个行业的代表 ETF 作为板块走势代理.
+            etf_code = SECTOR_TO_ETF_PROXY.get(industry)
+            if etf_code:
+                etf_start = (date.today() - timedelta(days=120)).strftime("%Y%m%d")
+                etf_end = today_tag()
+                etf_fn = getattr(ak, "fund_etf_hist_em", None)
+                if etf_fn:
+                    etf_hist, etf_err = safe_retry(
+                        etf_fn, symbol=etf_code, period="daily",
+                        start_date=etf_start, end_date=etf_end, adjust="qfq",
+                    )
+                    if isinstance(etf_hist, pd.DataFrame) and len(etf_hist) > 0:
+                        out["sector_price_recent"] = df_to_records(etf_hist.tail(20))
+                        out["sector_price_source"] = f"etf_proxy_{etf_code}"
+                        out["errors"].pop("sector_history", None)
+                    elif etf_err:
+                        out["errors"]["sector_history_etf"] = etf_err
 
         flow, err = safe_retry(ak.stock_sector_fund_flow_rank, indicator="今日", sector_type="行业资金流")
         if isinstance(flow, pd.DataFrame):
