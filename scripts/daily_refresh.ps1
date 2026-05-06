@@ -91,7 +91,9 @@ if ($dirtyTracked.Count -gt 0) {
 Log "git pull --rebase origin $Branch ..."
 $pullOk = Invoke-WithRetry -Label 'pull' -Action { git pull --rebase origin $Branch 2>&1 | ForEach-Object { Add-Content -Path $logFile -Value "  $_" -Encoding UTF8; $_ } | Out-Null }
 if (-not $pullOk) {
-  Log "WARN: git pull failed after retries. Continuing with local code; data collection is the priority. Any commit will stay local until next successful push."
+  Log "abort: git pull failed after retries. Not fetching or committing on stale code."
+  Log "If you only need to grab data manually, run scripts\fetch_all.ps1 -Refresh directly."
+  exit 2
 }
 
 # --- fetch all ---
