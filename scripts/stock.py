@@ -641,26 +641,52 @@ def fetch_sector(symbol: str, _force: bool = False) -> dict:
         else:
             if err:
                 out["errors"]["sector_history"] = err
-            # Fallback: 申万一级行业指数 + ETF 代理.
-            # akshare 1.18 没有 sw_index_daily / sw_index_daily_indicator (那些
-            # sw_* 函数都是 info/cons 类的现状快照, 不是历史K线).
-            # 退而求其次: 用每个行业的代表 ETF 作为板块走势代理.
+            # Fallback 1: EM ETF endpoint. fund_etf_hist_em is on push2/data.eastmoney
+            # which sometimes also gets RemoteDisconnected blocking, so we further
+            # fall back to Tencent kline using the ETF code as a stock symbol.
             etf_code = SECTOR_TO_ETF_PROXY.get(industry)
             if etf_code:
                 etf_start = (date.today() - timedelta(days=120)).strftime("%Y%m%d")
                 etf_end = today_tag()
+
+                # Try EM first
+                etf_hist, etf_err = None, None
                 etf_fn = getattr(ak, "fund_etf_hist_em", None)
                 if etf_fn:
                     etf_hist, etf_err = safe_retry(
                         etf_fn, symbol=etf_code, period="daily",
                         start_date=etf_start, end_date=etf_end, adjust="qfq",
                     )
-                    if isinstance(etf_hist, pd.DataFrame) and len(etf_hist) > 0:
-                        out["sector_price_recent"] = df_to_records(etf_hist.tail(20))
-                        out["sector_price_source"] = f"etf_proxy_{etf_code}"
-                        out["errors"].pop("sector_history", None)
-                    elif etf_err:
+                if isinstance(etf_hist, pd.DataFrame) and len(etf_hist) > 0:
+                    out["sector_price_recent"] = df_to_records(etf_hist.tail(20))
+                    out["sector_price_source"] = f"etf_em_{etf_code}"
+                    out["errors"].pop("sector_history", None)
+                else:
+                    if etf_err:
                         out["errors"]["sector_history_etf"] = etf_err
+                    elif isinstance(etf_hist, pd.DataFrame):
+                        out["errors"]["sector_history_etf"] = f"empty result for ETF {etf_code}"
+
+                    # Fallback 2: Tencent kline using ETF code as stock symbol.
+                    # ETFs trade like stocks; sh51xxxx/sh588xxx and sz15xxxx/sz16xxxx
+                    # all have continuous K-line via stock_zh_a_hist_tx (Tencent host
+                    # is consistently reachable when EM is blocked).
+                    if not (isinstance(etf_hist, pd.DataFrame) and len(etf_hist) > 0):
+                        prefix = "sh" if etf_code.startswith(("5", "6")) else "sz"
+                        tx_etf_sym = prefix + etf_code
+                        tx_fn = getattr(ak, "stock_zh_a_hist_tx", None)
+                        if tx_fn:
+                            tx_hist, tx_err = safe_retry(
+                                tx_fn, symbol=tx_etf_sym,
+                                start_date=etf_start, end_date=etf_end, adjust="qfq",
+                            )
+                            if isinstance(tx_hist, pd.DataFrame) and len(tx_hist) > 0:
+                                out["sector_price_recent"] = df_to_records(tx_hist.tail(20))
+                                out["sector_price_source"] = f"etf_tencent_{etf_code}"
+                                out["errors"].pop("sector_history", None)
+                                out["errors"].pop("sector_history_etf", None)
+                            elif tx_err:
+                                out["errors"]["sector_history_etf_tx"] = tx_err
 
         flow, err = safe_retry(ak.stock_sector_fund_flow_rank, indicator="今日", sector_type="行业资金流")
         if isinstance(flow, pd.DataFrame):
