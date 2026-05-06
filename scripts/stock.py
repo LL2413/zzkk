@@ -31,6 +31,14 @@ from datetime import datetime, date, timedelta
 from pathlib import Path
 from typing import Any, Callable
 
+# Force direct connection regardless of system / Windows Internet Settings proxy.
+# akshare endpoints (push2*.eastmoney.com, hq.sinajs.cn, etc.) are domestic-China
+# hosts that fail when the user has a stale V2Ray/Clash proxy configured but the
+# proxy server isn't running, since requests will dutifully try to route through
+# the dead proxy and fail with ProxyError. Set BEFORE importing akshare/requests.
+os.environ["NO_PROXY"] = "*"
+os.environ["no_proxy"] = "*"
+
 try:
     import akshare as ak
     import pandas as pd
