@@ -47,6 +47,11 @@ DEFAULT_WATCHLIST=(
   "688208"   # 道通科技   Autel (汽车诊断/充电桩)
   "002475"   # 立讯精密   Luxshare (消费电子代工)
   "300458"   # 全志科技   Allwinner (AIoT SoC)
+  "601869"   # 长飞光纤   YOFC (光纤光缆)
+  "600522"   # 中天科技   Zhongtian Tech (光纤+海缆+储能)
+  "600487"   # 亨通光电   Hengtong (光纤+海缆)
+  "300395"   # 菲利华     Feilihua (石英材料/半导体耗材)
+  "300408"   # 三环集团   Three Circle (MLCC 电子元件)
 )
 
 if [[ $# -gt 0 ]]; then
