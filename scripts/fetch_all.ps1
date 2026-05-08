@@ -16,12 +16,16 @@
 
 [CmdletBinding()]
 param(
-  [Parameter(ValueFromRemainingArguments = $true)]
-  [string[]]$Symbols = @(),
   [switch]$Refresh,
   [string]$Python = $null,
   [string]$WatchlistFile = $null
 )
+
+# Use $args (auto-variable) instead of [Parameter(ValueFromRemainingArguments)]
+# because the latter combined with [string[]] silently drops the first 2
+# positional arguments under powershell.exe -File invocation in PS 5.1.
+# Repro: `pwsh fetch_all.ps1 002281 000988 688008` would only fetch 688008.
+$Symbols = @($args | Where-Object { $_ -and "$_".Length -gt 0 })
 
 # PowerShell 5.1 treats ANY stderr output from native commands as a terminating
 # error under 'Stop'. akshare / urllib3 routinely emit FutureWarning etc. to
