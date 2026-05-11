@@ -1,9 +1,9 @@
 ﻿{
   "symbol": "688332",
-  "as_of": "2026-05-11T21:36:40",
+  "as_of": "2026-05-11T23:05:45",
   "fundamentals": {
     "symbol": "688332",
-    "as_of": "2026-05-11T18:53:28",
+    "as_of": "2026-05-11T22:39:45",
     "errors": {
       "basic_info": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
     },
@@ -1268,13 +1268,13 @@
     },
     "dividends_recent": [
       {
-        "公告日期": "2026-04-09T00:00:00.000",
+        "公告日期": "2026-05-12T00:00:00.000",
         "送股": 0,
         "转增": 4.8,
         "派息": 20.0,
-        "进度": "预案",
-        "除权除息日": null,
-        "股权登记日": null,
+        "进度": "实施",
+        "除权除息日": "2026-05-18T00:00:00.000",
+        "股权登记日": "2026-05-15T00:00:00.000",
         "红股上市日": null
       },
       {
@@ -1321,7 +1321,7 @@
   },
   "sentiment": {
     "symbol": "688332",
-    "as_of": "2026-05-11T18:54:23",
+    "as_of": "2026-05-11T22:40:40",
     "errors": {
       "margin": "ValueError: Length mismatch: Expected axis has 0 elements, new values have 13 elements"
     },
@@ -2016,7 +2016,7 @@
   },
   "sector": {
     "symbol": "688332",
-    "as_of": "2026-05-11T18:54:47",
+    "as_of": "2026-05-11T22:41:06",
     "errors": {
       "sector_fund_flow": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
     },

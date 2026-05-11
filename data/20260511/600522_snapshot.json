@@ -1,9 +1,9 @@
 ﻿{
   "symbol": "600522",
-  "as_of": "2026-05-11T21:36:51",
+  "as_of": "2026-05-11T23:05:56",
   "fundamentals": {
     "symbol": "600522",
-    "as_of": "2026-05-11T19:17:13",
+    "as_of": "2026-05-11T22:50:30",
     "errors": {
       "basic_info": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
     },
@@ -1373,7 +1373,7 @@
   },
   "sentiment": {
     "symbol": "600522",
-    "as_of": "2026-05-11T19:18:09",
+    "as_of": "2026-05-11T22:51:27",
     "errors": {
       "margin": "ValueError: Length mismatch: Expected axis has 0 elements, new values have 13 elements"
     },
@@ -2115,7 +2115,7 @@
   },
   "sector": {
     "symbol": "600522",
-    "as_of": "2026-05-11T19:18:35",
+    "as_of": "2026-05-11T22:51:56",
     "errors": {
       "sector_fund_flow": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
     },

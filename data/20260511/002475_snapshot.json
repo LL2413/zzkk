@@ -1,9 +1,9 @@
 ﻿{
   "symbol": "002475",
-  "as_of": "2026-05-11T21:36:47",
+  "as_of": "2026-05-11T23:05:52",
   "fundamentals": {
     "symbol": "002475",
-    "as_of": "2026-05-11T19:09:10",
+    "as_of": "2026-05-11T22:45:01",
     "errors": {
       "basic_info": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
     },
@@ -1373,7 +1373,7 @@
   },
   "sentiment": {
     "symbol": "002475",
-    "as_of": "2026-05-11T19:10:07",
+    "as_of": "2026-05-11T22:45:58",
     "errors": {},
     "fund_flow_recent_20d": [
       {
@@ -2113,7 +2113,7 @@
   },
   "sector": {
     "symbol": "002475",
-    "as_of": "2026-05-11T19:10:33",
+    "as_of": "2026-05-11T22:46:30",
     "errors": {
       "sector_fund_flow": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
     },
