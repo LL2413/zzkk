@@ -1,9 +1,9 @@
 ﻿{
   "symbol": "600522",
-  "as_of": "2026-05-11T23:05:56",
+  "as_of": "2026-05-11T23:41:19",
   "fundamentals": {
     "symbol": "600522",
-    "as_of": "2026-05-11T22:50:30",
+    "as_of": "2026-05-11T23:41:19",
     "errors": {
       "basic_info": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
     },
@@ -1373,10 +1373,8 @@
   },
   "sentiment": {
     "symbol": "600522",
-    "as_of": "2026-05-11T22:51:27",
-    "errors": {
-      "margin": "ValueError: Length mismatch: Expected axis has 0 elements, new values have 13 elements"
-    },
+    "as_of": "2026-05-11T23:42:16",
+    "errors": {},
     "fund_flow_recent_20d": [
       {
         "日期": "2026-04-09T00:00:00.000",
@@ -1725,6 +1723,20 @@
         "上榜后2日": -4.62377944,
         "上榜后5日": -1.55083285,
         "上榜后10日": 25.96209075
+      }
+    ],
+    "margin_trading_date": "20260508",
+    "margin_trading_today": [
+      {
+        "信用交易日期": "20260508",
+        "标的证券代码": "600522",
+        "标的证券简称": "中天科技",
+        "融资余额": 3971757085,
+        "融资买入额": 1791455796,
+        "融资偿还额": 1200535236,
+        "融券余量": 542900,
+        "融券卖出量": 145300,
+        "融券偿还量": 33700
       }
     ],
     "northbound_holdings_recent": [
@@ -2115,7 +2127,7 @@
   },
   "sector": {
     "symbol": "600522",
-    "as_of": "2026-05-11T22:51:56",
+    "as_of": "2026-05-11T23:42:46",
     "errors": {
       "sector_fund_flow": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
     },

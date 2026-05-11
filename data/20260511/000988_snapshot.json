@@ -1,9 +1,9 @@
 ﻿{
   "symbol": "000988",
-  "as_of": "2026-05-11T23:05:40",
+  "as_of": "2026-05-11T23:38:32",
   "fundamentals": {
     "symbol": "000988",
-    "as_of": "2026-05-11T22:47:47",
+    "as_of": "2026-05-11T23:38:32",
     "errors": {
       "basic_info": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
     },
@@ -1373,7 +1373,7 @@
   },
   "sentiment": {
     "symbol": "000988",
-    "as_of": "2026-05-11T22:48:44",
+    "as_of": "2026-05-11T23:39:30",
     "errors": {},
     "fund_flow_recent_20d": [
       {
@@ -1700,6 +1700,19 @@
         "上榜后2日": 7.43751517,
         "上榜后5日": 16.27032274,
         "上榜后10日": 49.85440427
+      }
+    ],
+    "margin_trading_date": "20260508",
+    "margin_trading_today": [
+      {
+        "证券代码": "000988",
+        "证券简称": "华工科技",
+        "融资买入额": 2298524914,
+        "融资余额": 9597592814,
+        "融券卖出量": 6800,
+        "融券余量": 257200,
+        "融券余额": 35156668,
+        "融资融券余额": 9632749482
       }
     ],
     "northbound_holdings_recent": [
@@ -2090,7 +2103,7 @@
   },
   "sector": {
     "symbol": "000988",
-    "as_of": "2026-05-11T22:49:14",
+    "as_of": "2026-05-11T23:40:00",
     "errors": {
       "sector_fund_flow": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
     },

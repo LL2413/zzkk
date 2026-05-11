@@ -1,9 +1,9 @@
 ﻿{
   "symbol": "002475",
-  "as_of": "2026-05-11T23:05:52",
+  "as_of": "2026-05-11T23:35:48",
   "fundamentals": {
     "symbol": "002475",
-    "as_of": "2026-05-11T22:45:01",
+    "as_of": "2026-05-11T23:35:48",
     "errors": {
       "basic_info": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
     },
@@ -1373,7 +1373,7 @@
   },
   "sentiment": {
     "symbol": "002475",
-    "as_of": "2026-05-11T22:45:58",
+    "as_of": "2026-05-11T23:36:45",
     "errors": {},
     "fund_flow_recent_20d": [
       {
@@ -1723,6 +1723,19 @@
         "上榜后2日": -0.70629782,
         "上榜后5日": -1.11830489,
         "上榜后10日": 8.08318619
+      }
+    ],
+    "margin_trading_date": "20260508",
+    "margin_trading_today": [
+      {
+        "证券代码": "002475",
+        "证券简称": "立讯精密",
+        "融资买入额": 2200953775,
+        "融资余额": 8735357722,
+        "融券卖出量": 76700,
+        "融券余量": 592858,
+        "融券余额": 42264846,
+        "融资融券余额": 8777622568
       }
     ],
     "northbound_holdings_recent": [
@@ -2113,7 +2126,7 @@
   },
   "sector": {
     "symbol": "002475",
-    "as_of": "2026-05-11T22:46:30",
+    "as_of": "2026-05-11T23:37:15",
     "errors": {
       "sector_fund_flow": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
     },

@@ -1,9 +1,9 @@
 ﻿{
   "symbol": "688008",
-  "as_of": "2026-05-11T23:05:41",
+  "as_of": "2026-05-11T23:33:08",
   "fundamentals": {
     "symbol": "688008",
-    "as_of": "2026-05-11T22:42:22",
+    "as_of": "2026-05-11T23:33:08",
     "errors": {
       "basic_info": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
     },
@@ -1353,10 +1353,8 @@
   },
   "sentiment": {
     "symbol": "688008",
-    "as_of": "2026-05-11T22:43:16",
-    "errors": {
-      "margin": "ValueError: Length mismatch: Expected axis has 0 elements, new values have 13 elements"
-    },
+    "as_of": "2026-05-11T23:34:03",
+    "errors": {},
     "fund_flow_recent_20d": [
       {
         "日期": "2026-04-09T00:00:00.000",
@@ -1660,6 +1658,20 @@
       }
     ],
     "lhb_recent_3m": [],
+    "margin_trading_date": "20260508",
+    "margin_trading_today": [
+      {
+        "信用交易日期": "20260508",
+        "标的证券代码": "688008",
+        "标的证券简称": "澜起科技",
+        "融资余额": 10356879025,
+        "融资买入额": 2752355110,
+        "融资偿还额": 1658627471,
+        "融券余量": 190389,
+        "融券卖出量": 26790,
+        "融券偿还量": 6056
+      }
+    ],
     "northbound_holdings_recent": [
       {
         "持股日期": "2024-07-22T00:00:00.000",
@@ -2048,7 +2060,7 @@
   },
   "sector": {
     "symbol": "688008",
-    "as_of": "2026-05-11T22:43:44",
+    "as_of": "2026-05-11T23:34:31",
     "errors": {
       "sector_fund_flow": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
     },

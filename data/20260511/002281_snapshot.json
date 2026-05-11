@@ -1,9 +1,9 @@
 ﻿{
   "symbol": "002281",
-  "as_of": "2026-05-11T23:05:39",
+  "as_of": "2026-05-11T23:27:39",
   "fundamentals": {
     "symbol": "002281",
-    "as_of": "2026-05-11T22:37:03",
+    "as_of": "2026-05-11T23:27:39",
     "errors": {
       "basic_info": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
     },
@@ -1373,7 +1373,7 @@
   },
   "sentiment": {
     "symbol": "002281",
-    "as_of": "2026-05-11T22:37:58",
+    "as_of": "2026-05-11T23:28:35",
     "errors": {},
     "fund_flow_recent_20d": [
       {
@@ -1863,6 +1863,19 @@
         "上榜后10日": -7.3003714
       }
     ],
+    "margin_trading_date": "20260508",
+    "margin_trading_today": [
+      {
+        "证券代码": "002281",
+        "证券简称": "光迅科技",
+        "融资买入额": 1722979326,
+        "融资余额": 4672391812,
+        "融券卖出量": 68100,
+        "融券余量": 170821,
+        "融券余额": 30870771,
+        "融资融券余额": 4703262583
+      }
+    ],
     "northbound_holdings_recent": [
       {
         "持股日期": "2024-07-22T00:00:00.000",
@@ -2251,7 +2264,7 @@
   },
   "sector": {
     "symbol": "002281",
-    "as_of": "2026-05-11T22:38:29",
+    "as_of": "2026-05-11T23:29:10",
     "errors": {
       "sector_fund_flow": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
     },

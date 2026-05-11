@@ -1,9 +1,9 @@
 ﻿{
   "symbol": "688332",
-  "as_of": "2026-05-11T23:05:45",
+  "as_of": "2026-05-11T23:30:27",
   "fundamentals": {
     "symbol": "688332",
-    "as_of": "2026-05-11T22:39:45",
+    "as_of": "2026-05-11T23:30:27",
     "errors": {
       "basic_info": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
     },
@@ -1321,10 +1321,8 @@
   },
   "sentiment": {
     "symbol": "688332",
-    "as_of": "2026-05-11T22:40:40",
-    "errors": {
-      "margin": "ValueError: Length mismatch: Expected axis has 0 elements, new values have 13 elements"
-    },
+    "as_of": "2026-05-11T23:31:23",
+    "errors": {},
     "fund_flow_recent_20d": [
       {
         "日期": "2026-04-09T00:00:00.000",
@@ -1628,6 +1626,20 @@
       }
     ],
     "lhb_recent_3m": [],
+    "margin_trading_date": "20260508",
+    "margin_trading_today": [
+      {
+        "信用交易日期": "20260508",
+        "标的证券代码": "688332",
+        "标的证券简称": "中科蓝讯",
+        "融资余额": 563495236,
+        "融资买入额": 27180389,
+        "融资偿还额": 22298568,
+        "融券余量": 9431,
+        "融券卖出量": 1600,
+        "融券偿还量": 800
+      }
+    ],
     "northbound_holdings_recent": [
       {
         "持股日期": "2024-07-22T00:00:00.000",
@@ -2016,7 +2028,7 @@
   },
   "sector": {
     "symbol": "688332",
-    "as_of": "2026-05-11T22:41:06",
+    "as_of": "2026-05-11T23:31:50",
     "errors": {
       "sector_fund_flow": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
     },

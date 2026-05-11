@@ -1,9 +1,9 @@
 ﻿{
   "symbol": "600487",
-  "as_of": "2026-05-11T23:05:57",
+  "as_of": "2026-05-11T23:25:05",
   "fundamentals": {
     "symbol": "600487",
-    "as_of": "2026-05-11T22:34:22",
+    "as_of": "2026-05-11T23:25:05",
     "errors": {
       "basic_info": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
     },
@@ -1373,10 +1373,8 @@
   },
   "sentiment": {
     "symbol": "600487",
-    "as_of": "2026-05-11T22:35:18",
-    "errors": {
-      "margin": "ValueError: Length mismatch: Expected axis has 0 elements, new values have 13 elements"
-    },
+    "as_of": "2026-05-11T23:26:01",
+    "errors": {},
     "fund_flow_recent_20d": [
       {
         "日期": "2026-04-09T00:00:00.000",
@@ -1702,6 +1700,20 @@
         "上榜后2日": -2.45967742,
         "上榜后5日": -7.82258065,
         "上榜后10日": -4.77822581
+      }
+    ],
+    "margin_trading_date": "20260508",
+    "margin_trading_today": [
+      {
+        "信用交易日期": "20260508",
+        "标的证券代码": "600487",
+        "标的证券简称": "亨通光电",
+        "融资余额": 5553032126,
+        "融资买入额": 1153668129,
+        "融资偿还额": 1099194515,
+        "融券余量": 1138755,
+        "融券卖出量": 39400,
+        "融券偿还量": 75599
       }
     ],
     "northbound_holdings_recent": [
@@ -2092,11 +2104,11 @@
   },
   "sector": {
     "symbol": "600487",
-    "as_of": "2026-05-11T22:35:47",
+    "as_of": "2026-05-11T23:26:31",
     "errors": {
       "sector_fund_flow": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
     },
-    "industry_hardcoded": "通信设备",
+    "industry_em": "通信设备",
     "sector_price_recent": [
       {
         "date": "2026-04-09T00:00:00.000",

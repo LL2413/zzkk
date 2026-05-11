@@ -1,9 +1,9 @@
 ﻿{
   "symbol": "603986",
-  "as_of": "2026-05-11T23:05:43",
+  "as_of": "2026-05-11T23:13:15",
   "fundamentals": {
     "symbol": "603986",
-    "as_of": "2026-05-11T23:02:57",
+    "as_of": "2026-05-11T23:13:15",
     "errors": {
       "basic_info": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
     },
@@ -1373,10 +1373,8 @@
   },
   "sentiment": {
     "symbol": "603986",
-    "as_of": "2026-05-11T23:03:54",
-    "errors": {
-      "margin": "ValueError: Length mismatch: Expected axis has 0 elements, new values have 13 elements"
-    },
+    "as_of": "2026-05-11T23:14:11",
+    "errors": {},
     "fund_flow_recent_20d": [
       {
         "日期": "2026-04-09T00:00:00.000",
@@ -1680,6 +1678,20 @@
       }
     ],
     "lhb_recent_3m": [],
+    "margin_trading_date": "20260508",
+    "margin_trading_today": [
+      {
+        "信用交易日期": "20260508",
+        "标的证券代码": "603986",
+        "标的证券简称": "兆易创新",
+        "融资余额": 13109950925,
+        "融资买入额": 2276317162,
+        "融资偿还额": 2323437097,
+        "融券余量": 89279,
+        "融券卖出量": 800,
+        "融券偿还量": 12200
+      }
+    ],
     "northbound_holdings_recent": [
       {
         "持股日期": "2024-07-22T00:00:00.000",
@@ -2068,7 +2080,7 @@
   },
   "sector": {
     "symbol": "603986",
-    "as_of": "2026-05-11T23:04:21",
+    "as_of": "2026-05-11T23:14:39",
     "errors": {
       "sector_fund_flow": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
     },
