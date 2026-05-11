@@ -51,6 +51,6 @@ capacitor.config.json.bak
 __pycache__/
 *.pyc
 .cache/
-data/
 logs/
 patch_stock.py
+# data/ is tracked — every daily snapshot is part of the time series

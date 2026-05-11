@@ -14,18 +14,20 @@
 #
 # Mirrors scripts/fetch_all.sh for non-WSL Windows environments.
 
-[CmdletBinding()]
+# PositionalBinding=$false stops -Refresh / -Python / -WatchlistFile from
+# silently consuming the first positional args. Symbols then collects every
+# bare token via Position=0 + ValueFromRemainingArguments=$true.
+# Works for both `.\fetch_all.ps1 002281 000988` (direct invocation) and
+# `powershell.exe -File fetch_all.ps1 002281 000988` under PS 5.1 + 7.
+[CmdletBinding(PositionalBinding=$false)]
 param(
   [switch]$Refresh,
   [string]$Python = $null,
-  [string]$WatchlistFile = $null
+  [string]$WatchlistFile = $null,
+  [Parameter(Position=0, ValueFromRemainingArguments=$true)]
+  [string[]]$Symbols = @()
 )
-
-# Use $args (auto-variable) instead of [Parameter(ValueFromRemainingArguments)]
-# because the latter combined with [string[]] silently drops the first 2
-# positional arguments under powershell.exe -File invocation in PS 5.1.
-# Repro: `pwsh fetch_all.ps1 002281 000988 688008` would only fetch 688008.
-$Symbols = @($args | Where-Object { $_ -and "$_".Length -gt 0 })
+$Symbols = @($Symbols | Where-Object { $_ -and "$_".Length -gt 0 })
 
 # PowerShell 5.1 treats ANY stderr output from native commands as a terminating
 # error under 'Stop'. akshare / urllib3 routinely emit FutureWarning etc. to

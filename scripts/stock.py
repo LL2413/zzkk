@@ -532,19 +532,33 @@ def fetch_sentiment(symbol: str, _force: bool = False) -> dict:
 
     # Margin: SSE/SZSE often haven't published today's data when called early evening,
     # producing either SSL errors or akshare's "Length mismatch" (empty frame, columns
-    # assigned to nothing). Try today first, fall back to yesterday on failure.
+    # assigned to nothing). Walk back up to 5 business days until we hit published data.
     margin_fn = ak.stock_margin_detail_szse if mkt == "sz" else ak.stock_margin_detail_sse
     margin = None
     err = None
-    for try_date in (today_tag(), (date.today() - timedelta(days=1)).strftime("%Y%m%d")):
-        margin, err = safe_retry(margin_fn, date=try_date)
-        if isinstance(margin, pd.DataFrame) and len(margin) > 0:
-            out["margin_trading_date"] = try_date
-            break
+    attempted: list[str] = []
+    d = date.today()
+    tries = 0
+    while tries < 5:
+        if d.weekday() < 5:  # Mon-Fri only; skip Sat/Sun
+            try_date = d.strftime("%Y%m%d")
+            margin, err = safe_retry(margin_fn, date=try_date)
+            attempted.append(try_date)
+            if isinstance(margin, pd.DataFrame) and len(margin) > 0:
+                out["margin_trading_date"] = try_date
+                break
+            tries += 1
+        d -= timedelta(days=1)
     if isinstance(margin, pd.DataFrame) and len(margin) > 0:
         row = margin[margin.astype(str).apply(lambda r: symbol in r.values, axis=1)]
         out["margin_trading_today"] = df_to_records(row)
     elif err:
+        # akshare raises "Length mismatch: Expected axis has 0 elements" when the
+        # exchange returned an empty file (data not yet published). Surface a clean
+        # message instead of the pandas internals.
+        msg = str(err)
+        if "Length mismatch" in msg or "axis has 0 elements" in msg or "BadZipFile" in msg:
+            err = f"margin data not yet published for {','.join(attempted)} (exchange returned empty)"
         out["errors"]["margin"] = err
 
     north, err = safe_retry(ak.stock_hsgt_individual_em, symbol=symbol)
