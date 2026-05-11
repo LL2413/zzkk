@@ -52,6 +52,8 @@ DEFAULT_WATCHLIST=(
   "600487"   # 亨通光电   Hengtong (光纤+海缆)
   "300395"   # 菲利华     Feilihua (石英材料/半导体耗材)
   "300408"   # 三环集团   Three Circle (MLCC 电子元件)
+  "603256"   # 宏和科技   Honghe Tech (电子布/玻纤，半导体封装+PCB)
+  "603773"   # 沃格光电   WG Tech (光电玻璃精加工)
 )
 
 if [[ $# -gt 0 ]]; then
