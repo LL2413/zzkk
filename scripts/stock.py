@@ -414,8 +414,8 @@ def fetch_fundamentals(symbol: str, _force: bool = False) -> dict:
     out: dict = {"symbol": symbol, "as_of": datetime.now().isoformat(timespec="seconds"), "errors": {}}
 
     # basic_info: needed for 总股本 → consistency_check. EM endpoint flakes on
-    # ConnectionError/SSL frequently; fall back to Xueqiu (different backend,
-    # often up when EM is down).
+    # ConnectionError/SSL frequently; fall back chain:
+    #   em (full info) → xq (full info) → spot_em (single row from market table)
     em_info, em_err = safe_retry(ak.stock_individual_info_em, symbol=symbol)
     if isinstance(em_info, pd.DataFrame) and len(em_info) > 0:
         out["basic_info"] = dict(zip(em_info["item"], em_info["value"]))
@@ -430,10 +430,21 @@ def fetch_fundamentals(symbol: str, _force: bool = False) -> dict:
                 kv = dict(zip(xq_info.iloc[:, 0].astype(str), xq_info.iloc[:, 1]))
                 out["basic_info"] = kv
                 out["basic_info_source"] = "xq"
+        # 3rd source: spot_em returns a market-wide snapshot; pluck the row for
+        # this symbol. Only gives name/price/mcap/PE etc, but better than empty.
+        spot_err = None
+        if "basic_info" not in out:
+            spot, spot_err = safe_retry(ak.stock_zh_a_spot_em)
+            if isinstance(spot, pd.DataFrame) and len(spot) > 0 and "代码" in spot.columns:
+                row = spot[spot["代码"] == symbol]
+                if len(row) > 0:
+                    out["basic_info"] = row.iloc[0].to_dict()
+                    out["basic_info_source"] = "spot_em"
         if "basic_info" not in out:
             errs = []
             if em_err: errs.append(f"em: {em_err}")
             if xq_err: errs.append(f"xq: {xq_err}")
+            if spot_err: errs.append(f"spot_em: {spot_err}")
             out["errors"]["basic_info"] = "; ".join(errs) if errs else "no source returned data"
 
     # Sina: ratios (每股 / 盈利能力 / 周转 / 偿债 / 现金流比率 等 80+ 字段).
@@ -739,17 +750,23 @@ def fetch_sector(symbol: str, _force: bool = False) -> dict:
 
         # Sector fund flow: EM rank endpoint frequently 403s/JSONDecodeErrors
         # under load. Try rank → summary as fallback chain.
+        # Note signatures differ:
+        #   rank(indicator, sector_type)  - returns full table, search row by industry
+        #   summary(symbol=industry, indicator) - returns rows for one industry
         flow_err = None
-        for fn_name, kwargs in (
-            ("stock_sector_fund_flow_rank",    {"indicator": "今日", "sector_type": "行业资金流"}),
-            ("stock_sector_fund_flow_summary", {"indicator": "今日", "sector_type": "行业资金流"}),
+        for fn_name, kwargs, search_industry in (
+            ("stock_sector_fund_flow_rank",    {"indicator": "今日", "sector_type": "行业资金流"}, True),
+            ("stock_sector_fund_flow_summary", {"symbol": industry, "indicator": "今日"},          False),
         ):
             fn = getattr(ak, fn_name, None)
             if not fn:
                 continue
             flow, err = safe_retry(fn, **kwargs)
             if isinstance(flow, pd.DataFrame) and len(flow) > 0:
-                row = flow[flow.astype(str).apply(lambda r: industry in r.values, axis=1)]
+                if search_industry:
+                    row = flow[flow.astype(str).apply(lambda r: industry in r.values, axis=1)]
+                else:
+                    row = flow  # summary already filtered to this industry
                 if len(row) > 0:
                     out["sector_fund_flow_today"] = df_to_records(row)
                     out["sector_fund_flow_source"] = fn_name
