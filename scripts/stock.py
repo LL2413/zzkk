@@ -413,12 +413,28 @@ def fetch_fundamentals(symbol: str, _force: bool = False) -> dict:
 
     out: dict = {"symbol": symbol, "as_of": datetime.now().isoformat(timespec="seconds"), "errors": {}}
 
-    # basic_info: needed for 总股本 → consistency_check. EM's endpoint flakes on SSL occasionally, retry.
-    info, err = safe_retry(ak.stock_individual_info_em, symbol=symbol)
-    if isinstance(info, pd.DataFrame):
-        out["basic_info"] = dict(zip(info["item"], info["value"]))
-    if err:
-        out["errors"]["basic_info"] = err
+    # basic_info: needed for 总股本 → consistency_check. EM endpoint flakes on
+    # ConnectionError/SSL frequently; fall back to Xueqiu (different backend,
+    # often up when EM is down).
+    em_info, em_err = safe_retry(ak.stock_individual_info_em, symbol=symbol)
+    if isinstance(em_info, pd.DataFrame) and len(em_info) > 0:
+        out["basic_info"] = dict(zip(em_info["item"], em_info["value"]))
+        out["basic_info_source"] = "em"
+    else:
+        xq_fn = getattr(ak, "stock_individual_basic_info_xq", None)
+        xq_err = None
+        if xq_fn:
+            xq_sym = market_prefix(symbol).upper() + symbol
+            xq_info, xq_err = safe_retry(xq_fn, symbol=xq_sym)
+            if isinstance(xq_info, pd.DataFrame) and len(xq_info) > 0:
+                kv = dict(zip(xq_info.iloc[:, 0].astype(str), xq_info.iloc[:, 1]))
+                out["basic_info"] = kv
+                out["basic_info_source"] = "xq"
+        if "basic_info" not in out:
+            errs = []
+            if em_err: errs.append(f"em: {em_err}")
+            if xq_err: errs.append(f"xq: {xq_err}")
+            out["errors"]["basic_info"] = "; ".join(errs) if errs else "no source returned data"
 
     # Sina: ratios (每股 / 盈利能力 / 周转 / 偿债 / 现金流比率 等 80+ 字段).
     # Newer akshare builds require start_year; without it the endpoint silently returns empty.
@@ -648,6 +664,8 @@ def fetch_sector(symbol: str, _force: bool = False) -> dict:
         "600487": "通信设备",  # 亨通光电 - 光纤+海缆
         "300395": "半导体",    # 菲利华 - 石英材料(半导体光刻核心耗材)
         "300408": "电子元件",  # 三环集团 - MLCC陶瓷电子元件
+        "603256": "电子元件",  # 宏和科技 - 电子布/玻纤(PCB+半导体封装上游)
+        "603773": "光学光电子", # 沃格光电 - 光电玻璃精加工(显示面板上游)
     }
     if not industry and symbol in WATCHLIST_INDUSTRY_FALLBACK:
         industry = WATCHLIST_INDUSTRY_FALLBACK[symbol]
@@ -719,12 +737,29 @@ def fetch_sector(symbol: str, _force: bool = False) -> dict:
                             elif tx_err:
                                 out["errors"]["sector_history_etf_tx"] = tx_err
 
-        flow, err = safe_retry(ak.stock_sector_fund_flow_rank, indicator="今日", sector_type="行业资金流")
-        if isinstance(flow, pd.DataFrame):
-            row = flow[flow.astype(str).apply(lambda r: industry in r.values, axis=1)]
-            out["sector_fund_flow_today"] = df_to_records(row)
-        if err:
-            out["errors"]["sector_fund_flow"] = err
+        # Sector fund flow: EM rank endpoint frequently 403s/JSONDecodeErrors
+        # under load. Try rank → summary as fallback chain.
+        flow_err = None
+        for fn_name, kwargs in (
+            ("stock_sector_fund_flow_rank",    {"indicator": "今日", "sector_type": "行业资金流"}),
+            ("stock_sector_fund_flow_summary", {"indicator": "今日", "sector_type": "行业资金流"}),
+        ):
+            fn = getattr(ak, fn_name, None)
+            if not fn:
+                continue
+            flow, err = safe_retry(fn, **kwargs)
+            if isinstance(flow, pd.DataFrame) and len(flow) > 0:
+                row = flow[flow.astype(str).apply(lambda r: industry in r.values, axis=1)]
+                if len(row) > 0:
+                    out["sector_fund_flow_today"] = df_to_records(row)
+                    out["sector_fund_flow_source"] = fn_name
+                    flow_err = None
+                    break
+                flow_err = f"{fn_name}: industry '{industry}' not in frame"
+            elif err:
+                flow_err = f"{fn_name}: {err}"
+        if flow_err and "sector_fund_flow_today" not in out:
+            out["errors"]["sector_fund_flow"] = flow_err
 
     sw, err = safe_retry(ak.sw_index_first_info)
     if isinstance(sw, pd.DataFrame):
