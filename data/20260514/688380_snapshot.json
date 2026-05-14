@@ -1,12 +1,10 @@
-﻿{
+{
   "symbol": "688380",
   "as_of": "2026-05-14T18:26:31",
   "fundamentals": {
     "symbol": "688380",
     "as_of": "2026-05-14T18:26:31",
-    "errors": {
-      "basic_info": "em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response')); xq: KeyError: 'data'; spot_em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
-    },
+    "errors": {},
     "financial_indicators_recent": [
       {
         "日期": "2024-06-30T00:00:00.000",
@@ -1309,7 +1307,19 @@
         "股权登记日": "2023-06-01T00:00:00.000",
         "红股上市日": null
       }
-    ]
+    ],
+    "basic_info": {
+      "最新": 49.44,
+      "股票代码": "688380",
+      "股票简称": "中微半导",
+      "总股本": 400365000.0,
+      "流通股": 400365000.0,
+      "总市值": 19794045600.0,
+      "流通市值": 19794045600.0,
+      "行业": "半导体",
+      "上市时间": 20220805
+    },
+    "basic_info_source": "historical_20260508_em"
   },
   "sentiment": {
     "symbol": "688380",
