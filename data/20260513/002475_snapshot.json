@@ -1,12 +1,10 @@
-﻿{
+{
   "symbol": "002475",
   "as_of": "2026-05-13T18:59:35",
   "fundamentals": {
     "symbol": "002475",
     "as_of": "2026-05-13T18:59:35",
-    "errors": {
-      "basic_info": "em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response')); xq: KeyError: 'data'; spot_em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
-    },
+    "errors": {},
     "financial_indicators_recent": [
       {
         "日期": "2024-06-30T00:00:00.000",
@@ -1369,7 +1367,27 @@
         "股权登记日": "2011-05-25T00:00:00.000",
         "红股上市日": null
       }
-    ]
+    ],
+    "basic_info": {
+      "最新": 71.29,
+      "股票代码": "002475",
+      "股票简称": "立讯精密",
+      "总股本": 7285984864.0,
+      "流通股": 7269273060.0,
+      "总市值": 519417860954.56006,
+      "流通市值": 518226476447.4,
+      "行业": "消费电子",
+      "上市时间": 20100915
+    },
+    "basic_info_source": "historical_20260514_historical_20260508_em",
+    "_valuation_summary": {
+      "primary_metric": "PE_TTM",
+      "primary_value": 33.92061278,
+      "pe_ttm": 33.92061278,
+      "pb": 6.61046695,
+      "ps": 1.6475656,
+      "rule": "PE_TTM if 0<x<1000 else PB if >0 else PS if >0 else N/A"
+    }
   },
   "sentiment": {
     "symbol": "002475",
@@ -1735,7 +1753,10 @@
         "融券卖出量": 35700,
         "融券余量": 671258,
         "融券余额": 51814405,
-        "融资融券余额": 7959765438
+        "融资融券余额": 7959765438,
+        "_estimated_net_margin_yi": -1.5773,
+        "_estimated_net_margin_method": "balance_delta",
+        "_prev_balance_date": "20260512"
       }
     ],
     "northbound_holdings_recent": [

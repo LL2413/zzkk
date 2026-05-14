@@ -1,12 +1,10 @@
-﻿{
+{
   "symbol": "000988",
   "as_of": "2026-05-13T18:19:59",
   "fundamentals": {
     "symbol": "000988",
     "as_of": "2026-05-13T18:19:59",
-    "errors": {
-      "basic_info": "em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response')); xq: KeyError: 'data'; spot_em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
-    },
+    "errors": {},
     "financial_indicators_recent": [
       {
         "日期": "2024-06-30T00:00:00.000",
@@ -1369,7 +1367,22 @@
         "股权登记日": "2001-04-25T00:00:00.000",
         "红股上市日": null
       }
-    ]
+    ],
+    "basic_info": {
+      "股票代码": "000988",
+      "股票简称": "华工科技",
+      "行业": "通信设备",
+      "上市时间": "20000628"
+    },
+    "basic_info_source": "historical_20260514_hardcoded_minimal",
+    "_valuation_summary": {
+      "primary_metric": "PE_TTM",
+      "primary_value": 84.0802398,
+      "pe_ttm": 84.0802398,
+      "pb": 12.22520839,
+      "ps": 9.36001185,
+      "rule": "PE_TTM if 0<x<1000 else PB if >0 else PS if >0 else N/A"
+    }
   },
   "sentiment": {
     "symbol": "000988",
@@ -1712,7 +1725,10 @@
         "融券卖出量": 5100,
         "融券余量": 245900,
         "融券余额": 35448944,
-        "融资融券余额": 10250280622
+        "融资融券余额": 10250280622,
+        "_estimated_net_margin_yi": 1.347,
+        "_estimated_net_margin_method": "balance_delta",
+        "_prev_balance_date": "20260512"
       }
     ],
     "northbound_holdings_recent": [

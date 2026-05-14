@@ -5,8 +5,11 @@
 #   1. cd to repo, git pull (retry 4x on transient network failures)
 #   2. Skip weekends (A-share markets closed; data unchanged)
 #   3. Run fetch_all.ps1 -Refresh for all watchlist symbols
-#   4. If any data/<today> file changed, commit and push to the tracked branch
-#   5. Log everything to logs/daily_refresh_<date>.log (under .gitignore)
+#   4. Run post-fetch enrichers (basic_info / SZ margin net / sector
+#      aggregation / valuation triage) — failures are logged but
+#      non-fatal so fresh fetch data still ships
+#   5. If any data/<today> file changed, commit and push to the tracked branch
+#   6. Log everything to logs/daily_refresh_<date>.log (under .gitignore)
 #
 # Register once (run PowerShell as the user you want the task to run as):
 #   pwsh scripts\register_daily_task.ps1
@@ -127,6 +130,30 @@ if (Test-Path $validator) {
   Log "WARN: data validator missing: $validator"
 }
 
+# --- post-fetch enrichments (idempotent, additive) ---
+# Run after validation so enrichments only apply to known-good snapshots.
+# Each enricher modifies in place (basic_info / valuation / SZ margin) or
+# writes a sidecar (sector_flow_aggregated.json). Failures are non-fatal
+# — fresh fetch data is more critical than enrichment; we still commit.
+$enrichScripts = @(
+  'scripts\enrich_basic_info.py',
+  'scripts\enrich_margin_net.py',
+  'scripts\enrich_sector_flow.py',
+  'scripts\enrich_valuation.py'
+)
+foreach ($script in $enrichScripts) {
+  $fullPath = Join-Path $root $script
+  if (-not (Test-Path $fullPath)) {
+    Log "WARN: enricher missing: $script (skipped)"
+    continue
+  }
+  Log "enrich: $script --date $dateTag"
+  & $py $fullPath --date $dateTag 2>&1 | ForEach-Object { Log "  $_" }
+  if ($LASTEXITCODE -ne 0) {
+    Log "  WARN: enricher exit=$LASTEXITCODE (non-fatal, continuing)"
+  }
+}
+
 # data/ is in .gitignore, so `git status --porcelain` won't list changes there
 # unless we stage with -f first. Stage, then inspect the index.
 git add -f $dataDir 2>&1 | Out-Null
@@ -138,7 +165,7 @@ if ($staged.Count -eq 0) {
 }
 
 Log "$($staged.Count) file(s) staged, committing..."
-$msg = "Daily data refresh $dateTag"
+$msg = "Daily data refresh + enrich $dateTag"
 git commit -m $msg 2>&1 | ForEach-Object { Log "  $_" }
 if ($LASTEXITCODE -ne 0) {
   Log "commit failed (exit=$LASTEXITCODE). Aborting."

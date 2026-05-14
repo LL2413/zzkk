@@ -1,12 +1,10 @@
-﻿{
+{
   "symbol": "300395",
   "as_of": "2026-05-12T18:43:14",
   "fundamentals": {
     "symbol": "300395",
     "as_of": "2026-05-12T18:43:14",
-    "errors": {
-      "basic_info": "em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response')); xq: KeyError: 'data'"
-    },
+    "errors": {},
     "financial_indicators_recent": [
       {
         "日期": "2024-06-30T00:00:00.000",
@@ -1369,7 +1367,27 @@
         "股权登记日": "2015-04-20T00:00:00.000",
         "红股上市日": null
       }
-    ]
+    ],
+    "basic_info": {
+      "最新": 128.66,
+      "股票代码": "300395",
+      "股票简称": "菲利华",
+      "总股本": 522267673.0,
+      "流通股": 511506793.0,
+      "总市值": 67194958808.18,
+      "流通市值": 65810463987.38,
+      "行业": "航空装备Ⅱ",
+      "上市时间": 20140910
+    },
+    "basic_info_source": "historical_20260514_historical_20260508_em",
+    "_valuation_summary": {
+      "primary_metric": "PE_TTM",
+      "primary_value": 160.5985123,
+      "pe_ttm": 160.5985123,
+      "pb": 16.18371499,
+      "ps": 34.67086569,
+      "rule": "PE_TTM if 0<x<1000 else PB if >0 else PS if >0 else N/A"
+    }
   },
   "sentiment": {
     "symbol": "300395",
@@ -1712,7 +1730,10 @@
         "融券卖出量": 4900,
         "融券余量": 176040,
         "融券余额": 23140458,
-        "融资融券余额": 3637052522
+        "融资融券余额": 3637052522,
+        "_estimated_net_margin_yi": 1.4899,
+        "_estimated_net_margin_method": "balance_delta",
+        "_prev_balance_date": "20260508"
       }
     ],
     "northbound_holdings_recent": [

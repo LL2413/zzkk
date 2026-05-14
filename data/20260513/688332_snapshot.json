@@ -1,12 +1,10 @@
-﻿{
+{
   "symbol": "688332",
   "as_of": "2026-05-13T18:35:52",
   "fundamentals": {
     "symbol": "688332",
     "as_of": "2026-05-13T18:35:52",
-    "errors": {
-      "basic_info": "em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response')); xq: KeyError: 'data'; spot_em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
-    },
+    "errors": {},
     "financial_indicators_recent": [
       {
         "日期": "2024-06-30T00:00:00.000",
@@ -1317,7 +1315,27 @@
         "股权登记日": "2022-10-25T00:00:00.000",
         "红股上市日": null
       }
-    ]
+    ],
+    "basic_info": {
+      "最新": 113.6,
+      "股票代码": "688332",
+      "股票简称": "中科蓝讯",
+      "总股本": 120598200.0,
+      "流通股": 120598200.0,
+      "总市值": 13699955520.0,
+      "流通市值": 13699955520.0,
+      "行业": "半导体",
+      "上市时间": 20220715
+    },
+    "basic_info_source": "historical_20260514_historical_20260508_em",
+    "_valuation_summary": {
+      "primary_metric": "PE_TTM",
+      "primary_value": 11.85749026,
+      "pe_ttm": 11.85749026,
+      "pb": 3.06502857,
+      "ps": 8.60171126,
+      "rule": "PE_TTM if 0<x<1000 else PB if >0 else PS if >0 else N/A"
+    }
   },
   "sentiment": {
     "symbol": "688332",

@@ -1,12 +1,10 @@
-﻿{
+{
   "symbol": "600522",
   "as_of": "2026-05-13T19:11:32",
   "fundamentals": {
     "symbol": "600522",
     "as_of": "2026-05-13T19:11:32",
-    "errors": {
-      "basic_info": "em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response')); xq: KeyError: 'data'; spot_em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
-    },
+    "errors": {},
     "financial_indicators_recent": [
       {
         "日期": "2024-06-30T00:00:00.000",
@@ -1369,7 +1367,22 @@
         "股权登记日": "2003-06-06T00:00:00.000",
         "红股上市日": null
       }
-    ]
+    ],
+    "basic_info": {
+      "股票代码": "600522",
+      "股票简称": "中天科技",
+      "行业": "通信设备",
+      "上市时间": "20020108"
+    },
+    "basic_info_source": "historical_20260514_hardcoded_minimal",
+    "_valuation_summary": {
+      "primary_metric": "PE_TTM",
+      "primary_value": 46.59412311,
+      "pe_ttm": 46.59412311,
+      "pb": 3.91458609,
+      "ps": 2.66263463,
+      "rule": "PE_TTM if 0<x<1000 else PB if >0 else PS if >0 else N/A"
+    }
   },
   "sentiment": {
     "symbol": "600522",

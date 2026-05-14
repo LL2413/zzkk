@@ -1,12 +1,10 @@
-﻿{
+{
   "symbol": "603773",
   "as_of": "2026-05-13T19:31:18",
   "fundamentals": {
     "symbol": "603773",
     "as_of": "2026-05-13T19:31:18",
-    "errors": {
-      "basic_info": "em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response')); xq: KeyError: 'data'; spot_em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
-    },
+    "errors": {},
     "financial_indicators_recent": [
       {
         "日期": "2024-06-30T00:00:00.000",
@@ -1347,7 +1345,22 @@
         "股权登记日": "2019-07-03T00:00:00.000",
         "红股上市日": null
       }
-    ]
+    ],
+    "basic_info": {
+      "股票代码": "603773",
+      "股票简称": "沃格光电",
+      "行业": "光学光电子",
+      "上市时间": "20170313"
+    },
+    "basic_info_source": "historical_20260514_hardcoded_minimal",
+    "_valuation_summary": {
+      "primary_metric": "PB",
+      "primary_value": 18.74844662,
+      "pe_ttm": -106.78876305,
+      "pb": 18.74844662,
+      "ps": 7.62183007,
+      "rule": "PE_TTM if 0<x<1000 else PB if >0 else PS if >0 else N/A"
+    }
   },
   "sentiment": {
     "symbol": "603773",

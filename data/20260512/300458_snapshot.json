@@ -1,12 +1,10 @@
-﻿{
+{
   "symbol": "300458",
   "as_of": "2026-05-12T18:32:14",
   "fundamentals": {
     "symbol": "300458",
     "as_of": "2026-05-12T18:32:14",
-    "errors": {
-      "basic_info": "em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response')); xq: KeyError: 'data'"
-    },
+    "errors": {},
     "financial_indicators_recent": [
       {
         "日期": "2024-06-30T00:00:00.000",
@@ -1371,7 +1369,27 @@
         "股权登记日": "2016-04-28T00:00:00.000",
         "红股上市日": null
       }
-    ]
+    ],
+    "basic_info": {
+      "最新": 36.53,
+      "股票代码": "300458",
+      "股票简称": "全志科技",
+      "总股本": 990512858.0,
+      "流通股": 791904156.0,
+      "总市值": 36183434702.74,
+      "流通市值": 28928258818.68,
+      "行业": "半导体",
+      "上市时间": 20150515
+    },
+    "basic_info_source": "historical_20260514_historical_20260508_em",
+    "_valuation_summary": {
+      "primary_metric": "PE_TTM",
+      "primary_value": 97.45764669,
+      "pe_ttm": 97.45764669,
+      "pb": 10.96766398,
+      "ps": 11.63278059,
+      "rule": "PE_TTM if 0<x<1000 else PB if >0 else PS if >0 else N/A"
+    }
   },
   "sentiment": {
     "symbol": "300458",
@@ -1690,7 +1708,10 @@
         "融券卖出量": 3100,
         "融券余量": 300368,
         "融券余额": 11233763,
-        "融资融券余额": 1400945850
+        "融资融券余额": 1400945850,
+        "_estimated_net_margin_yi": -0.3038,
+        "_estimated_net_margin_method": "balance_delta",
+        "_prev_balance_date": "20260508"
       }
     ],
     "northbound_holdings_recent": [

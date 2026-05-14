@@ -1,12 +1,10 @@
-﻿{
+{
   "symbol": "688550",
   "as_of": "2026-05-11T23:05:50",
   "fundamentals": {
     "symbol": "688550",
     "as_of": "2026-05-11T19:03:56",
-    "errors": {
-      "basic_info": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
-    },
+    "errors": {},
     "financial_indicators_recent": [
       {
         "日期": "2024-06-30T00:00:00.000",
@@ -1339,7 +1337,27 @@
         "股权登记日": "2021-06-11T00:00:00.000",
         "红股上市日": null
       }
-    ]
+    ],
+    "basic_info": {
+      "最新": 42.72,
+      "股票代码": "688550",
+      "股票简称": "瑞联新材",
+      "总股本": 173844438.0,
+      "流通股": 173844438.0,
+      "总市值": 7426634391.36,
+      "流通市值": 7426634391.36,
+      "行业": "电子化学品Ⅱ",
+      "上市时间": 20200902
+    },
+    "basic_info_source": "historical_20260514_historical_20260508_em",
+    "_valuation_summary": {
+      "primary_metric": "PE_TTM",
+      "primary_value": 24.29734565,
+      "pe_ttm": 24.29734565,
+      "pb": 2.23430675,
+      "ps": 4.36391251,
+      "rule": "PE_TTM if 0<x<1000 else PB if >0 else PS if >0 else N/A"
+    }
   },
   "sentiment": {
     "symbol": "688550",

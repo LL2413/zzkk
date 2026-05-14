@@ -1,12 +1,10 @@
-﻿{
+{
   "symbol": "300458",
   "as_of": "2026-05-11T23:05:53",
   "fundamentals": {
     "symbol": "300458",
     "as_of": "2026-05-11T19:11:51",
-    "errors": {
-      "basic_info": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
-    },
+    "errors": {},
     "financial_indicators_recent": [
       {
         "日期": "2024-06-30T00:00:00.000",
@@ -1371,7 +1369,27 @@
         "股权登记日": "2016-04-28T00:00:00.000",
         "红股上市日": null
       }
-    ]
+    ],
+    "basic_info": {
+      "最新": 36.53,
+      "股票代码": "300458",
+      "股票简称": "全志科技",
+      "总股本": 990512858.0,
+      "流通股": 791904156.0,
+      "总市值": 36183434702.74,
+      "流通市值": 28928258818.68,
+      "行业": "半导体",
+      "上市时间": 20150515
+    },
+    "basic_info_source": "historical_20260514_historical_20260508_em",
+    "_valuation_summary": {
+      "primary_metric": "PE_TTM",
+      "primary_value": 99.15440658,
+      "pe_ttm": 99.15440658,
+      "pb": 11.15861352,
+      "ps": 11.83530996,
+      "rule": "PE_TTM if 0<x<1000 else PB if >0 else PS if >0 else N/A"
+    }
   },
   "sentiment": {
     "symbol": "300458",

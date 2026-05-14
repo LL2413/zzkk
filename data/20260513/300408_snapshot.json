@@ -1,12 +1,10 @@
-﻿{
+{
   "symbol": "300408",
   "as_of": "2026-05-13T19:23:23",
   "fundamentals": {
     "symbol": "300408",
     "as_of": "2026-05-13T19:23:23",
-    "errors": {
-      "basic_info": "em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response')); xq: KeyError: 'data'; spot_em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
-    },
+    "errors": {},
     "financial_indicators_recent": [
       {
         "日期": "2024-06-30T00:00:00.000",
@@ -1369,7 +1367,27 @@
         "股权登记日": "2015-05-21T00:00:00.000",
         "红股上市日": null
       }
-    ]
+    ],
+    "basic_info": {
+      "最新": 86.3,
+      "股票代码": "300408",
+      "股票简称": "三环集团",
+      "总股本": 1916497371.0,
+      "流通股": 1869803942.0,
+      "总市值": 165393723117.3,
+      "流通市值": 161364080194.6,
+      "行业": "元件",
+      "上市时间": 20141203
+    },
+    "basic_info_source": "historical_20260514_historical_20260508_em",
+    "_valuation_summary": {
+      "primary_metric": "PE_TTM",
+      "primary_value": 60.42035205,
+      "pe_ttm": 60.42035205,
+      "pb": 7.76035989,
+      "ps": 17.63643178,
+      "rule": "PE_TTM if 0<x<1000 else PB if >0 else PS if >0 else N/A"
+    }
   },
   "sentiment": {
     "symbol": "300408",
@@ -1688,7 +1706,10 @@
         "融券卖出量": 11400,
         "融券余量": 151900,
         "融券余额": 13399099,
-        "融资融券余额": 966554918
+        "融资融券余额": 966554918,
+        "_estimated_net_margin_yi": -0.3786,
+        "_estimated_net_margin_method": "balance_delta",
+        "_prev_balance_date": "20260512"
       }
     ],
     "northbound_holdings_recent": [

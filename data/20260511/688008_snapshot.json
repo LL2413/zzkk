@@ -1,12 +1,10 @@
-﻿{
+{
   "symbol": "688008",
   "as_of": "2026-05-11T23:33:08",
   "fundamentals": {
     "symbol": "688008",
     "as_of": "2026-05-11T23:33:08",
-    "errors": {
-      "basic_info": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
-    },
+    "errors": {},
     "financial_indicators_recent": [
       {
         "日期": "2024-06-30T00:00:00.000",
@@ -1349,7 +1347,27 @@
         "股权登记日": "2020-07-03T00:00:00.000",
         "红股上市日": null
       }
-    ]
+    ],
+    "basic_info": {
+      "最新": 210.27,
+      "股票代码": "688008",
+      "股票简称": "澜起科技",
+      "总股本": 1222200021.0,
+      "流通股": 1146426521.0,
+      "总市值": 256991998415.67,
+      "流通市值": 241059104570.67,
+      "行业": "半导体",
+      "上市时间": 20190722
+    },
+    "basic_info_source": "historical_20260514_historical_20260508_em",
+    "_valuation_summary": {
+      "primary_metric": "PE_TTM",
+      "primary_value": 119.09383833,
+      "pe_ttm": 119.09383833,
+      "pb": 14.61197138,
+      "ps": 53.48656996,
+      "rule": "PE_TTM if 0<x<1000 else PB if >0 else PS if >0 else N/A"
+    }
   },
   "sentiment": {
     "symbol": "688008",

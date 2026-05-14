@@ -1,12 +1,10 @@
-﻿{
+{
   "symbol": "688046",
   "as_of": "2026-05-12T18:16:21",
   "fundamentals": {
     "symbol": "688046",
     "as_of": "2026-05-12T18:16:21",
-    "errors": {
-      "basic_info": "em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response')); xq: KeyError: 'data'"
-    },
+    "errors": {},
     "financial_indicators_recent": [
       {
         "日期": "2024-06-30T00:00:00.000",
@@ -1339,7 +1337,27 @@
         "股权登记日": null,
         "红股上市日": null
       }
-    ]
+    ],
+    "basic_info": {
+      "最新": 20.48,
+      "股票代码": "688046",
+      "股票简称": "药康生物",
+      "总股本": 410000000.0,
+      "流通股": 410000000.0,
+      "总市值": 8396800000.0,
+      "流通市值": 8396800000.0,
+      "行业": "医疗服务",
+      "上市时间": 20220425
+    },
+    "basic_info_source": "historical_20260514_historical_20260508_em",
+    "_valuation_summary": {
+      "primary_metric": "PE_TTM",
+      "primary_value": 53.61092685,
+      "pe_ttm": 53.61092685,
+      "pb": 3.75837356,
+      "ps": 10.31157665,
+      "rule": "PE_TTM if 0<x<1000 else PB if >0 else PS if >0 else N/A"
+    }
   },
   "sentiment": {
     "symbol": "688046",

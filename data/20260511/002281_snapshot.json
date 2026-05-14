@@ -1,12 +1,10 @@
-﻿{
+{
   "symbol": "002281",
   "as_of": "2026-05-11T23:27:39",
   "fundamentals": {
     "symbol": "002281",
     "as_of": "2026-05-11T23:27:39",
-    "errors": {
-      "basic_info": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
-    },
+    "errors": {},
     "financial_indicators_recent": [
       {
         "日期": "2024-06-30T00:00:00.000",
@@ -1369,7 +1367,27 @@
         "股权登记日": "2010-05-28T00:00:00.000",
         "红股上市日": null
       }
-    ]
+    ],
+    "basic_info": {
+      "最新": 203.8,
+      "股票代码": "002281",
+      "股票简称": "光迅科技",
+      "总股本": 806675752.0,
+      "流通股": 779498772.0,
+      "总市值": 164400518257.6,
+      "流通市值": 158861849733.6,
+      "行业": "通信设备",
+      "上市时间": 20090821
+    },
+    "basic_info_source": "historical_20260514_em",
+    "_valuation_summary": {
+      "primary_metric": "PE_TTM",
+      "primary_value": 154.77688659,
+      "pe_ttm": 154.77688659,
+      "pb": 15.50803063,
+      "ps": 12.84957154,
+      "rule": "PE_TTM if 0<x<1000 else PB if >0 else PS if >0 else N/A"
+    }
   },
   "sentiment": {
     "symbol": "002281",
@@ -1873,7 +1891,10 @@
         "融券卖出量": 68100,
         "融券余量": 170821,
         "融券余额": 30870771,
-        "融资融券余额": 4703262583
+        "融资融券余额": 4703262583,
+        "_estimated_net_margin_yi": 11.8128,
+        "_estimated_net_margin_method": "balance_delta",
+        "_prev_balance_date": "20260429"
       }
     ],
     "northbound_holdings_recent": [
