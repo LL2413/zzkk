@@ -53,4 +53,16 @@ Write-Host "=== 4. 估值口径 (PE / PB / PS) ==="
 & $py scripts\enrich_valuation.py @dateArgs
 
 Write-Host ""
+Write-Host "=== 5. 主力流向连续天数 (streak) ==="
+& $py scripts\enrich_streak.py @dateArgs
+
+Write-Host ""
+Write-Host "=== 6. 价主背离 (divergence) ==="
+& $py scripts\enrich_divergence.py @dateArgs
+
+Write-Host ""
+Write-Host "=== 7. 个股 vs 板块 (alpha) ==="
+& $py scripts\enrich_alpha.py @dateArgs
+
+Write-Host ""
 Write-Host "All enrichments complete."

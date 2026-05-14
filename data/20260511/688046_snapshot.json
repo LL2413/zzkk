@@ -2052,7 +2052,21 @@
         "amount": 8409349.0
       }
     ],
-    "price_recent_source": "tencent_kline"
+    "price_recent_source": "tencent_kline",
+    "_main_flow_streak": {
+      "direction": "negative",
+      "days": 3,
+      "as_of": "2026-05-11",
+      "main_pct_today": -6.1,
+      "main_yi_total_streak": -0.2673
+    },
+    "_divergence": {
+      "as_of": "2026-05-11",
+      "chg_pct": 6.45,
+      "main_pct": -6.1,
+      "score": 12.55,
+      "interpretation": "crowded"
+    }
   },
   "sector": {
     "symbol": "688046",
@@ -2504,6 +2518,13 @@
         "市净率": 2.79,
         "静态股息率": 2.08
       }
-    ]
+    ],
+    "_alpha_vs_sector": {
+      "as_of": "2026-05-11",
+      "stock_chg": 6.45,
+      "sector_chg": 1.749,
+      "alpha": 4.701,
+      "sector_price_source": "etf_tencent_159929"
+    }
   }
 }

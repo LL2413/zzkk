@@ -2143,7 +2143,21 @@
         "amount": 2216706.0
       }
     ],
-    "price_recent_source": "tencent_kline"
+    "price_recent_source": "tencent_kline",
+    "_main_flow_streak": {
+      "direction": "negative",
+      "days": 1,
+      "as_of": "2026-05-14",
+      "main_pct_today": -9.97,
+      "main_yi_total_streak": -16.9281
+    },
+    "_divergence": {
+      "as_of": "2026-05-14",
+      "chg_pct": -5.93,
+      "main_pct": -9.97,
+      "score": 4.04,
+      "interpretation": "drift"
+    }
   },
   "sector": {
     "symbol": "002475",
@@ -2315,6 +2329,13 @@
         "amount": 2110919.0
       }
     ],
-    "sector_price_source": "etf_tencent_159732"
+    "sector_price_source": "etf_tencent_159732",
+    "_alpha_vs_sector": {
+      "as_of": "2026-05-14",
+      "stock_chg": -5.93,
+      "sector_chg": -3.4597,
+      "alpha": -2.4703,
+      "sector_price_source": "etf_tencent_159732"
+    }
   }
 }

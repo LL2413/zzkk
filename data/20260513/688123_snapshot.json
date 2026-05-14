@@ -2064,7 +2064,21 @@
         "amount": 21526687.0
       }
     ],
-    "price_recent_source": "tencent_kline"
+    "price_recent_source": "tencent_kline",
+    "_main_flow_streak": {
+      "direction": "positive",
+      "days": 3,
+      "as_of": "2026-05-13",
+      "main_pct_today": 4.71,
+      "main_yi_total_streak": 5.7658
+    },
+    "_divergence": {
+      "as_of": "2026-05-13",
+      "chg_pct": 6.09,
+      "main_pct": 4.71,
+      "score": 1.38,
+      "interpretation": "balanced"
+    }
   },
   "sector": {
     "symbol": "688123",

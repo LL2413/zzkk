@@ -45,4 +45,16 @@ echo "=== 4. 估值口径 (PE / PB / PS) ==="
 "$PY" scripts/enrich_valuation.py "${ARGS[@]}"
 
 echo ""
+echo "=== 5. 主力流向连续天数 (streak) ==="
+"$PY" scripts/enrich_streak.py "${ARGS[@]}"
+
+echo ""
+echo "=== 6. 价主背离 (divergence) ==="
+"$PY" scripts/enrich_divergence.py "${ARGS[@]}"
+
+echo ""
+echo "=== 7. 个股 vs 板块 (alpha) ==="
+"$PY" scripts/enrich_alpha.py "${ARGS[@]}"
+
+echo ""
 echo "All enrichments complete."
