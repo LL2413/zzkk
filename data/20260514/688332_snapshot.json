@@ -1327,7 +1327,15 @@
       "行业": "半导体",
       "上市时间": 20220715
     },
-    "basic_info_source": "historical_20260508_em"
+    "basic_info_source": "historical_20260508_em",
+    "_valuation_summary": {
+      "primary_metric": "PE_TTM",
+      "primary_value": 11.76558543,
+      "pe_ttm": 11.76558543,
+      "pb": 3.0412722,
+      "ps": 8.53504127,
+      "rule": "PE_TTM if 0<x<1000 else PB if >0 else PS if >0 else N/A"
+    }
   },
   "sentiment": {
     "symbol": "688332",

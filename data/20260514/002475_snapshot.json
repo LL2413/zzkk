@@ -1379,7 +1379,15 @@
       "行业": "消费电子",
       "上市时间": 20100915
     },
-    "basic_info_source": "historical_20260508_em"
+    "basic_info_source": "historical_20260508_em",
+    "_valuation_summary": {
+      "primary_metric": "PE_TTM",
+      "primary_value": 31.91034565,
+      "pe_ttm": 31.91034565,
+      "pb": 6.21870503,
+      "ps": 1.54992447,
+      "rule": "PE_TTM if 0<x<1000 else PB if >0 else PS if >0 else N/A"
+    }
   },
   "sentiment": {
     "symbol": "002475",
@@ -1745,7 +1753,10 @@
         "融券卖出量": 26700,
         "融券余量": 630458,
         "融券余额": 50531208,
-        "融资融券余额": 8497876716
+        "融资融券余额": 8497876716,
+        "_estimated_net_margin_yi": 5.3939,
+        "_estimated_net_margin_method": "balance_delta",
+        "_prev_balance_date": "20260513"
       }
     ],
     "northbound_holdings_recent": [

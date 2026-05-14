@@ -1,12 +1,10 @@
-﻿{
+{
   "symbol": "601869",
   "as_of": "2026-05-14T18:50:27",
   "fundamentals": {
     "symbol": "601869",
     "as_of": "2026-05-14T18:50:27",
-    "errors": {
-      "basic_info": "em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response')); xq: KeyError: 'data'; spot_em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
-    },
+    "errors": {},
     "financial_indicators_recent": [
       {
         "日期": "2024-06-30T00:00:00.000",
@@ -1361,7 +1359,22 @@
         "股权登记日": "2018-12-11T00:00:00.000",
         "红股上市日": null
       }
-    ]
+    ],
+    "basic_info": {
+      "股票代码": "601869",
+      "股票简称": "长飞光纤",
+      "行业": "通信设备",
+      "上市时间": "20180726"
+    },
+    "basic_info_source": "hardcoded_minimal",
+    "_valuation_summary": {
+      "primary_metric": "PE_TTM",
+      "primary_value": 289.54475065,
+      "pe_ttm": 289.54475065,
+      "pb": 23.54232352,
+      "ps": 22.25717979,
+      "rule": "PE_TTM if 0<x<1000 else PB if >0 else PS if >0 else N/A"
+    }
   },
   "sentiment": {
     "symbol": "601869",

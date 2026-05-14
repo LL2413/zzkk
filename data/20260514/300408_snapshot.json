@@ -1379,7 +1379,15 @@
       "行业": "元件",
       "上市时间": 20141203
     },
-    "basic_info_source": "historical_20260508_em"
+    "basic_info_source": "historical_20260508_em",
+    "_valuation_summary": {
+      "primary_metric": "PE_TTM",
+      "primary_value": 58.88802424,
+      "pe_ttm": 58.88802424,
+      "pb": 7.56354847,
+      "ps": 17.18915211,
+      "rule": "PE_TTM if 0<x<1000 else PB if >0 else PS if >0 else N/A"
+    }
   },
   "sentiment": {
     "symbol": "300408",
@@ -1698,7 +1706,10 @@
         "融券卖出量": 11700,
         "融券余量": 157900,
         "融券余额": 14319951,
-        "融资融券余额": 1001142298
+        "融资融券余额": 1001142298,
+        "_estimated_net_margin_yi": 0.3367,
+        "_estimated_net_margin_method": "balance_delta",
+        "_prev_balance_date": "20260513"
       }
     ],
     "northbound_holdings_recent": [

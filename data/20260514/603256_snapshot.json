@@ -1,12 +1,10 @@
-﻿{
+{
   "symbol": "603256",
   "as_of": "2026-05-14T19:10:10",
   "fundamentals": {
     "symbol": "603256",
     "as_of": "2026-05-14T19:10:10",
-    "errors": {
-      "basic_info": "em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response')); xq: KeyError: 'data'; spot_em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
-    },
+    "errors": {},
     "financial_indicators_recent": [
       {
         "日期": "2024-06-30T00:00:00.000",
@@ -1349,7 +1347,22 @@
         "股权登记日": "2019-10-24T00:00:00.000",
         "红股上市日": null
       }
-    ]
+    ],
+    "basic_info": {
+      "股票代码": "603256",
+      "股票简称": "宏和科技",
+      "行业": "电子元件",
+      "上市时间": "20190910"
+    },
+    "basic_info_source": "hardcoded_minimal",
+    "_valuation_summary": {
+      "primary_metric": "PE_TTM",
+      "primary_value": 412.17308826,
+      "pe_ttm": 412.17308826,
+      "pb": 46.29033965,
+      "ps": 93.8437792,
+      "rule": "PE_TTM if 0<x<1000 else PB if >0 else PS if >0 else N/A"
+    }
   },
   "sentiment": {
     "symbol": "603256",

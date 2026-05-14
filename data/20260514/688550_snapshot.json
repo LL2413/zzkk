@@ -1349,7 +1349,15 @@
       "行业": "电子化学品Ⅱ",
       "上市时间": 20200902
     },
-    "basic_info_source": "historical_20260508_em"
+    "basic_info_source": "historical_20260508_em",
+    "_valuation_summary": {
+      "primary_metric": "PE_TTM",
+      "primary_value": 26.45270973,
+      "pe_ttm": 26.45270973,
+      "pb": 2.43250719,
+      "ps": 4.75102559,
+      "rule": "PE_TTM if 0<x<1000 else PB if >0 else PS if >0 else N/A"
+    }
   },
   "sentiment": {
     "symbol": "688550",

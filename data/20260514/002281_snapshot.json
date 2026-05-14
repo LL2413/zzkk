@@ -1,4 +1,4 @@
-﻿{
+{
   "symbol": "002281",
   "as_of": "2026-05-14T18:00:30",
   "fundamentals": {
@@ -1379,7 +1379,15 @@
         "股权登记日": "2010-05-28T00:00:00.000",
         "红股上市日": null
       }
-    ]
+    ],
+    "_valuation_summary": {
+      "primary_metric": "PE_TTM",
+      "primary_value": 158.6776472,
+      "pe_ttm": 158.6776472,
+      "pb": 15.89887138,
+      "ps": 13.17341254,
+      "rule": "PE_TTM if 0<x<1000 else PB if >0 else PS if >0 else N/A"
+    }
   },
   "sentiment": {
     "symbol": "002281",
@@ -1906,7 +1914,10 @@
         "融券卖出量": 900,
         "融券余量": 167747,
         "融券余额": 33208873,
-        "融资融券余额": 5401662321
+        "融资融券余额": 5401662321,
+        "_estimated_net_margin_yi": -1.2881,
+        "_estimated_net_margin_method": "balance_delta",
+        "_prev_balance_date": "20260513"
       }
     ],
     "northbound_holdings_recent": [

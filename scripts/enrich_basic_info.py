@@ -5,6 +5,12 @@ basic_info (公司简介/行业/股本等) is largely time-invariant. When EM/Xu
 endpoints are unreachable on a given fetch, we can still surface the same
 descriptive metadata by lifting it from the most recent successful snapshot.
 
+Two-stage fallback:
+  1. Historical reuse — scan past data/YYYYMMDD/ for first non-empty basic_info
+  2. Hardcoded minimal — for symbols that never succeeded (e.g., always-blocked
+     endpoints), inject a tiny manually-curated dict with code/name/industry/
+     listing date so downstream analyzers see at least identity + industry.
+
 Usage:
     python scripts/enrich_basic_info.py                 # default: data/<today>
     python scripts/enrich_basic_info.py --date 20260514
@@ -12,6 +18,7 @@ Usage:
 
 Output: writes each enriched snapshot in place, tagging
     fundamentals.basic_info_source = "historical_<src_date>_<original_source>"
+                                  or "hardcoded_minimal"
 and removing the resolved "basic_info" entry from errors.
 """
 import argparse
@@ -20,6 +27,23 @@ import json
 import os
 import sys
 from datetime import date
+
+
+# Hardcoded minimal fallback for watchlist symbols that have NEVER had a
+# successful basic_info fetch across all historical snapshots. Keep this list
+# minimal (code/name/industry/listing date) — never claim live numbers.
+HARDCODED_MINIMAL: dict[str, dict] = {
+    "000988": {"股票代码": "000988", "股票简称": "华工科技",
+               "行业": "通信设备", "上市时间": "20000628"},
+    "601869": {"股票代码": "601869", "股票简称": "长飞光纤",
+               "行业": "通信设备", "上市时间": "20180726"},
+    "600522": {"股票代码": "600522", "股票简称": "中天科技",
+               "行业": "通信设备", "上市时间": "20020108"},
+    "603256": {"股票代码": "603256", "股票简称": "宏和科技",
+               "行业": "电子元件", "上市时间": "20190910"},
+    "603773": {"股票代码": "603773", "股票简称": "沃格光电",
+               "行业": "光学光电子", "上市时间": "20170313"},
+}
 
 
 def load_json(path):
@@ -85,7 +109,7 @@ def main():
     current_tag = os.path.basename(target_dir)
     snapshots = sorted(glob.glob(os.path.join(target_dir, "*_snapshot.json")))
 
-    enriched = skipped = failed = 0
+    historical = hardcoded = skipped = failed = 0
     for snap in snapshots:
         symbol = os.path.basename(snap)[:6]
         try:
@@ -105,25 +129,34 @@ def main():
             skipped += 1
             continue
 
+        # Stage 1: historical
         bi, source = find_historical(symbol, repo_root, current_tag)
+        if bi is None and symbol in HARDCODED_MINIMAL:
+            # Stage 2: hardcoded minimal
+            bi = dict(HARDCODED_MINIMAL[symbol])  # copy to avoid mutating constant
+            source = "hardcoded_minimal"
+
         if bi is None:
-            print(f"  {symbol}: FAIL (no historical basic_info in any past snapshot)")
+            print(f"  {symbol}: FAIL (no historical + no hardcoded entry)")
             failed += 1
             continue
 
         fund["basic_info"] = bi
         fund["basic_info_source"] = source
-        # Clear resolved error
         errs = fund.get("errors", {})
         errs.pop("basic_info", None)
 
         save_json(snap, d)
-        print(f"  {symbol}: enriched <- {source}")
-        enriched += 1
+        if source.startswith("historical"):
+            print(f"  {symbol}: enriched <- {source}")
+            historical += 1
+        else:
+            print(f"  {symbol}: enriched <- {source}")
+            hardcoded += 1
 
     print(
-        f"\nDone: enriched={enriched}, skipped={skipped}, "
-        f"failed={failed}, total={len(snapshots)}"
+        f"\nDone: historical={historical}, hardcoded={hardcoded}, "
+        f"skipped={skipped}, failed={failed}, total={len(snapshots)}"
     )
     return 0 if failed == 0 else 1
 

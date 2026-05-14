@@ -1369,7 +1369,15 @@
       "行业": "计算机设备",
       "上市时间": 20200213
     },
-    "basic_info_source": "historical_20260508_em"
+    "basic_info_source": "historical_20260508_em",
+    "_valuation_summary": {
+      "primary_metric": "PE_TTM",
+      "primary_value": 27.71342408,
+      "pe_ttm": 27.71342408,
+      "pb": 6.69362296,
+      "ps": 5.12131854,
+      "rule": "PE_TTM if 0<x<1000 else PB if >0 else PS if >0 else N/A"
+    }
   },
   "sentiment": {
     "symbol": "688208",

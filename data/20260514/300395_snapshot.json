@@ -1379,7 +1379,15 @@
       "行业": "航空装备Ⅱ",
       "上市时间": 20140910
     },
-    "basic_info_source": "historical_20260508_em"
+    "basic_info_source": "historical_20260508_em",
+    "_valuation_summary": {
+      "primary_metric": "PE_TTM",
+      "primary_value": 152.31710954,
+      "pe_ttm": 152.31710954,
+      "pb": 15.34918757,
+      "ps": 32.88303218,
+      "rule": "PE_TTM if 0<x<1000 else PB if >0 else PS if >0 else N/A"
+    }
   },
   "sentiment": {
     "symbol": "300395",
@@ -1722,7 +1730,10 @@
         "融券卖出量": 5200,
         "融券余量": 193140,
         "融券余额": 28758546,
-        "融资融券余额": 4268802239
+        "融资融券余额": 4268802239,
+        "_estimated_net_margin_yi": 2.9794,
+        "_estimated_net_margin_method": "balance_delta",
+        "_prev_balance_date": "20260513"
       }
     ],
     "northbound_holdings_recent": [

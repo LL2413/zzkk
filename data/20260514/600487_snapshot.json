@@ -1379,7 +1379,15 @@
       "行业": "通信设备",
       "上市时间": 20030822
     },
-    "basic_info_source": "historical_20260508_em"
+    "basic_info_source": "historical_20260508_em",
+    "_valuation_summary": {
+      "primary_metric": "PE_TTM",
+      "primary_value": 56.52570272,
+      "pe_ttm": 56.52570272,
+      "pb": 5.63159472,
+      "ps": 2.55701198,
+      "rule": "PE_TTM if 0<x<1000 else PB if >0 else PS if >0 else N/A"
+    }
   },
   "sentiment": {
     "symbol": "600487",

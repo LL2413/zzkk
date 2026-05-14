@@ -1381,7 +1381,15 @@
       "行业": "半导体",
       "上市时间": 20150515
     },
-    "basic_info_source": "historical_20260508_em"
+    "basic_info_source": "historical_20260508_em",
+    "_valuation_summary": {
+      "primary_metric": "PE_TTM",
+      "primary_value": 96.47670737,
+      "pe_ttm": 96.47670737,
+      "pb": 10.85727128,
+      "ps": 11.5156933,
+      "rule": "PE_TTM if 0<x<1000 else PB if >0 else PS if >0 else N/A"
+    }
   },
   "sentiment": {
     "symbol": "300458",
@@ -1700,7 +1708,10 @@
         "融券卖出量": 8700,
         "融券余量": 289668,
         "融券余额": 10874137,
-        "融资融券余额": 1335086411
+        "融资融券余额": 1335086411,
+        "_estimated_net_margin_yi": -0.4098,
+        "_estimated_net_margin_method": "balance_delta",
+        "_prev_balance_date": "20260513"
       }
     ],
     "northbound_holdings_recent": [

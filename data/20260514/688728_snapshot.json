@@ -1331,7 +1331,15 @@
       "行业": "半导体",
       "上市时间": 20210818
     },
-    "basic_info_source": "historical_20260508_em"
+    "basic_info_source": "historical_20260508_em",
+    "_valuation_summary": {
+      "primary_metric": "PE_TTM",
+      "primary_value": 363.80563708,
+      "pe_ttm": 363.80563708,
+      "pb": 4.79080251,
+      "ps": 4.63334851,
+      "rule": "PE_TTM if 0<x<1000 else PB if >0 else PS if >0 else N/A"
+    }
   },
   "sentiment": {
     "symbol": "688728",
