@@ -2149,7 +2149,9 @@
       "chg_pct": 7.24,
       "main_pct": -5.52,
       "score": 12.76,
-      "interpretation": "crowded"
+      "interpretation": "拥挤",
+      "interpretation_en": "crowded",
+      "note": "价格涨幅超出主力支持、或跌幅不及主力流出，警惕散户/游资虚撑与拥挤交易"
     }
   },
   "sector": {

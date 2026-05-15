@@ -44,14 +44,24 @@ def save_json(path, data):
         json.dump(data, f, ensure_ascii=False, indent=2, default=str)
 
 
+# Each bucket maps to (中文标签, 一句话解释).
+DIVERGENCE_LABELS = {
+    "balanced": ("均衡", "价格涨跌与主力资金方向基本一致，本次波动可信"),
+    "drift": ("漂移", "价格与主力资金轻微背离，方向仍需观察"),
+    "crowded": ("拥挤", "价格涨幅超出主力支持、或跌幅不及主力流出，警惕散户/游资虚撑与拥挤交易"),
+    "accumulation": ("吸筹", "主力净流入明显超过价格涨幅，疑似主力低调建仓、价格尚未反应"),
+    "panic": ("恐慌", "价格跌幅明显超过主力流出，疑似散户恐慌砸盘"),
+}
+
+
 def classify(score, chg_pct, main_pct):
-    """Bucket the divergence into a short label."""
+    """Return the bucket key for this divergence reading."""
     if abs(score) <= 3:
         return "balanced"
     if score > 10:
         # Price moved up far more than main inflow, OR price fell less than
         # main outflow — both flavors of "price decoupled from main fund"
-        return "crowded"  # warning: 散户/游资推动 or 主力出货价不跌
+        return "crowded"
     if score < -10:
         # Main inflow > price rise (accumulation), or price fell more than
         # main outflow supports (panic selling beyond institutional view)
@@ -105,18 +115,21 @@ def main():
             skipped += 1
             continue
         score = chg - main_pct
-        label = classify(score, chg, main_pct)
+        bucket = classify(score, chg, main_pct)
+        label_cn, note = DIVERGENCE_LABELS[bucket]
         d.setdefault("sentiment", {})["_divergence"] = {
             "as_of": target_iso,
             "chg_pct": round(chg, 4),
             "main_pct": round(main_pct, 4),
             "score": round(score, 4),
-            "interpretation": label,
+            "interpretation": label_cn,        # 中文标签
+            "interpretation_en": bucket,       # English key, stable for code
+            "note": note,                      # 一句话解释
         }
         save_json(snap, d)
         print(
             f"  {symbol}: chg {chg:+6.2f}% - main {main_pct:+6.2f}% = "
-            f"score {score:+6.2f}  [{label}]"
+            f"score {score:+6.2f}  [{label_cn}] {note}"
         )
         computed += 1
 

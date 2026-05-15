@@ -2077,7 +2077,9 @@
       "chg_pct": 0.92,
       "main_pct": 11.38,
       "score": -10.46,
-      "interpretation": "accumulation"
+      "interpretation": "吸筹",
+      "interpretation_en": "accumulation",
+      "note": "主力净流入明显超过价格涨幅，疑似主力低调建仓、价格尚未反应"
     }
   },
   "sector": {

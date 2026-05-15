@@ -2087,7 +2087,9 @@
       "chg_pct": -3.42,
       "main_pct": -1.4,
       "score": -2.02,
-      "interpretation": "balanced"
+      "interpretation": "均衡",
+      "interpretation_en": "balanced",
+      "note": "价格涨跌与主力资金方向基本一致，本次波动可信"
     }
   },
   "sector": {

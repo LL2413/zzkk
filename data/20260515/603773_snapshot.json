@@ -2138,7 +2138,9 @@
       "chg_pct": -10.0,
       "main_pct": -18.86,
       "score": 8.86,
-      "interpretation": "drift"
+      "interpretation": "漂移",
+      "interpretation_en": "drift",
+      "note": "价格与主力资金轻微背离，方向仍需观察"
     }
   },
   "sector": {
