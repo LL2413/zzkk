@@ -1,12 +1,10 @@
-﻿{
+{
   "symbol": "603773",
   "as_of": "2026-05-15T19:15:08",
   "fundamentals": {
     "symbol": "603773",
     "as_of": "2026-05-15T19:15:08",
-    "errors": {
-      "basic_info": "em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response')); xq: KeyError: 'data'; spot_em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
-    },
+    "errors": {},
     "financial_indicators_recent": [
       {
         "日期": "2024-06-30T00:00:00.000",
@@ -1347,7 +1345,22 @@
         "股权登记日": "2019-07-03T00:00:00.000",
         "红股上市日": null
       }
-    ]
+    ],
+    "basic_info": {
+      "股票代码": "603773",
+      "股票简称": "沃格光电",
+      "行业": "光学光电子",
+      "上市时间": "20170313"
+    },
+    "basic_info_source": "historical_20260514_hardcoded_minimal",
+    "_valuation_summary": {
+      "primary_metric": "PB",
+      "primary_value": 15.95852454,
+      "pe_ttm": -90.89772237,
+      "pb": 15.95852454,
+      "ps": 6.48763947,
+      "rule": "PE_TTM if 0<x<1000 else PB if >0 else PS if >0 else N/A"
+    }
   },
   "sentiment": {
     "symbol": "603773",
@@ -2112,7 +2125,21 @@
         "amount": 23736.0
       }
     ],
-    "price_recent_source": "tencent_kline"
+    "price_recent_source": "tencent_kline",
+    "_main_flow_streak": {
+      "direction": "negative",
+      "days": 1,
+      "as_of": "2026-05-15",
+      "main_pct_today": -18.86,
+      "main_yi_total_streak": -0.3357
+    },
+    "_divergence": {
+      "as_of": "2026-05-15",
+      "chg_pct": -10.0,
+      "main_pct": -18.86,
+      "score": 8.86,
+      "interpretation": "drift"
+    }
   },
   "sector": {
     "symbol": "603773",

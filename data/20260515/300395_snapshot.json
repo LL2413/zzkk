@@ -1,12 +1,10 @@
-﻿{
+{
   "symbol": "300395",
   "as_of": "2026-05-15T19:03:19",
   "fundamentals": {
     "symbol": "300395",
     "as_of": "2026-05-15T19:03:19",
-    "errors": {
-      "basic_info": "em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response')); xq: KeyError: 'data'; spot_em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
-    },
+    "errors": {},
     "financial_indicators_recent": [
       {
         "日期": "2024-06-30T00:00:00.000",
@@ -1369,7 +1367,27 @@
         "股权登记日": "2015-04-20T00:00:00.000",
         "红股上市日": null
       }
-    ]
+    ],
+    "basic_info": {
+      "最新": 128.66,
+      "股票代码": "300395",
+      "股票简称": "菲利华",
+      "总股本": 522267673.0,
+      "流通股": 511506793.0,
+      "总市值": 67194958808.18,
+      "流通市值": 65810463987.38,
+      "行业": "航空装备Ⅱ",
+      "上市时间": 20140910
+    },
+    "basic_info_source": "historical_20260514_historical_20260508_em",
+    "_valuation_summary": {
+      "primary_metric": "PE_TTM",
+      "primary_value": 145.06546235,
+      "pe_ttm": 145.06546235,
+      "pb": 14.61842992,
+      "ps": 31.3175078,
+      "rule": "PE_TTM if 0<x<1000 else PB if >0 else PS if >0 else N/A"
+    }
   },
   "sentiment": {
     "symbol": "300395",
@@ -1712,7 +1730,10 @@
         "融券卖出量": 13400,
         "融券余量": 200740,
         "融券余额": 28207985,
-        "融资融券余额": 4407580553
+        "融资融券余额": 4407580553,
+        "_estimated_net_margin_yi": 1.3933,
+        "_estimated_net_margin_method": "balance_delta",
+        "_prev_balance_date": "20260514"
       }
     ],
     "northbound_holdings_recent": [
@@ -2099,7 +2120,21 @@
         "amount": 479472.0
       }
     ],
-    "price_recent_source": "tencent_kline"
+    "price_recent_source": "tencent_kline",
+    "_main_flow_streak": {
+      "direction": "negative",
+      "days": 3,
+      "as_of": "2026-05-15",
+      "main_pct_today": -14.63,
+      "main_yi_total_streak": -14.399
+    },
+    "_divergence": {
+      "as_of": "2026-05-15",
+      "chg_pct": -4.76,
+      "main_pct": -14.63,
+      "score": 9.87,
+      "interpretation": "drift"
+    }
   },
   "sector": {
     "symbol": "300395",
@@ -2551,6 +2586,13 @@
         "市净率": 2.66,
         "静态股息率": 2.19
       }
-    ]
+    ],
+    "_alpha_vs_sector": {
+      "as_of": "2026-05-15",
+      "stock_chg": -4.76,
+      "sector_chg": -0.7273,
+      "alpha": -4.0327,
+      "sector_price_source": "etf_tencent_512760"
+    }
   }
 }

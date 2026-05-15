@@ -1,12 +1,10 @@
-﻿{
+{
   "symbol": "600487",
   "as_of": "2026-05-15T18:59:24",
   "fundamentals": {
     "symbol": "600487",
     "as_of": "2026-05-15T18:59:24",
-    "errors": {
-      "basic_info": "em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response')); xq: KeyError: 'data'; spot_em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
-    },
+    "errors": {},
     "financial_indicators_recent": [
       {
         "日期": "2024-06-30T00:00:00.000",
@@ -1369,7 +1367,27 @@
         "股权登记日": "2004-05-28T00:00:00.000",
         "红股上市日": null
       }
-    ]
+    ],
+    "basic_info": {
+      "最新": 77.27,
+      "股票代码": "600487",
+      "股票简称": "亨通光电",
+      "总股本": 2466392257.0,
+      "流通股": 2445181125.0,
+      "总市值": 190578129698.38998,
+      "流通市值": 188939145528.75,
+      "行业": "通信设备",
+      "上市时间": 20030822
+    },
+    "basic_info_source": "historical_20260514_historical_20260508_em",
+    "_valuation_summary": {
+      "primary_metric": "PE_TTM",
+      "primary_value": 53.31748716,
+      "pe_ttm": 53.31748716,
+      "pb": 5.31196367,
+      "ps": 2.41188427,
+      "rule": "PE_TTM if 0<x<1000 else PB if >0 else PS if >0 else N/A"
+    }
   },
   "sentiment": {
     "symbol": "600487",
@@ -2100,7 +2118,21 @@
         "amount": 1583769.0
       }
     ],
-    "price_recent_source": "tencent_kline"
+    "price_recent_source": "tencent_kline",
+    "_main_flow_streak": {
+      "direction": "negative",
+      "days": 6,
+      "as_of": "2026-05-15",
+      "main_pct_today": -14.18,
+      "main_yi_total_streak": -56.2456
+    },
+    "_divergence": {
+      "as_of": "2026-05-15",
+      "chg_pct": -5.68,
+      "main_pct": -14.18,
+      "score": 8.5,
+      "interpretation": "drift"
+    }
   },
   "sector": {
     "symbol": "600487",
@@ -2552,6 +2584,13 @@
         "市净率": 2.66,
         "静态股息率": 2.19
       }
-    ]
+    ],
+    "_alpha_vs_sector": {
+      "as_of": "2026-05-15",
+      "stock_chg": -5.68,
+      "sector_chg": -2.8497,
+      "alpha": -2.8303,
+      "sector_price_source": "etf_tencent_515880"
+    }
   }
 }

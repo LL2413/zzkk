@@ -1,12 +1,10 @@
-﻿{
+{
   "symbol": "603986",
   "as_of": "2026-05-15T18:12:36",
   "fundamentals": {
     "symbol": "603986",
     "as_of": "2026-05-15T18:12:36",
-    "errors": {
-      "basic_info": "em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response')); xq: KeyError: 'data'; spot_em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
-    },
+    "errors": {},
     "financial_indicators_recent": [
       {
         "日期": "2024-06-30T00:00:00.000",
@@ -1369,7 +1367,27 @@
         "股权登记日": "2017-05-19T00:00:00.000",
         "红股上市日": null
       }
-    ]
+    ],
+    "basic_info": {
+      "最新": 334.1,
+      "股票代码": "603986",
+      "股票简称": "兆易创新",
+      "总股本": 701102451.0,
+      "流通股": 667844786.0,
+      "总市值": 234238328879.1,
+      "流通市值": 223126943002.6,
+      "行业": "半导体",
+      "上市时间": 20160818
+    },
+    "basic_info_source": "historical_20260514_historical_20260508_em",
+    "_valuation_summary": {
+      "primary_metric": "PE_TTM",
+      "primary_value": 91.54249227,
+      "pe_ttm": 91.54249227,
+      "pb": 10.41224235,
+      "ps": 22.91768645,
+      "rule": "PE_TTM if 0<x<1000 else PB if >0 else PS if >0 else N/A"
+    }
   },
   "sentiment": {
     "symbol": "603986",
@@ -2076,7 +2094,21 @@
         "amount": 624368.0
       }
     ],
-    "price_recent_source": "tencent_kline"
+    "price_recent_source": "tencent_kline",
+    "_main_flow_streak": {
+      "direction": "positive",
+      "days": 1,
+      "as_of": "2026-05-15",
+      "main_pct_today": 3.17,
+      "main_yi_total_streak": 7.2262
+    },
+    "_divergence": {
+      "as_of": "2026-05-15",
+      "chg_pct": 5.38,
+      "main_pct": 3.17,
+      "score": 2.21,
+      "interpretation": "balanced"
+    }
   },
   "sector": {
     "symbol": "603986",
@@ -2528,6 +2560,13 @@
         "市净率": 2.71,
         "静态股息率": 2.16
       }
-    ]
+    ],
+    "_alpha_vs_sector": {
+      "as_of": "2026-05-15",
+      "stock_chg": 5.38,
+      "sector_chg": -0.7273,
+      "alpha": 6.1073,
+      "sector_price_source": "etf_tencent_512760"
+    }
   }
 }

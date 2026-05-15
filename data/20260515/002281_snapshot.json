@@ -1,12 +1,10 @@
-﻿{
+{
   "symbol": "002281",
   "as_of": "2026-05-15T18:00:22",
   "fundamentals": {
     "symbol": "002281",
     "as_of": "2026-05-15T18:00:22",
-    "errors": {
-      "basic_info": "em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response')); xq: KeyError: 'data'; spot_em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
-    },
+    "errors": {},
     "financial_indicators_recent": [
       {
         "日期": "2024-06-30T00:00:00.000",
@@ -1369,7 +1367,27 @@
         "股权登记日": "2010-05-28T00:00:00.000",
         "红股上市日": null
       }
-    ]
+    ],
+    "basic_info": {
+      "最新": 203.8,
+      "股票代码": "002281",
+      "股票简称": "光迅科技",
+      "总股本": 806675752.0,
+      "流通股": 779498772.0,
+      "总市值": 164400518257.6,
+      "流通市值": 158861849733.6,
+      "行业": "通信设备",
+      "上市时间": 20090821
+    },
+    "basic_info_source": "historical_20260514_em",
+    "_valuation_summary": {
+      "primary_metric": "PE_TTM",
+      "primary_value": 152.98611825,
+      "pe_ttm": 152.98611825,
+      "pb": 15.32860274,
+      "ps": 12.70090201,
+      "rule": "PE_TTM if 0<x<1000 else PB if >0 else PS if >0 else N/A"
+    }
   },
   "sentiment": {
     "symbol": "002281",
@@ -1896,7 +1914,10 @@
         "融券卖出量": 24400,
         "融券余量": 180847,
         "融券余额": 36856619,
-        "融资融券余额": 6369491742
+        "融资融券余额": 6369491742,
+        "_estimated_net_margin_yi": 9.6418,
+        "_estimated_net_margin_method": "balance_delta",
+        "_prev_balance_date": "20260514"
       }
     ],
     "northbound_holdings_recent": [
@@ -2283,7 +2304,21 @@
         "amount": 907859.0
       }
     ],
-    "price_recent_source": "tencent_kline"
+    "price_recent_source": "tencent_kline",
+    "_main_flow_streak": {
+      "direction": "negative",
+      "days": 4,
+      "as_of": "2026-05-15",
+      "main_pct_today": -6.32,
+      "main_yi_total_streak": -41.5369
+    },
+    "_divergence": {
+      "as_of": "2026-05-15",
+      "chg_pct": -3.59,
+      "main_pct": -6.32,
+      "score": 2.73,
+      "interpretation": "balanced"
+    }
   },
   "sector": {
     "symbol": "002281",
@@ -2735,6 +2770,13 @@
         "市净率": 2.71,
         "静态股息率": 2.16
       }
-    ]
+    ],
+    "_alpha_vs_sector": {
+      "as_of": "2026-05-15",
+      "stock_chg": -3.59,
+      "sector_chg": -2.8497,
+      "alpha": -0.7403,
+      "sector_price_source": "etf_tencent_515880"
+    }
   }
 }

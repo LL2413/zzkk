@@ -1,0 +1,92 @@
+{
+  "as_of": "2026-05-15",
+  "method": "watchlist_aggregation",
+  "note": "Sums 主力净流入-净额 from each watchlist member in the industry. Coverage is limited to industries with watchlist stocks; not a substitute for full-market EM sector_fund_flow_rank.",
+  "sectors": {
+    "通信设备": {
+      "main_net_total_yi": -65.2806,
+      "members": [
+        "000988",
+        "002281",
+        "600487",
+        "600522",
+        "601869"
+      ],
+      "member_count": 5,
+      "main_net_avg_yi": -13.0561,
+      "main_pct_avg": -11.734
+    },
+    "消费电子": {
+      "main_net_total_yi": -14.5063,
+      "members": [
+        "002475"
+      ],
+      "member_count": 1,
+      "main_net_avg_yi": -14.5063,
+      "main_pct_avg": -9.83
+    },
+    "半导体": {
+      "main_net_total_yi": -37.8079,
+      "members": [
+        "300395",
+        "300458",
+        "603986",
+        "688008",
+        "688123",
+        "688332",
+        "688380",
+        "688728"
+      ],
+      "member_count": 8,
+      "main_net_avg_yi": -4.726,
+      "main_pct_avg": -4.5325
+    },
+    "电子元件": {
+      "main_net_total_yi": -9.5771,
+      "members": [
+        "300408",
+        "603256"
+      ],
+      "member_count": 2,
+      "main_net_avg_yi": -4.7886,
+      "main_pct_avg": -16.22
+    },
+    "光学光电子": {
+      "main_net_total_yi": -0.3357,
+      "members": [
+        "603773"
+      ],
+      "member_count": 1,
+      "main_net_avg_yi": -0.3357,
+      "main_pct_avg": -18.86
+    },
+    "医疗服务": {
+      "main_net_total_yi": 0.0556,
+      "members": [
+        "688046"
+      ],
+      "member_count": 1,
+      "main_net_avg_yi": 0.0556,
+      "main_pct_avg": 3.75
+    },
+    "计算机设备": {
+      "main_net_total_yi": 0.0477,
+      "members": [
+        "688208"
+      ],
+      "member_count": 1,
+      "main_net_avg_yi": 0.0477,
+      "main_pct_avg": 0.61
+    },
+    "化学制品": {
+      "main_net_total_yi": 0.4132,
+      "members": [
+        "688550"
+      ],
+      "member_count": 1,
+      "main_net_avg_yi": 0.4132,
+      "main_pct_avg": 11.38
+    }
+  },
+  "missing_symbols": []
+}

@@ -1,12 +1,10 @@
-﻿{
+{
   "symbol": "300408",
   "as_of": "2026-05-15T19:07:21",
   "fundamentals": {
     "symbol": "300408",
     "as_of": "2026-05-15T19:07:21",
-    "errors": {
-      "basic_info": "em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response')); xq: KeyError: 'data'; spot_em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
-    },
+    "errors": {},
     "financial_indicators_recent": [
       {
         "日期": "2024-06-30T00:00:00.000",
@@ -1369,7 +1367,27 @@
         "股权登记日": "2015-05-21T00:00:00.000",
         "红股上市日": null
       }
-    ]
+    ],
+    "basic_info": {
+      "最新": 86.3,
+      "股票代码": "300408",
+      "股票简称": "三环集团",
+      "总股本": 1916497371.0,
+      "流通股": 1869803942.0,
+      "总市值": 165393723117.3,
+      "流通市值": 161364080194.6,
+      "行业": "元件",
+      "上市时间": 20141203
+    },
+    "basic_info_source": "historical_20260514_historical_20260508_em",
+    "_valuation_summary": {
+      "primary_metric": "PE_TTM",
+      "primary_value": 57.09586692,
+      "pe_ttm": 57.09586692,
+      "pb": 7.33336468,
+      "ps": 16.66602937,
+      "rule": "PE_TTM if 0<x<1000 else PB if >0 else PS if >0 else N/A"
+    }
   },
   "sentiment": {
     "symbol": "300408",
@@ -1688,7 +1706,10 @@
         "融券卖出量": 5300,
         "融券余量": 153800,
         "融券余额": 13594382,
-        "融资融券余额": 1006303577
+        "融资融券余额": 1006303577,
+        "_estimated_net_margin_yi": 0.0589,
+        "_estimated_net_margin_method": "balance_delta",
+        "_prev_balance_date": "20260514"
       }
     ],
     "northbound_holdings_recent": [
@@ -2075,7 +2096,21 @@
         "amount": 333375.0
       }
     ],
-    "price_recent_source": "tencent_kline"
+    "price_recent_source": "tencent_kline",
+    "_main_flow_streak": {
+      "direction": "negative",
+      "days": 2,
+      "as_of": "2026-05-15",
+      "main_pct_today": -13.2,
+      "main_yi_total_streak": -5.1598
+    },
+    "_divergence": {
+      "as_of": "2026-05-15",
+      "chg_pct": -3.04,
+      "main_pct": -13.2,
+      "score": 10.16,
+      "interpretation": "crowded"
+    }
   },
   "sector": {
     "symbol": "300408",
@@ -2527,6 +2562,13 @@
         "市净率": 2.66,
         "静态股息率": 2.19
       }
-    ]
+    ],
+    "_alpha_vs_sector": {
+      "as_of": "2026-05-15",
+      "stock_chg": -3.04,
+      "sector_chg": -0.7273,
+      "alpha": -2.3127,
+      "sector_price_source": "etf_tencent_512760"
+    }
   }
 }

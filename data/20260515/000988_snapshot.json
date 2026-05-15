@@ -1,12 +1,10 @@
-﻿{
+{
   "symbol": "000988",
   "as_of": "2026-05-15T18:04:31",
   "fundamentals": {
     "symbol": "000988",
     "as_of": "2026-05-15T18:04:31",
-    "errors": {
-      "basic_info": "em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response')); xq: KeyError: 'data'; spot_em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
-    },
+    "errors": {},
     "financial_indicators_recent": [
       {
         "日期": "2024-06-30T00:00:00.000",
@@ -1369,7 +1367,22 @@
         "股权登记日": "2001-04-25T00:00:00.000",
         "红股上市日": null
       }
-    ]
+    ],
+    "basic_info": {
+      "股票代码": "000988",
+      "股票简称": "华工科技",
+      "行业": "通信设备",
+      "上市时间": "20000628"
+    },
+    "basic_info_source": "historical_20260514_hardcoded_minimal",
+    "_valuation_summary": {
+      "primary_metric": "PE_TTM",
+      "primary_value": 79.27565467,
+      "pe_ttm": 79.27565467,
+      "pb": 11.52662505,
+      "ps": 8.82515403,
+      "rule": "PE_TTM if 0<x<1000 else PB if >0 else PS if >0 else N/A"
+    }
   },
   "sentiment": {
     "symbol": "000988",
@@ -1712,7 +1725,10 @@
         "融券卖出量": 1000,
         "融券余量": 165301,
         "融券余额": 22712357,
-        "融资融券余额": 10535047936
+        "融资融券余额": 10535047936,
+        "_estimated_net_margin_yi": 1.6802,
+        "_estimated_net_margin_method": "balance_delta",
+        "_prev_balance_date": "20260514"
       }
     ],
     "northbound_holdings_recent": [
@@ -2099,7 +2115,21 @@
         "amount": 886672.0
       }
     ],
-    "price_recent_source": "tencent_kline"
+    "price_recent_source": "tencent_kline",
+    "_main_flow_streak": {
+      "direction": "negative",
+      "days": 4,
+      "as_of": "2026-05-15",
+      "main_pct_today": -5.69,
+      "main_yi_total_streak": -42.8163
+    },
+    "_divergence": {
+      "as_of": "2026-05-15",
+      "chg_pct": -2.49,
+      "main_pct": -5.69,
+      "score": 3.2,
+      "interpretation": "drift"
+    }
   },
   "sector": {
     "symbol": "000988",
@@ -2551,6 +2581,13 @@
         "市净率": 2.71,
         "静态股息率": 2.16
       }
-    ]
+    ],
+    "_alpha_vs_sector": {
+      "as_of": "2026-05-15",
+      "stock_chg": -2.49,
+      "sector_chg": -2.8497,
+      "alpha": 0.3597,
+      "sector_price_source": "etf_tencent_515880"
+    }
   }
 }

@@ -1,12 +1,10 @@
-﻿{
+{
   "symbol": "688208",
   "as_of": "2026-05-15T18:39:51",
   "fundamentals": {
     "symbol": "688208",
     "as_of": "2026-05-15T18:39:51",
-    "errors": {
-      "basic_info": "em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response')); xq: KeyError: 'data'; spot_em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
-    },
+    "errors": {},
     "financial_indicators_recent": [
       {
         "日期": "2024-06-30T00:00:00.000",
@@ -1359,7 +1357,27 @@
         "股权登记日": "2020-05-11T00:00:00.000",
         "红股上市日": null
       }
-    ]
+    ],
+    "basic_info": {
+      "最新": 34.2,
+      "股票代码": "688208",
+      "股票简称": "道通科技",
+      "总股本": 670183758.0,
+      "流通股": 670183758.0,
+      "总市值": 22920284523.600002,
+      "流通市值": 22920284523.600002,
+      "行业": "计算机设备",
+      "上市时间": 20200213
+    },
+    "basic_info_source": "historical_20260514_historical_20260508_em",
+    "_valuation_summary": {
+      "primary_metric": "PE_TTM",
+      "primary_value": 27.64144116,
+      "pe_ttm": 27.64144116,
+      "pb": 6.67623693,
+      "ps": 5.10801641,
+      "rule": "PE_TTM if 0<x<1000 else PB if >0 else PS if >0 else N/A"
+    }
   },
   "sentiment": {
     "symbol": "688208",
@@ -2066,7 +2084,21 @@
         "amount": 20372869.0
       }
     ],
-    "price_recent_source": "tencent_kline"
+    "price_recent_source": "tencent_kline",
+    "_main_flow_streak": {
+      "direction": "positive",
+      "days": 2,
+      "as_of": "2026-05-15",
+      "main_pct_today": 0.61,
+      "main_yi_total_streak": 0.0651
+    },
+    "_divergence": {
+      "as_of": "2026-05-15",
+      "chg_pct": 1.05,
+      "main_pct": 0.61,
+      "score": 0.44,
+      "interpretation": "balanced"
+    }
   },
   "sector": {
     "symbol": "688208",
@@ -2518,6 +2550,13 @@
         "市净率": 2.66,
         "静态股息率": 2.19
       }
-    ]
+    ],
+    "_alpha_vs_sector": {
+      "as_of": "2026-05-15",
+      "stock_chg": 1.05,
+      "sector_chg": -1.426,
+      "alpha": 2.476,
+      "sector_price_source": "etf_tencent_159998"
+    }
   }
 }
