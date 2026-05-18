@@ -1,4 +1,4 @@
-﻿{
+{
   "symbol": "002281",
   "as_of": "2026-05-18T20:25:23",
   "fundamentals": {
@@ -1379,7 +1379,15 @@
         "股权登记日": "2010-05-28T00:00:00.000",
         "红股上市日": null
       }
-    ]
+    ],
+    "_valuation_summary": {
+      "primary_metric": "PE_TTM",
+      "primary_value": 163.42707629,
+      "pe_ttm": 163.42707629,
+      "pb": 16.37474535,
+      "ps": 13.56770997,
+      "rule": "PE_TTM if 0<x<1000 else PB if >0 else PS if >0 else N/A"
+    }
   },
   "sentiment": {
     "symbol": "002281",
@@ -1906,7 +1914,10 @@
         "融券卖出量": 16900,
         "融券余量": 180021,
         "融券余额": 35372326,
-        "融资融券余额": 6530203654
+        "融资融券余额": 6530203654,
+        "_estimated_net_margin_yi": 1.622,
+        "_estimated_net_margin_method": "balance_delta",
+        "_prev_balance_date": "20260515"
       }
     ],
     "northbound_holdings_recent": [
@@ -2413,7 +2424,23 @@
         "换手率": 8.66
       }
     ],
-    "price_recent_source": "em_kline"
+    "price_recent_source": "em_kline",
+    "_main_flow_streak": {
+      "direction": "positive",
+      "days": 1,
+      "as_of": "2026-05-18",
+      "main_pct_today": 3.42,
+      "main_yi_total_streak": 4.7987
+    },
+    "_divergence": {
+      "as_of": "2026-05-18",
+      "chg_pct": 6.82,
+      "main_pct": 3.42,
+      "score": 3.4,
+      "interpretation": "漂移",
+      "interpretation_en": "drift",
+      "note": "价格与主力资金轻微背离，方向仍需观察"
+    }
   },
   "sector": {
     "symbol": "002281",
@@ -2865,6 +2892,13 @@
         "市净率": 2.63,
         "静态股息率": 2.22
       }
-    ]
+    ],
+    "_alpha_vs_sector": {
+      "as_of": "2026-05-18",
+      "stock_chg": 6.82,
+      "sector_chg": 1.1333,
+      "alpha": 5.6867,
+      "sector_price_source": "etf_tencent_515880"
+    }
   }
 }

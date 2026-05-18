@@ -1,12 +1,10 @@
-﻿{
+{
   "symbol": "300458",
   "as_of": "2026-05-18T19:09:35",
   "fundamentals": {
     "symbol": "300458",
     "as_of": "2026-05-18T19:09:35",
-    "errors": {
-      "basic_info": "em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response')); xq: KeyError: 'data'; spot_em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
-    },
+    "errors": {},
     "financial_indicators_recent": [
       {
         "日期": "2024-06-30T00:00:00.000",
@@ -1371,7 +1369,27 @@
         "股权登记日": "2016-04-28T00:00:00.000",
         "红股上市日": null
       }
-    ]
+    ],
+    "basic_info": {
+      "最新": 36.53,
+      "股票代码": "300458",
+      "股票简称": "全志科技",
+      "总股本": 990512858.0,
+      "流通股": 791904156.0,
+      "总市值": 36183434702.74,
+      "流通市值": 28928258818.68,
+      "行业": "半导体",
+      "上市时间": 20150515
+    },
+    "basic_info_source": "historical_20260515_historical_20260514_historical_20260508_em",
+    "_valuation_summary": {
+      "primary_metric": "PE_TTM",
+      "primary_value": 97.35159919,
+      "pe_ttm": 97.35159919,
+      "pb": 10.95572963,
+      "ps": 11.62012251,
+      "rule": "PE_TTM if 0<x<1000 else PB if >0 else PS if >0 else N/A"
+    }
   },
   "sentiment": {
     "symbol": "300458",
@@ -1690,7 +1708,10 @@
         "融券卖出量": 22600,
         "融券余量": 295668,
         "融券余额": 10688398,
-        "融资融券余额": 1267458447
+        "融资融券余额": 1267458447,
+        "_estimated_net_margin_yi": -0.1724,
+        "_estimated_net_margin_method": "balance_delta",
+        "_prev_balance_date": "20260515"
       }
     ],
     "northbound_holdings_recent": [
@@ -2077,7 +2098,23 @@
         "amount": 345436.0
       }
     ],
-    "price_recent_source": "tencent_kline"
+    "price_recent_source": "tencent_kline",
+    "_main_flow_streak": {
+      "direction": "positive",
+      "days": 1,
+      "as_of": "2026-05-18",
+      "main_pct_today": 0.99,
+      "main_yi_total_streak": 0.1247
+    },
+    "_divergence": {
+      "as_of": "2026-05-18",
+      "chg_pct": 1.58,
+      "main_pct": 0.99,
+      "score": 0.59,
+      "interpretation": "均衡",
+      "interpretation_en": "balanced",
+      "note": "价格涨跌与主力资金方向基本一致，本次波动可信"
+    }
   },
   "sector": {
     "symbol": "300458",
@@ -2529,6 +2566,13 @@
         "市净率": 2.63,
         "静态股息率": 2.22
       }
-    ]
+    ],
+    "_alpha_vs_sector": {
+      "as_of": "2026-05-18",
+      "stock_chg": 1.58,
+      "sector_chg": 1.3736,
+      "alpha": 0.2064,
+      "sector_price_source": "etf_tencent_512760"
+    }
   }
 }

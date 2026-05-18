@@ -1,12 +1,10 @@
-﻿{
+{
   "symbol": "688123",
   "as_of": "2026-05-18T18:53:50",
   "fundamentals": {
     "symbol": "688123",
     "as_of": "2026-05-18T18:53:50",
-    "errors": {
-      "basic_info": "em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response')); xq: KeyError: 'data'; spot_em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
-    },
+    "errors": {},
     "financial_indicators_recent": [
       {
         "日期": "2024-06-30T00:00:00.000",
@@ -1339,7 +1337,27 @@
         "股权登记日": "2020-05-25T00:00:00.000",
         "红股上市日": null
       }
-    ]
+    ],
+    "basic_info": {
+      "最新": 130.65,
+      "股票代码": "688123",
+      "股票简称": "聚辰股份",
+      "总股本": 158271044.0,
+      "流通股": 158271044.0,
+      "总市值": 20678111898.600002,
+      "流通市值": 20678111898.600002,
+      "行业": "半导体",
+      "上市时间": 20191223
+    },
+    "basic_info_source": "historical_20260515_historical_20260514_historical_20260508_em",
+    "_valuation_summary": {
+      "primary_metric": "PE_TTM",
+      "primary_value": 85.97062795,
+      "pe_ttm": 85.97062795,
+      "pb": 9.47094862,
+      "ps": 20.44496403,
+      "rule": "PE_TTM if 0<x<1000 else PB if >0 else PS if >0 else N/A"
+    }
   },
   "sentiment": {
     "symbol": "688123",
@@ -2046,7 +2064,23 @@
         "amount": 16605349.0
       }
     ],
-    "price_recent_source": "tencent_kline"
+    "price_recent_source": "tencent_kline",
+    "_main_flow_streak": {
+      "direction": "negative",
+      "days": 2,
+      "as_of": "2026-05-18",
+      "main_pct_today": -2.68,
+      "main_yi_total_streak": -4.9278
+    },
+    "_divergence": {
+      "as_of": "2026-05-18",
+      "chg_pct": -2.1,
+      "main_pct": -2.68,
+      "score": 0.58,
+      "interpretation": "均衡",
+      "interpretation_en": "balanced",
+      "note": "价格涨跌与主力资金方向基本一致，本次波动可信"
+    }
   },
   "sector": {
     "symbol": "688123",
@@ -2498,6 +2532,13 @@
         "市净率": 2.63,
         "静态股息率": 2.22
       }
-    ]
+    ],
+    "_alpha_vs_sector": {
+      "as_of": "2026-05-18",
+      "stock_chg": -2.1,
+      "sector_chg": 1.3736,
+      "alpha": -3.4736,
+      "sector_price_source": "etf_tencent_512760"
+    }
   }
 }

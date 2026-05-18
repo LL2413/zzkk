@@ -1,12 +1,10 @@
-﻿{
+{
   "symbol": "688728",
   "as_of": "2026-05-18T18:37:56",
   "fundamentals": {
     "symbol": "688728",
     "as_of": "2026-05-18T18:37:56",
-    "errors": {
-      "basic_info": "em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response')); xq: KeyError: 'data'; spot_em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
-    },
+    "errors": {},
     "financial_indicators_recent": [
       {
         "日期": "2024-06-30T00:00:00.000",
@@ -1321,7 +1319,27 @@
         "股权登记日": null,
         "红股上市日": null
       }
-    ]
+    ],
+    "basic_info": {
+      "最新": 14.5,
+      "股票代码": "688728",
+      "股票简称": "格科微",
+      "总股本": 2600586667.0,
+      "流通股": 2498887173.0,
+      "总市值": 37708506671.5,
+      "流通市值": 36233864008.5,
+      "行业": "半导体",
+      "上市时间": 20210818
+    },
+    "basic_info_source": "historical_20260515_historical_20260514_historical_20260508_em",
+    "_valuation_summary": {
+      "primary_metric": "PE_TTM",
+      "primary_value": 364.05653752,
+      "pe_ttm": 364.05653752,
+      "pb": 4.79410651,
+      "ps": 4.63654392,
+      "rule": "PE_TTM if 0<x<1000 else PB if >0 else PS if >0 else N/A"
+    }
   },
   "sentiment": {
     "symbol": "688728",
@@ -2028,7 +2046,23 @@
         "amount": 26270069.0
       }
     ],
-    "price_recent_source": "tencent_kline"
+    "price_recent_source": "tencent_kline",
+    "_main_flow_streak": {
+      "direction": "positive",
+      "days": 2,
+      "as_of": "2026-05-18",
+      "main_pct_today": 5.98,
+      "main_yi_total_streak": 0.5169
+    },
+    "_divergence": {
+      "as_of": "2026-05-18",
+      "chg_pct": -0.27,
+      "main_pct": 5.98,
+      "score": -6.25,
+      "interpretation": "漂移",
+      "interpretation_en": "drift",
+      "note": "价格与主力资金轻微背离，方向仍需观察"
+    }
   },
   "sector": {
     "symbol": "688728",
@@ -2480,6 +2514,13 @@
         "市净率": 2.63,
         "静态股息率": 2.22
       }
-    ]
+    ],
+    "_alpha_vs_sector": {
+      "as_of": "2026-05-18",
+      "stock_chg": -0.27,
+      "sector_chg": 1.3736,
+      "alpha": -1.6436,
+      "sector_price_source": "etf_tencent_512760"
+    }
   }
 }

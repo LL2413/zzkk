@@ -1,12 +1,10 @@
-﻿{
+{
   "symbol": "000988",
   "as_of": "2026-05-18T18:26:07",
   "fundamentals": {
     "symbol": "000988",
     "as_of": "2026-05-18T18:26:07",
-    "errors": {
-      "basic_info": "em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response')); xq: KeyError: 'data'; spot_em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
-    },
+    "errors": {},
     "financial_indicators_recent": [
       {
         "日期": "2024-06-30T00:00:00.000",
@@ -1369,7 +1367,22 @@
         "股权登记日": "2001-04-25T00:00:00.000",
         "红股上市日": null
       }
-    ]
+    ],
+    "basic_info": {
+      "股票代码": "000988",
+      "股票简称": "华工科技",
+      "行业": "通信设备",
+      "上市时间": "20000628"
+    },
+    "basic_info_source": "historical_20260515_historical_20260514_hardcoded_minimal",
+    "_valuation_summary": {
+      "primary_metric": "PE_TTM",
+      "primary_value": 87.20440353,
+      "pe_ttm": 87.20440353,
+      "pb": 12.67945962,
+      "ps": 9.70780117,
+      "rule": "PE_TTM if 0<x<1000 else PB if >0 else PS if >0 else N/A"
+    }
   },
   "sentiment": {
     "symbol": "000988",
@@ -1735,7 +1748,10 @@
         "融券卖出量": 12700,
         "融券余量": 123400,
         "融券余额": 16533132,
-        "融资融券余额": 10272159510
+        "融资融券余额": 10272159510,
+        "_estimated_net_margin_yi": -2.5671,
+        "_estimated_net_margin_method": "balance_delta",
+        "_prev_balance_date": "20260515"
       }
     ],
     "northbound_holdings_recent": [
@@ -2122,7 +2138,23 @@
         "amount": 676805.0
       }
     ],
-    "price_recent_source": "tencent_kline"
+    "price_recent_source": "tencent_kline",
+    "_main_flow_streak": {
+      "direction": "positive",
+      "days": 1,
+      "as_of": "2026-05-18",
+      "main_pct_today": 23.51,
+      "main_yi_total_streak": 22.9922
+    },
+    "_divergence": {
+      "as_of": "2026-05-18",
+      "chg_pct": 10.0,
+      "main_pct": 23.51,
+      "score": -13.51,
+      "interpretation": "吸筹",
+      "interpretation_en": "accumulation",
+      "note": "主力净流入明显超过价格涨幅，疑似主力低调建仓、价格尚未反应"
+    }
   },
   "sector": {
     "symbol": "000988",
@@ -2574,6 +2606,13 @@
         "市净率": 2.63,
         "静态股息率": 2.22
       }
-    ]
+    ],
+    "_alpha_vs_sector": {
+      "as_of": "2026-05-18",
+      "stock_chg": 10.0,
+      "sector_chg": 1.1333,
+      "alpha": 8.8667,
+      "sector_price_source": "etf_tencent_515880"
+    }
   }
 }

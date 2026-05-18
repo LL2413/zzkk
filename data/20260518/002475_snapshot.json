@@ -1,12 +1,10 @@
-﻿{
+{
   "symbol": "002475",
   "as_of": "2026-05-18T19:05:33",
   "fundamentals": {
     "symbol": "002475",
     "as_of": "2026-05-18T19:05:33",
-    "errors": {
-      "basic_info": "em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response')); xq: KeyError: 'data'; spot_em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
-    },
+    "errors": {},
     "financial_indicators_recent": [
       {
         "日期": "2024-06-30T00:00:00.000",
@@ -1369,7 +1367,27 @@
         "股权登记日": "2011-05-25T00:00:00.000",
         "红股上市日": null
       }
-    ]
+    ],
+    "basic_info": {
+      "最新": 71.29,
+      "股票代码": "002475",
+      "股票简称": "立讯精密",
+      "总股本": 7285984864.0,
+      "流通股": 7269273060.0,
+      "总市值": 519417860954.56006,
+      "流通市值": 518226476447.4,
+      "行业": "消费电子",
+      "上市时间": 20100915
+    },
+    "basic_info_source": "historical_20260515_historical_20260514_historical_20260508_em",
+    "_valuation_summary": {
+      "primary_metric": "PE_TTM",
+      "primary_value": 30.85231032,
+      "pe_ttm": 30.85231032,
+      "pb": 6.01251454,
+      "ps": 1.4985344,
+      "rule": "PE_TTM if 0<x<1000 else PB if >0 else PS if >0 else N/A"
+    }
   },
   "sentiment": {
     "symbol": "002475",
@@ -1735,7 +1753,10 @@
         "融券卖出量": 35000,
         "融券余量": 592658,
         "融券余额": 43856692,
-        "融资融券余额": 8806367763
+        "融资融券余额": 8806367763,
+        "_estimated_net_margin_yi": 0.4776,
+        "_estimated_net_margin_method": "balance_delta",
+        "_prev_balance_date": "20260515"
       }
     ],
     "northbound_holdings_recent": [
@@ -2122,7 +2143,23 @@
         "amount": 2045112.0
       }
     ],
-    "price_recent_source": "tencent_kline"
+    "price_recent_source": "tencent_kline",
+    "_main_flow_streak": {
+      "direction": "negative",
+      "days": 3,
+      "as_of": "2026-05-18",
+      "main_pct_today": -10.72,
+      "main_yi_total_streak": -47.4633
+    },
+    "_divergence": {
+      "as_of": "2026-05-18",
+      "chg_pct": -1.49,
+      "main_pct": -10.72,
+      "score": 9.23,
+      "interpretation": "漂移",
+      "interpretation_en": "drift",
+      "note": "价格与主力资金轻微背离，方向仍需观察"
+    }
   },
   "sector": {
     "symbol": "002475",
@@ -2574,6 +2611,13 @@
         "市净率": 2.63,
         "静态股息率": 2.22
       }
-    ]
+    ],
+    "_alpha_vs_sector": {
+      "as_of": "2026-05-18",
+      "stock_chg": -1.49,
+      "sector_chg": 2.5017,
+      "alpha": -3.9917,
+      "sector_price_source": "etf_tencent_159732"
+    }
   }
 }

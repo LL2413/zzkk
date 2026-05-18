@@ -1,12 +1,10 @@
-﻿{
+{
   "symbol": "603256",
   "as_of": "2026-05-18T19:34:25",
   "fundamentals": {
     "symbol": "603256",
     "as_of": "2026-05-18T19:34:25",
-    "errors": {
-      "basic_info": "em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response')); xq: KeyError: 'data'; spot_em: ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
-    },
+    "errors": {},
     "financial_indicators_recent": [
       {
         "日期": "2024-06-30T00:00:00.000",
@@ -1349,7 +1347,22 @@
         "股权登记日": "2019-10-24T00:00:00.000",
         "红股上市日": null
       }
-    ]
+    ],
+    "basic_info": {
+      "股票代码": "603256",
+      "股票简称": "宏和科技",
+      "行业": "电子元件",
+      "上市时间": "20190910"
+    },
+    "basic_info_source": "historical_20260515_historical_20260514_hardcoded_minimal",
+    "_valuation_summary": {
+      "primary_metric": "PE_TTM",
+      "primary_value": 382.09488574,
+      "pe_ttm": 382.09488574,
+      "pb": 42.91231656,
+      "ps": 86.99555869,
+      "rule": "PE_TTM if 0<x<1000 else PB if >0 else PS if >0 else N/A"
+    }
   },
   "sentiment": {
     "symbol": "603256",
@@ -2114,7 +2127,23 @@
         "amount": 182559.0
       }
     ],
-    "price_recent_source": "tencent_kline"
+    "price_recent_source": "tencent_kline",
+    "_main_flow_streak": {
+      "direction": "negative",
+      "days": 6,
+      "as_of": "2026-05-18",
+      "main_pct_today": -9.01,
+      "main_yi_total_streak": -14.6436
+    },
+    "_divergence": {
+      "as_of": "2026-05-18",
+      "chg_pct": -1.95,
+      "main_pct": -9.01,
+      "score": 7.06,
+      "interpretation": "漂移",
+      "interpretation_en": "drift",
+      "note": "价格与主力资金轻微背离，方向仍需观察"
+    }
   },
   "sector": {
     "symbol": "603256",
@@ -2566,6 +2595,13 @@
         "市净率": 2.63,
         "静态股息率": 2.22
       }
-    ]
+    ],
+    "_alpha_vs_sector": {
+      "as_of": "2026-05-18",
+      "stock_chg": -1.95,
+      "sector_chg": 1.3736,
+      "alpha": -3.3236,
+      "sector_price_source": "etf_tencent_512760"
+    }
   }
 }
