@@ -23,6 +23,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import socket
 import sys
 import time
 import traceback
@@ -38,6 +39,15 @@ from typing import Any, Callable
 # the dead proxy and fail with ProxyError. Set BEFORE importing akshare/requests.
 os.environ["NO_PROXY"] = "*"
 os.environ["no_proxy"] = "*"
+
+# Global socket timeout. akshare endpoints have no per-call timeout, so a
+# half-dead host (accepts the connection then never sends data) hangs the
+# whole fetch indefinitely — observed as a 57-minute stall on one symbol.
+# setdefaulttimeout makes any socket op with no progress for STOCK_NET_TIMEOUT
+# seconds raise TimeoutError, which safe_retry treats as a transient failure
+# (retry, then record as an error and move on). Override via env if needed.
+STOCK_NET_TIMEOUT = float(os.environ.get("STOCK_NET_TIMEOUT", "20"))
+socket.setdefaulttimeout(STOCK_NET_TIMEOUT)
 
 try:
     import akshare as ak
@@ -123,7 +133,7 @@ def safe_retry(fn, *args, retries: int = 3, delay: float = 1.5, **kwargs) -> tup
         transient = any(k in err for k in ("SSLError", "ConnectionError", "Timeout",
                                             "RemoteDisconnected", "ChunkedEncodingError",
                                             "ProtocolError", "ReadTimeout",
-                                            "JSONDecodeError"))
+                                            "JSONDecodeError", "timed out"))
         if not transient or i == retries:
             break
         time.sleep(delay * (i + 1))
