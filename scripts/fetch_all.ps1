@@ -129,11 +129,15 @@ if ($Refresh) {
 } else {
   $marketExit = Invoke-StockJson -CommandArgs @('scripts\stock.py', 'market', '--json') -OutFile $marketFile
 }
-if ($marketExit -eq 0 -and (Test-Path $marketFile)) {
+if ($marketExit -eq 0 -and (Test-Path $marketFile) -and (Get-Item $marketFile).Length -gt 1024) {
   $bytes = (Get-Item $marketFile).Length
   Log "  ok  $bytes bytes -> $marketFile"
 } else {
-  Log "  FAIL (exit=$marketExit) see manifest"
+  # Mirror the per-symbol guard: a sub-1KB market.json is a truncated/empty
+  # write (seen as a 3-byte UTF-16 stub). Delete it so the validator doesn't
+  # later abort on an unreadable-json critical error.
+  $sz = if (Test-Path $marketFile) { (Get-Item $marketFile).Length } else { 0 }
+  Log "  FAIL (exit=$marketExit, size=$sz bytes) see manifest"
   Remove-Item $marketFile -Force -ErrorAction SilentlyContinue
 }
 

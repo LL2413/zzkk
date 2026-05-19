@@ -118,23 +118,11 @@ if ($fetchExit -ne 0) {
 $dateTag = Get-Date -Format 'yyyyMMdd'
 $dataDir = "data\$dateTag"
 
-$validator = Join-Path $root '.claude\skills\china-stock-analysis\scripts\validate_data.py'
-if (Test-Path $validator) {
-  Log "validating $dataDir ..."
-  & $py $validator --data-dir $dataDir 2>&1 | ForEach-Object { Log "  $_" }
-  if ($LASTEXITCODE -ne 0) {
-    Log "abort: data validation failed. Not committing bad snapshots."
-    exit 6
-  }
-} else {
-  Log "WARN: data validator missing: $validator"
-}
-
 # --- post-fetch enrichments (idempotent, additive) ---
-# Run after validation so enrichments only apply to known-good snapshots.
-# Each enricher modifies in place (basic_info / valuation / SZ margin) or
-# writes a sidecar (sector_flow_aggregated.json). Failures are non-fatal
-# — fresh fetch data is more critical than enrichment; we still commit.
+# MUST run BEFORE validation: enrichers fill basic_info (historical/hardcoded)
+# and other fields whose absence the validator would otherwise flag. Running
+# validate first would abort on exactly the gaps enrichment is designed to
+# close. Enricher failures are non-fatal — we still proceed to validate+commit.
 $enrichScripts = @(
   'scripts\enrich_basic_info.py',
   'scripts\enrich_margin_net.py',
@@ -155,6 +143,19 @@ foreach ($script in $enrichScripts) {
   if ($LASTEXITCODE -ne 0) {
     Log "  WARN: enricher exit=$LASTEXITCODE (non-fatal, continuing)"
   }
+}
+
+# --- validate (after enrichment, so basic_info gaps are already filled) ---
+$validator = Join-Path $root '.claude\skills\china-stock-analysis\scripts\validate_data.py'
+if (Test-Path $validator) {
+  Log "validating $dataDir ..."
+  & $py $validator --data-dir $dataDir 2>&1 | ForEach-Object { Log "  $_" }
+  if ($LASTEXITCODE -ne 0) {
+    Log "abort: data validation failed (critical). Not committing bad snapshots."
+    exit 6
+  }
+} else {
+  Log "WARN: data validator missing: $validator"
 }
 
 # data/ is in .gitignore, so `git status --porcelain` won't list changes there
