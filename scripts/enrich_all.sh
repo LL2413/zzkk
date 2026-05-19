@@ -57,4 +57,8 @@ echo "=== 7. 个股 vs 板块 (alpha) ==="
 "$PY" scripts/enrich_alpha.py "${ARGS[@]}"
 
 echo ""
+echo "=== 8. 三维信号评分 (score) ==="
+"$PY" scripts/enrich_score.py "${ARGS[@]}"
+
+echo ""
 echo "All enrichments complete."

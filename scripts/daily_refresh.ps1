@@ -130,7 +130,8 @@ $enrichScripts = @(
   'scripts\enrich_valuation.py',
   'scripts\enrich_streak.py',
   'scripts\enrich_divergence.py',
-  'scripts\enrich_alpha.py'
+  'scripts\enrich_alpha.py',
+  'scripts\enrich_score.py'
 )
 foreach ($script in $enrichScripts) {
   $fullPath = Join-Path $root $script

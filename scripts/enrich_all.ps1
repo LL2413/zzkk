@@ -65,4 +65,8 @@ Write-Host "=== 7. 个股 vs 板块 (alpha) ==="
 & $py scripts\enrich_alpha.py @dateArgs
 
 Write-Host ""
+Write-Host "=== 8. 三维信号评分 (score) ==="
+& $py scripts\enrich_score.py @dateArgs
+
+Write-Host ""
 Write-Host "All enrichments complete."
