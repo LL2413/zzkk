@@ -100,9 +100,19 @@ log ""
 log "fetch market ..."
 MARKET_FILE="$OUT_DIR/market.json"
 if "$PY" scripts/stock.py market $FORCE_FLAG --json > "$MARKET_FILE" 2>>"$MANIFEST"; then
-  log "  ok  $(wc -c < "$MARKET_FILE") bytes → $MARKET_FILE"
+  MARKET_BYTES=$(wc -c < "$MARKET_FILE")
+  if (( MARKET_BYTES > 1024 )); then
+    log "  ok  ${MARKET_BYTES} bytes → $MARKET_FILE"
+  else
+    # Mirror fetch_all.ps1 guard: sub-1KB market.json is a truncated/empty write
+    # that later tripped the validator on "unreadable json". Delete it so the
+    # next step sees a missing market, not a corrupt one.
+    log "  FAIL ($MARKET_BYTES bytes is too small; treating as truncated)"
+    rm -f "$MARKET_FILE"
+  fi
 else
   log "  FAIL (exit=$?) see manifest"
+  rm -f "$MARKET_FILE"
 fi
 
 # --- per-symbol snapshots ---

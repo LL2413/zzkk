@@ -212,6 +212,11 @@ SECTOR_TO_SW_LEVEL1 = {
     "化工": "801030",
     "医药生物": "801150",
     "计算机": "801750",
+    "电源设备": "801730",    # 电力设备
+    "电力设备": "801730",
+    "软件开发": "801750",    # 计算机
+    "软件": "801750",
+    "光学光电子": "801080",  # 电子下属
 }
 
 # Industry → 代表 ETF 代码. Used as second-level fallback for sector_price_recent
@@ -460,7 +465,7 @@ def fetch_fundamentals(symbol: str, _force: bool = False) -> dict:
     # Sina: ratios (每股 / 盈利能力 / 周转 / 偿债 / 现金流比率 等 80+ 字段).
     # Newer akshare builds require start_year; without it the endpoint silently returns empty.
     start_year = str(datetime.now().year - 4)
-    ind, err = safe(ak.stock_financial_analysis_indicator, symbol=symbol, start_year=start_year)
+    ind, err = safe_retry(ak.stock_financial_analysis_indicator, symbol=symbol, start_year=start_year)
     if isinstance(ind, pd.DataFrame) and len(ind) > 0:
         out["financial_indicators_recent"] = df_to_records(ind.tail(8))
         out["financial_indicators_source"] = "sina_indicator"
@@ -471,7 +476,7 @@ def fetch_fundamentals(symbol: str, _force: bool = False) -> dict:
 
     # THS: absolute amounts (营收 / 净利 / 扣非 / 经营现金流 / 总资产 / 毛利率).
     # Fetched independently — NOT as fallback — so we can cross-check against Sina.
-    ths, err = safe(ak.stock_financial_abstract_ths, symbol=symbol, indicator="按报告期")
+    ths, err = safe_retry(ak.stock_financial_abstract_ths, symbol=symbol, indicator="按报告期")
     if isinstance(ths, pd.DataFrame) and len(ths) > 0:
         recent = ths.tail(8) if len(ths) >= 8 else ths
         out["financials_absolute_recent"] = [_normalize_ths_record(r) for r in df_to_records(recent)]
@@ -506,7 +511,7 @@ def fetch_fundamentals(symbol: str, _force: bool = False) -> dict:
             out["errors"]["financials_absolute_em"] = err_em
 
     # Valuation BEFORE total_shares so it can be a 4th fallback for shares.
-    val, err = safe(ak.stock_value_em, symbol=symbol)
+    val, err = safe_retry(ak.stock_value_em, symbol=symbol)
     if isinstance(val, pd.DataFrame):
         out["valuation_recent"] = df_to_records(val.tail(20))
         out["valuation_latest"] = df_to_records(val.tail(1))
@@ -529,7 +534,7 @@ def fetch_fundamentals(symbol: str, _force: bool = False) -> dict:
         shares_source,
     )
 
-    divd, err = safe(ak.stock_history_dividend_detail, symbol=symbol, indicator="分红")
+    divd, err = safe_retry(ak.stock_history_dividend_detail, symbol=symbol, indicator="分红")
     if isinstance(divd, pd.DataFrame):
         out["dividends_recent"] = df_to_records(divd.tail(10))
     if err:
@@ -559,7 +564,7 @@ def fetch_sentiment(symbol: str, _force: bool = False) -> dict:
         out["errors"]["fund_flow"] = err
 
     lhb, err = safe_retry(ak.stock_lhb_detail_em,
-                          start_date=(datetime.now().replace(month=max(1, datetime.now().month - 3))).strftime("%Y%m%d"),
+                          start_date=(date.today() - timedelta(days=90)).strftime("%Y%m%d"),
                           end_date=today_tag())
     if isinstance(lhb, pd.DataFrame) and len(lhb):
         mask = lhb.astype(str).apply(lambda r: symbol in r.values, axis=1)
@@ -713,9 +718,10 @@ def fetch_sector(symbol: str, _force: bool = False) -> dict:
             out["errors"]["industry_lookup"] = "; ".join(errs_combined)
 
     if industry:
+        sector_start = (date.today() - timedelta(days=90)).strftime("%Y%m%d")
         hist, err = safe_retry(ak.stock_board_industry_hist_em,
                                symbol=industry,
-                               start_date=(date.today().replace(month=max(1, date.today().month - 3))).strftime("%Y%m%d"),
+                               start_date=sector_start,
                                end_date=today_tag(),
                                period="daily", adjust="")
         if isinstance(hist, pd.DataFrame) and len(hist) > 0:
@@ -724,10 +730,35 @@ def fetch_sector(symbol: str, _force: bool = False) -> dict:
         else:
             if err:
                 out["errors"]["sector_history"] = err
-            # Fallback 1: EM ETF endpoint. fund_etf_hist_em is on push2/data.eastmoney
+
+            # Fallback 1 (preferred): 申万一级 index via index_zh_a_hist.
+            # SW level-1 is the canonical Chinese sector taxonomy; the endpoint
+            # is hosted separately from EM's push2 so it stays up when EM is
+            # blocked. Less granular than EM industry board (5 codes cover 33
+            # stocks) but the data is clean and trustworthy for cross-stock
+            # comparison. Put BEFORE ETF: ETF tracks a sector but adds tracking
+            # error and pricing noise; SW is the source of truth.
+            sw_code = SECTOR_TO_SW_LEVEL1.get(industry)
+            if sw_code:
+                sw_hist, sw_err = safe_retry(
+                    ak.index_zh_a_hist, symbol=sw_code, period="daily",
+                    start_date=(date.today() - timedelta(days=120)).strftime("%Y%m%d"),
+                    end_date=today_tag(),
+                )
+                if isinstance(sw_hist, pd.DataFrame) and len(sw_hist) > 0:
+                    out["sector_price_recent"] = df_to_records(sw_hist.tail(20))
+                    out["sector_price_source"] = f"sw_index_{sw_code}"
+                    out["errors"].pop("sector_history", None)
+                elif sw_err:
+                    out["errors"]["sector_history_sw"] = sw_err
+
+            # Fallback 2: EM ETF endpoint. fund_etf_hist_em is on push2/data.eastmoney
             # which sometimes also gets RemoteDisconnected blocking, so we further
             # fall back to Tencent kline using the ETF code as a stock symbol.
-            etf_code = SECTOR_TO_ETF_PROXY.get(industry)
+            if "sector_price_recent" in out:
+                etf_code = None  # SW already resolved; skip ETF
+            else:
+                etf_code = SECTOR_TO_ETF_PROXY.get(industry)
             if etf_code:
                 etf_start = (date.today() - timedelta(days=120)).strftime("%Y%m%d")
                 etf_end = today_tag()
@@ -823,32 +854,32 @@ def fetch_market(_force: bool = False) -> dict:
 
     out: dict = {"as_of": datetime.now().isoformat(timespec="seconds"), "errors": {}}
 
-    act, err = safe(ak.stock_market_activity_legu)
+    act, err = safe_retry(ak.stock_market_activity_legu)
     if isinstance(act, pd.DataFrame):
         out["market_activity"] = df_to_records(act)
     if err:
         out["errors"]["market_activity"] = err
 
-    ttm, err = safe(ak.stock_a_ttm_lyr)
+    ttm, err = safe_retry(ak.stock_a_ttm_lyr)
     if isinstance(ttm, pd.DataFrame):
         out["all_a_pe_recent"] = df_to_records(ttm.tail(10))
     if err:
         out["errors"]["all_a_pe"] = err
 
-    pb, err = safe(ak.stock_a_all_pb)
+    pb, err = safe_retry(ak.stock_a_all_pb)
     if isinstance(pb, pd.DataFrame):
         out["all_a_pb_recent"] = df_to_records(pb.tail(10))
     if err:
         out["errors"]["all_a_pb"] = err
 
-    zt, err = safe(ak.stock_zt_pool_em, date=today_tag())
+    zt, err = safe_retry(ak.stock_zt_pool_em, date=today_tag())
     if isinstance(zt, pd.DataFrame):
         out["limit_up_count_today"] = len(zt)
         out["limit_up_sample"] = df_to_records(zt.head(20))
     if err:
         out["errors"]["limit_up"] = err
 
-    dt, err = safe(ak.stock_zt_pool_dtgc_em, date=today_tag())
+    dt, err = safe_retry(ak.stock_zt_pool_dtgc_em, date=today_tag())
     if isinstance(dt, pd.DataFrame):
         out["limit_down_count_today"] = len(dt)
     if err:

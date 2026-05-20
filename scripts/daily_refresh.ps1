@@ -147,10 +147,26 @@ foreach ($script in $enrichScripts) {
 }
 
 # --- validate (after enrichment, so basic_info gaps are already filled) ---
+# Pass --expected-count so the validator fails when fetch was partial. The
+# count is parsed dynamically from fetch_all.ps1's $default array so it stays
+# in sync as the watchlist grows.
+$expectedCount = 0
+$fetchScript = Join-Path $root 'scripts\fetch_all.ps1'
+if (Test-Path $fetchScript) {
+  try {
+    $content = Get-Content $fetchScript -Raw
+    if ($content -match '(?s)\$default\s*=\s*@\((.*?)\)') {
+      $expectedCount = ([regex]::Matches($matches[1], "'\d{6}'")).Count
+    }
+  } catch { $expectedCount = 0 }
+}
+
 $validator = Join-Path $root '.claude\skills\china-stock-analysis\scripts\validate_data.py'
 if (Test-Path $validator) {
-  Log "validating $dataDir ..."
-  & $py $validator --data-dir $dataDir 2>&1 | ForEach-Object { Log "  $_" }
+  Log "validating $dataDir (expected-count=$expectedCount) ..."
+  $validateArgs = @($validator, '--data-dir', $dataDir)
+  if ($expectedCount -gt 0) { $validateArgs += @('--expected-count', $expectedCount) }
+  & $py @validateArgs 2>&1 | ForEach-Object { Log "  $_" }
   if ($LASTEXITCODE -ne 0) {
     Log "abort: data validation failed (critical). Not committing bad snapshots."
     exit 6

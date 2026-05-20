@@ -158,9 +158,28 @@ def main() -> int:
     parser.add_argument("--data-dir", type=Path, default=default_data_dir(), help="data/YYYYMMDD directory")
     parser.add_argument("--json", action="store_true", help="emit machine-readable JSON")
     parser.add_argument("--strict", action="store_true", help="return non-zero when warnings are present")
+    parser.add_argument("--expected-count", type=int, default=0,
+                        help="expected snapshot count (watchlist size). If set and the actual "
+                             "snapshot count is less, emit a critical finding so daily_refresh "
+                             "aborts instead of committing a partial run.")
     args = parser.parse_args()
 
     result = validate_data_dir(args.data_dir)
+
+    # Snapshot-count guard: validator previously only checked >0 snapshots, so a
+    # partial fetch (4 of 33) passed silently. With --expected-count N, anything
+    # less than N is a critical finding.
+    if args.expected_count > 0 and result["snapshot_count"] < args.expected_count:
+        result["findings"].append({
+            "level": "critical",
+            "file": str(args.data_dir),
+            "message": (
+                f"snapshot_count={result['snapshot_count']} < expected={args.expected_count} "
+                "— fetch incomplete"
+            ),
+        })
+        result["critical_count"] = sum(1 for f in result["findings"] if f["level"] == "critical")
+
     if args.json:
         print(json.dumps(result, ensure_ascii=False, indent=2))
     else:
