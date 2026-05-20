@@ -92,6 +92,7 @@ context belongs in commit messages, not in `context.md`.
 - Write new JSON outputs as UTF-8. Legacy UTF-16 snapshots may be read, but should not be produced going forward.
 - Validate generated `data/YYYYMMDD` before staging. Empty or unreadable snapshots must fail the run.
 - Do not stage scratch files such as ad hoc audits unless the user asks.
+- `daily_refresh.ps1` can silently skip enrichers (observed 2026-05-20: `_signal_score` missing from snapshots, required manual backfill). After every refresh, post-flight check: open the latest `data/YYYYMMDD/<code>_snapshot.json` and confirm `_signal_score` is present. If absent, re-run the enricher chain (`basic_info → valuation → margin_net → sector_flow → streak → divergence → alpha → score`) and tail the log for the enricher's `WARN` / `exit` lines before declaring the day complete.
 
 ## Report Template
 

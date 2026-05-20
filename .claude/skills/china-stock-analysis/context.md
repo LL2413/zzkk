@@ -83,7 +83,13 @@ evergreen. Daily commentary belongs in commit messages or chat replies.
 
 Windows（用户环境）：
 
+**约定：每段 PowerShell 第一条命令必须是 `cd C:\Users\computer\zzkk`**。
+不要让用户在任意目录起命令，否则 `logs\` `scripts\` `data\` 这些
+相对路径会 PathNotFound（5-20 排查 enrich_score 时踩过坑）。
+
 ```powershell
+cd C:\Users\computer\zzkk
+
 # 单股全量刷新
 C:\Users\computer\.venv\Scripts\python.exe scripts\stock.py snapshot 002281 --force --json
 
@@ -100,6 +106,13 @@ pwsh scripts\daily_refresh.ps1
 C:\Users\computer\.venv\Scripts\python.exe `
   .claude\skills\china-stock-analysis\scripts\validate_data.py `
   --data-dir data\<YYYYMMDD>
+
+# 看最新日志（绝对路径，不依赖当前目录）
+Get-ChildItem C:\Users\computer\zzkk\logs\ -ErrorAction SilentlyContinue |
+  Sort-Object LastWriteTime -Descending | Select-Object -First 10 Name,Length,LastWriteTime
+
+Get-Content C:\Users\computer\zzkk\logs\daily_refresh_<YYYYMMDD>.log |
+  Select-String -Pattern "enrich|WARN|exit" | Select-Object -First 40
 ```
 
 macOS/Linux（容器/本机）：
@@ -139,11 +152,52 @@ sector_flow → streak → divergence → alpha → score。
 7. 板块判断须声明分类来源（EM / 雪球 / 硬编码）。
 8. 全程不输出买/卖/持有评级、目标价、点位预测。
 
-## 报告模板
+## 报告模板（单股）
 
 输出仍走 SKILL.md 末段的报告模板（一句话结论 / 盈利发展卡 /
 热度卡 / 板块卡 / 风险与催化 / 数据缺口 / 合规声明）。模板若有更新，
 以 SKILL.md 为准。
+
+## Watchlist 扫描输出格式（默认）
+
+收到 "watchlist 全扫 / 全 33 只" 类请求时，**默认按主力净流入 desc 排序**
+（用户若说"按评分排"则改 `_signal_score` desc）。表头固定如下：
+
+| 代码 | 名称 | 区间% | 主力(亿) | 净占% | streak | 背离 | 标签 | 估值 | 评分 | 新 |
+
+字段口径：
+- 区间% — 区间默认为本月至最新交易日；用户指定区间（如 "5-20"）就用指定。
+- 主力(亿) — `sentiment.main_fund_flow` 主力净额，单位亿元，保留两位小数。
+- 净占% — 主力净额占成交额比例。
+- streak — `enrich_streak.py` 输出，形如 `+2d` / `-1d`。
+- 背离 — `enrich_divergence.py` 输出的量价/资金背离强度（数值越大越强）。
+- 标签 — 漂移 / 均衡 / 共振 等分类标签（来自 alpha 或 divergence 枚举）。
+- 估值 — `valuation_latest.pe` 取整，前缀 `PE`；缺数据写 "—"。
+- 评分 — `_signal_score` 总分 + 分档（如 `+1 中` / `+3 偏多` / `-2 偏空`）。
+- 新 — 5-13 扩展进来的 15 只标 `★`，老 18 只留空。
+
+不要把"今天"硬编码进表里；按 `data/` 里的最大日期决定。
+
+## 资金扫描摘要（表前置块）
+
+表前默认输出三行摘要，结构固定、不写当天名字：
+
+```
+🟢 资金流入 Top N：<code 名称 +金额>, ...
+   → 板块集中度备注（哪几只属同一行业 / 是否单只占板块流入大头）
+🔴 资金流出 Top N：<code 名称 -金额>, ...
+   → 流出归因（AI 硬件 / 消费电子 / 存储 / 光模块 / IP 设计 任一）
+⚠️ 价涨主力跑（重点看）：
+   筛选条件 = 当日涨幅 > 0 AND 主力净额 < 0 AND (背离 ≥ 1.5 OR 拥挤 ≥ 10)
+```
+
+N 一般取 5~6，可按个股密度调整。"价涨主力跑" 一节列每只一行：
+`<名称> <涨幅%> / 主力 <金额> 亿 / 拥挤 <数> — 一句话归因`。
+
+## Watchlist 中标记 ★ 的 15 只（5-13 扩展引入）
+
+`000021 002156 002837 300499 600584 600845 601138 603256 603773
+688047 688206 688347 688521 688627 688981`
 
 ## 进入分析模式的典型触发语
 
