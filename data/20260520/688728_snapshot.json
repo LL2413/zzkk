@@ -2522,5 +2522,19 @@
       "alpha": -1.6557,
       "sector_price_source": "etf_tencent_512760"
     }
+  },
+  "_signal_score": {
+    "as_of": "2026-05-20",
+    "streak_score": 2,
+    "label_score": 1,
+    "valuation_score": -1,
+    "total": 2,
+    "tier": "偏多",
+    "lights": {
+      "streak": "🟢",
+      "label": "🟢",
+      "valuation": "🔴"
+    },
+    "note": "信号质量评分，非投资建议；streak/label/valuation 三维合成"
   }
 }
