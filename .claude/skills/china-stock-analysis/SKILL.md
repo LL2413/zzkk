@@ -7,6 +7,14 @@ description: Analyze China A-share stocks, sectors, and broad market conditions 
 
 Use this skill to produce structured A-share analysis from local data and public sources. The canonical project entry is this folder plus the repo-level scripts under `../../../scripts/`; ignore stale app files unless the user explicitly asks about the old React/Capacitor app.
 
+## Session Bootstrap
+
+Read `context.md` first when entering this skill. It pins the canonical
+branch (`claude/stock-market-analysis-skill-9p7lc`), the 33-code
+watchlist with names+industry, snapshot JSON shape, refresh/validate
+commands, fallback rules, and the pre-report checklist. Daily/event
+context belongs in commit messages, not in `context.md`.
+
 ## Canonical Layout
 
 - Skill guide: `.claude/skills/china-stock-analysis/SKILL.md`
