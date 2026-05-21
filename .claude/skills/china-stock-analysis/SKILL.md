@@ -53,8 +53,9 @@ context belongs in commit messages, not in `context.md`.
    C:\Users\computer\.venv\Scripts\python.exe scripts\stock.py snapshot 002281 --json
    C:\Users\computer\.venv\Scripts\python.exe scripts\stock.py snapshot 002281 --force --json
    C:\Users\computer\.venv\Scripts\python.exe scripts\stock.py market --json
-   pwsh scripts\fetch_all.ps1 -Refresh
+   powershell -ExecutionPolicy Bypass -File scripts\fetch_all.ps1 -Refresh
    ```
+   (User's machine has Windows PowerShell 5.1 only — no `pwsh`/PS7.)
 
    macOS/Linux:
    ```bash

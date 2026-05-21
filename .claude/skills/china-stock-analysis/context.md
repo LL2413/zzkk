@@ -83,9 +83,13 @@ evergreen. Daily commentary belongs in commit messages or chat replies.
 
 Windows（用户环境）：
 
-**约定：每段 PowerShell 第一条命令必须是 `cd C:\Users\computer\zzkk`**。
+**约定 1：每段 PowerShell 第一条命令必须是 `cd C:\Users\computer\zzkk`**。
 不要让用户在任意目录起命令，否则 `logs\` `scripts\` `data\` 这些
 相对路径会 PathNotFound（5-20 排查 enrich_score 时踩过坑）。
+
+**约定 2：用户机器只有 Windows PowerShell 5.1，没有 `pwsh`（PS7）**。
+跑 `.ps1` 一律用 `powershell -ExecutionPolicy Bypass -File scripts\xxx.ps1`，
+不要写 `pwsh`（5-21 踩过坑）。脚本本身兼容 5.1。
 
 ```powershell
 cd C:\Users\computer\zzkk
@@ -97,10 +101,11 @@ C:\Users\computer\.venv\Scripts\python.exe scripts\stock.py snapshot 002281 --fo
 C:\Users\computer\.venv\Scripts\python.exe scripts\stock.py market --json
 
 # 批量全 watchlist 刷新
-pwsh scripts\fetch_all.ps1 -Refresh
+powershell -ExecutionPolicy Bypass -File scripts\fetch_all.ps1 -Refresh
 
-# 计划任务（每日收盘后跑）
-pwsh scripts\daily_refresh.ps1
+# 每日刷新（一条全包：git pull --rebase → fetch_all → 8 个 enricher
+#   含 enrich_score → validate → commit → git push。不要再手动 git add/push）
+powershell -ExecutionPolicy Bypass -File scripts\daily_refresh.ps1
 
 # 数据健康检查
 C:\Users\computer\.venv\Scripts\python.exe `
