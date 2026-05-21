@@ -613,6 +613,14 @@ def fetch_sentiment(symbol: str, _force: bool = False) -> dict:
                            start_date=(date.today() - timedelta(days=60)).strftime("%Y%m%d"),
                            end_date=today_tag(), adjust="qfq")
     if isinstance(hist, pd.DataFrame) and len(hist) > 0:
+        # EM kline returns Chinese column names; Tencent kline (the fallback
+        # below) returns English. Normalize EM to the English schema so every
+        # snapshot's price_recent has the same keys regardless of source.
+        hist = hist.rename(columns={
+            "日期": "date", "开盘": "open", "收盘": "close",
+            "最高": "high", "最低": "low", "成交额": "amount",
+            "成交量": "volume", "涨跌幅": "pct_chg",
+        })
         out["price_recent"] = df_to_records(hist.tail(20))
         out["price_recent_source"] = "em_kline"
     else:
@@ -802,6 +810,14 @@ def fetch_sector(symbol: str, _force: bool = False) -> dict:
                             elif tx_err:
                                 out["errors"]["sector_history_etf_tx"] = tx_err
 
+        # If any fallback ultimately populated sector_price_recent, the
+        # intermediate-source errors are not real gaps — drop them so the
+        # validator doesn't flag a resolved fetch as a warning.
+        if out.get("sector_price_recent"):
+            for _k in ("sector_history", "sector_history_sw",
+                       "sector_history_etf", "sector_history_etf_tx"):
+                out["errors"].pop(_k, None)
+
         # Sector fund flow: EM rank endpoint frequently 403s/JSONDecodeErrors
         # under load. Try rank → summary as fallback chain.
         # Note signatures differ:
@@ -857,8 +873,28 @@ def fetch_market(_force: bool = False) -> dict:
     act, err = safe_retry(ak.stock_market_activity_legu)
     if isinstance(act, pd.DataFrame):
         out["market_activity"] = df_to_records(act)
-    if err:
-        out["errors"]["market_activity"] = err
+    else:
+        if err:
+            out["errors"]["market_activity"] = err
+        # Fallback: derive breadth from full A-share spot. legu's scrape
+        # target goes down intermittently (AttributeError: NoneType.text),
+        # but stock_zh_a_spot_em is a reliable JSON endpoint already used
+        # elsewhere in this script. It yields up/down/flat counts — the core
+        # 赚钱效应 signal — minus legu's composite activity index.
+        spot, spot_err = safe_retry(ak.stock_zh_a_spot_em)
+        if (isinstance(spot, pd.DataFrame) and len(spot) > 0
+                and "涨跌幅" in spot.columns):
+            chg = pd.to_numeric(spot["涨跌幅"], errors="coerce").dropna()
+            out["market_breadth_fallback"] = {
+                "up": int((chg > 0).sum()),
+                "down": int((chg < 0).sum()),
+                "flat": int((chg == 0).sum()),
+                "median_pct": round(float(chg.median()), 2),
+                "source": "stock_zh_a_spot_em (legu unavailable)",
+            }
+            out["errors"].pop("market_activity", None)
+        elif spot_err:
+            out["errors"]["market_activity_fallback"] = spot_err
 
     ttm, err = safe_retry(ak.stock_a_ttm_lyr)
     if isinstance(ttm, pd.DataFrame):

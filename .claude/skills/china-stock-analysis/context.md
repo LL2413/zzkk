@@ -146,6 +146,30 @@ sector_flow → streak → divergence → alpha → score。
 - 涉及"今天/最新/实时"时，先核对 `data/` 里最大日期目录；与日历日不一致
   说明遇到周末或假日，使用最近交易日数据并标明日期。
 
+## 数据接口噪声 vs 真缺口
+
+`validate_data.py` 的 warning 多数是**噪声**，不要在报告"数据缺口"里当真缺口列。
+判断口径：
+
+- `sector_history_sw`：**噪声**。stock.py 板块价格走 EM→申万→ETF(EM)→ETF(腾讯)
+  四级 fallback；只要 snapshot 里有 `sector_price_recent`（看 `sector_price_source`，
+  常见 `etf_tencent_*`），数据就是齐的。2026-05-21 起 stock.py 已在 fallback
+  成功后清掉这个 stale error key——若仍看到，说明该只 4 级全失败，才是真缺。
+- `sector_fund_flow`（per-stock）：**噪声**。per-stock 板块资金接口常挂，但
+  `data/YYYYMMDD/sector_flow_aggregated.json` 已用 watchlist 成员主力净额聚合
+  重建板块资金流，分析板块资金一律用这个聚合文件。
+- `market_activity`：legu 接口不稳。2026-05-21 起 stock.py 有 fallback——
+  失败时用 `stock_zh_a_spot_em` 算涨跌家数写入 `market.json` 的
+  `market_breadth_fallback`（up/down/flat/median_pct）。有这个字段就用它，
+  缺的只是 legu 的综合活跃度指数。
+- `northbound`（个别股）：真缺但影响小，可能非沪深港通标的。
+- `price_recent` schema：2026-05-21 起统一为英文键（`date/open/close/high/
+  low/amount`），EM 源（中文键）已在 stock.py 里 rename。读历史旧 snapshot
+  时仍可能遇到中文键（`日期/收盘`），分析脚本两套键都要认。
+
+根因：Eastmoney push2/data 服务器 `RemoteDisconnected` 限流——fallback 设计
+就是为对付它，多数情况下 fallback 已拿到数据。
+
 ## 报告前自检清单
 
 1. `validate_data.py --data-dir data/<latest>` 通过；critical 失败 = 阻断。
