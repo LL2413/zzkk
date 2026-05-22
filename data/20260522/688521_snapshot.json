@@ -1344,9 +1344,7 @@
   "sentiment": {
     "symbol": "688521",
     "as_of": "2026-05-22T19:36:31",
-    "errors": {
-      "fund_flow": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
-    },
+    "errors": {},
     "lhb_recent_3m": [
       {
         "序号": 4306,
@@ -1770,7 +1768,41 @@
         "amount": 18250195.0
       }
     ],
-    "price_recent_source": "tencent_kline"
+    "price_recent_source": "tencent_kline",
+    "fund_flow_recent_20d": [
+      {
+        "日期": "2026-05-22",
+        "股票代码": "688521",
+        "股票简称": "芯原股份",
+        "最新价": 275.75,
+        "涨跌幅": 0.81,
+        "换手率": 3.47,
+        "主力净流入-净额": -79056700.0,
+        "主力净流入-净占比": -1.5767,
+        "流入资金": 2468000000.0,
+        "流出资金": 2547000000.0,
+        "成交额": 5014000000.0,
+        "fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径"
+      }
+    ],
+    "fund_flow_source": "ths_individual_net_today_only",
+    "fund_flow_fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径",
+    "_main_flow_streak": {
+      "direction": "negative",
+      "days": 1,
+      "as_of": "2026-05-22",
+      "main_pct_today": -1.5767,
+      "main_yi_total_streak": -0.7906
+    },
+    "_divergence": {
+      "as_of": "2026-05-22",
+      "chg_pct": 0.81,
+      "main_pct": -1.5767,
+      "score": 2.3867,
+      "interpretation": "均衡",
+      "interpretation_en": "balanced",
+      "note": "价格涨跌与主力资金方向基本一致，本次波动可信"
+    }
   },
   "sector": {
     "symbol": "688521",
@@ -2222,6 +2254,27 @@
         "市净率": 2.55,
         "静态股息率": 2.29
       }
-    ]
+    ],
+    "_alpha_vs_sector": {
+      "as_of": "2026-05-22",
+      "stock_chg": 0.81,
+      "sector_chg": 2.3296,
+      "alpha": -1.5196,
+      "sector_price_source": "etf_tencent_512760"
+    }
+  },
+  "_signal_score": {
+    "as_of": "2026-05-22",
+    "streak_score": -1,
+    "label_score": 1,
+    "valuation_score": -1,
+    "total": -1,
+    "tier": "警示",
+    "lights": {
+      "streak": "🔴",
+      "label": "🟢",
+      "valuation": "🔴"
+    },
+    "note": "信号质量评分，非投资建议；streak/label/valuation 三维合成"
   }
 }

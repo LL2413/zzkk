@@ -1392,9 +1392,7 @@
   "sentiment": {
     "symbol": "300408",
     "as_of": "2026-05-22T19:08:08",
-    "errors": {
-      "fund_flow": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
-    },
+    "errors": {},
     "lhb_recent_3m": [],
     "margin_trading_date": "20260521",
     "margin_trading_today": [
@@ -1796,7 +1794,41 @@
         "amount": 823684.0
       }
     ],
-    "price_recent_source": "tencent_kline"
+    "price_recent_source": "tencent_kline",
+    "fund_flow_recent_20d": [
+      {
+        "日期": "2026-05-22",
+        "股票代码": "300408",
+        "股票简称": "三环集团",
+        "最新价": 115.0,
+        "涨跌幅": 16.79,
+        "换手率": 4.41,
+        "主力净流入-净额": -447000000.0,
+        "主力净流入-净占比": -4.8267,
+        "流入资金": 4407000000.0,
+        "流出资金": 4854000000.0,
+        "成交额": 9261000000.0,
+        "fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径"
+      }
+    ],
+    "fund_flow_source": "ths_individual_net_today_only",
+    "fund_flow_fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径",
+    "_main_flow_streak": {
+      "direction": "negative",
+      "days": 1,
+      "as_of": "2026-05-22",
+      "main_pct_today": -4.8267,
+      "main_yi_total_streak": -4.47
+    },
+    "_divergence": {
+      "as_of": "2026-05-22",
+      "chg_pct": 16.79,
+      "main_pct": -4.8267,
+      "score": 21.6167,
+      "interpretation": "拥挤",
+      "interpretation_en": "crowded",
+      "note": "价格涨幅超出主力支持、或跌幅不及主力流出，警惕散户/游资虚撑与拥挤交易"
+    }
   },
   "sector": {
     "symbol": "300408",
@@ -2248,6 +2280,27 @@
         "市净率": 2.55,
         "静态股息率": 2.29
       }
-    ]
+    ],
+    "_alpha_vs_sector": {
+      "as_of": "2026-05-22",
+      "stock_chg": 16.79,
+      "sector_chg": 2.3296,
+      "alpha": 14.4604,
+      "sector_price_source": "etf_tencent_512760"
+    }
+  },
+  "_signal_score": {
+    "as_of": "2026-05-22",
+    "streak_score": -1,
+    "label_score": -2,
+    "valuation_score": 0,
+    "total": -3,
+    "tier": "警示",
+    "lights": {
+      "streak": "🔴",
+      "label": "🔴",
+      "valuation": "🟡"
+    },
+    "note": "信号质量评分，非投资建议；streak/label/valuation 三维合成"
   }
 }

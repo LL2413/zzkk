@@ -46,7 +46,7 @@ os.environ["no_proxy"] = "*"
 # setdefaulttimeout makes any socket op with no progress for STOCK_NET_TIMEOUT
 # seconds raise TimeoutError, which safe_retry treats as a transient failure
 # (retry, then record as an error and move on). Override via env if needed.
-STOCK_NET_TIMEOUT = float(os.environ.get("STOCK_NET_TIMEOUT", "20"))
+STOCK_NET_TIMEOUT = float(os.environ.get("STOCK_NET_TIMEOUT", "12"))
 socket.setdefaulttimeout(STOCK_NET_TIMEOUT)
 
 try:
@@ -169,6 +169,81 @@ def parse_cn_amount(v: Any) -> float | None:
         return float(s) * mult
     except ValueError:
         return None
+
+
+def normalize_stock_code(v: Any) -> str:
+    """Return a zero-padded 6-digit stock code from strings/numbers."""
+    if v is None:
+        return ""
+    s = str(v).strip()
+    if s.endswith(".0"):
+        s = s[:-2]
+    digits = "".join(ch for ch in s if ch.isdigit())
+    if not digits:
+        return ""
+    return digits[-6:].zfill(6)
+
+
+def fetch_ths_fund_flow_today(symbol: str, as_of: str | None = None) -> tuple[dict | None, str | None]:
+    """Fallback today's per-stock fund flow from THS.
+
+    THS exposes total inflow/outflow/net amount, not EastMoney's
+    super+large-order "main" classification. We map THS net amount into the
+    existing keys so downstream enrichers can still compute same-day scans,
+    while `fund_flow_source` records the weaker data口径.
+    """
+    cache = cache_path("all", "ths_fund_flow_individual")
+    records: list[dict] | None = None
+
+    if cache.exists():
+        try:
+            loaded = json.loads(cache.read_text(encoding="utf-8-sig"))
+            if isinstance(loaded, list) and loaded:
+                records = loaded
+        except Exception:
+            records = None
+
+    if records is None:
+        ths_fn = getattr(ak, "stock_fund_flow_individual", None)
+        if ths_fn is None:
+            return None, "ak.stock_fund_flow_individual unavailable"
+        table, err = safe_retry(ths_fn, symbol="即时", retries=1, delay=2)
+        if not isinstance(table, pd.DataFrame) or len(table) == 0:
+            return None, err or "THS individual fund-flow returned empty"
+        records = df_to_records(table)
+        try:
+            cache.write_text(json.dumps(records, ensure_ascii=False, default=str, indent=2), encoding="utf-8")
+        except Exception:
+            pass
+
+    row = next((r for r in records if normalize_stock_code(r.get("股票代码")) == symbol), None)
+    if not row:
+        return None, f"{symbol} not found in THS individual fund-flow table"
+
+    net = parse_cn_amount(row.get("净额"))
+    amount = parse_cn_amount(row.get("成交额"))
+    if net is None:
+        return None, f"THS row for {symbol} missing 净额"
+
+    net_pct = None
+    if amount and amount != 0:
+        net_pct = round(net / amount * 100, 4)
+
+    rec = {
+        "日期": as_of or date.today().strftime("%Y-%m-%d"),
+        "股票代码": normalize_stock_code(row.get("股票代码")),
+        "股票简称": row.get("股票简称"),
+        "最新价": parse_cn_amount(row.get("最新价")),
+        "涨跌幅": parse_cn_amount(row.get("涨跌幅")),
+        "换手率": parse_cn_amount(row.get("换手率")),
+        "主力净流入-净额": net,
+        "主力净流入-净占比": net_pct,
+        "流入资金": parse_cn_amount(row.get("流入资金")),
+        "流出资金": parse_cn_amount(row.get("流出资金")),
+        "成交额": amount,
+        "fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径",
+    }
+    return rec, None
 
 
 def _normalize_ths_record(rec: dict) -> dict:
@@ -557,50 +632,63 @@ def fetch_sentiment(symbol: str, _force: bool = False) -> dict:
     out: dict = {"symbol": symbol, "as_of": datetime.now().isoformat(timespec="seconds"), "errors": {}}
     mkt = market_prefix(symbol)
 
-    flow, err = safe_retry(ak.stock_individual_fund_flow, stock=symbol, market=mkt)
+    flow, err = safe_retry(ak.stock_individual_fund_flow, stock=symbol, market=mkt, retries=0, delay=0.8)
     if isinstance(flow, pd.DataFrame) and len(flow) > 0:
         out["fund_flow_recent_20d"] = df_to_records(flow.tail(20))
         out["fund_flow_source"] = "em_individual"
     else:
         if err:
             out["errors"]["fund_flow"] = err
-        # Fallback: EM fund-flow RANK endpoint. It lives on the push2
-        # data-center host — a different host from the push2his used by
-        # stock_individual_fund_flow above — so it often stays up when the
-        # primary is throttled (RemoteDisconnected). Trade-off: it returns
-        # only TODAY's row, not 20-day history; but today's 主力净流入 is the
-        # watchlist scan's primary signal. Rank columns are prefixed with the
-        # indicator ("今日主力净流入-净额"); strip the prefix to match the
-        # primary endpoint's schema. Any failure leaves fund_flow_recent_20d
-        # absent — no worse than before.
-        rank_fn = getattr(ak, "stock_individual_fund_flow_rank", None)
-        if rank_fn is not None:
-            rank, rank_err = safe_retry(rank_fn, indicator="今日")
-            if isinstance(rank, pd.DataFrame) and len(rank) > 0:
-                code_col = next((c for c in rank.columns
-                                 if c in ("代码", "股票代码")), None)
-                row = pd.DataFrame()
-                if code_col is not None:
-                    codes = rank[code_col].astype(str).str.zfill(6)
-                    row = rank[codes == symbol]
-                if len(row) > 0:
-                    r = row.iloc[0]
-                    rec = {"日期": date.today().strftime("%Y-%m-%d")}
-                    for c in rank.columns:
-                        if isinstance(c, str) and c.startswith("今日"):
-                            rec[c[len("今日"):]] = r[c]
-                    if "主力净流入-净额" in rec:
-                        out["fund_flow_recent_20d"] = [rec]
-                        out["fund_flow_source"] = "em_rank_today_only"
-                        out["errors"].pop("fund_flow", None)
+        # Fallback 1: THS per-stock net flow. This is weaker than EM's
+        # super+large-order "main" classification, but it uses a different
+        # host and keeps same-day scans/enrichers alive when EM push2/push2his
+        # is throttled.
+        if "fund_flow_recent_20d" not in out:
+            ths_rec, ths_err = fetch_ths_fund_flow_today(symbol)
+            if ths_rec:
+                out["fund_flow_recent_20d"] = [ths_rec]
+                out["fund_flow_source"] = "ths_individual_net_today_only"
+                out["fund_flow_fallback_note"] = (
+                    "THS净额fallback；不是EastMoney超大单+大单主力口径"
+                )
+                out["errors"].pop("fund_flow", None)
+                out["errors"].pop("fund_flow_fallback", None)
+            elif ths_err:
+                out["errors"]["fund_flow_fallback_ths"] = ths_err
+
+        # Fallback 2: EM fund-flow rank endpoint. It has the better EM main
+        # money-flow口径, but AkShare pages through the full market and can
+        # fail if any page is rate-limited. Try it only if THS is unavailable.
+        if "fund_flow_recent_20d" not in out:
+            rank_fn = getattr(ak, "stock_individual_fund_flow_rank", None)
+            if rank_fn is not None:
+                rank, rank_err = safe_retry(rank_fn, indicator="今日", retries=0, delay=0.8)
+                if isinstance(rank, pd.DataFrame) and len(rank) > 0:
+                    code_col = next((c for c in rank.columns
+                                     if c in ("代码", "股票代码")), None)
+                    row = pd.DataFrame()
+                    if code_col is not None:
+                        codes = rank[code_col].astype(str).str.zfill(6)
+                        row = rank[codes == symbol]
+                    if len(row) > 0:
+                        r = row.iloc[0]
+                        rec = {"日期": date.today().strftime("%Y-%m-%d")}
+                        for c in rank.columns:
+                            if isinstance(c, str) and c.startswith("今日"):
+                                rec[c[len("今日"):]] = r[c]
+                        if "主力净流入-净额" in rec:
+                            out["fund_flow_recent_20d"] = [rec]
+                            out["fund_flow_source"] = "em_rank_today_only"
+                            out["errors"].pop("fund_flow", None)
+                            out["errors"].pop("fund_flow_fallback_ths", None)
+                        else:
+                            out["errors"]["fund_flow_fallback"] = (
+                                "rank frame missing 主力净流入 columns")
                     else:
                         out["errors"]["fund_flow_fallback"] = (
-                            "rank frame missing 主力净流入 columns")
-                else:
-                    out["errors"]["fund_flow_fallback"] = (
-                        f"{symbol} not found in rank frame")
-            elif rank_err:
-                out["errors"]["fund_flow_fallback"] = rank_err
+                            f"{symbol} not found in rank frame")
+                elif rank_err:
+                    out["errors"]["fund_flow_fallback"] = rank_err
 
     lhb, err = safe_retry(ak.stock_lhb_detail_em,
                           start_date=(date.today() - timedelta(days=90)).strftime("%Y%m%d"),

@@ -45,27 +45,31 @@ Write-Host "=== 2. SZ 净融资 (balance delta) ==="
 & $py scripts\enrich_margin_net.py @dateArgs
 
 Write-Host ""
-Write-Host "=== 3. 板块资金流 (watchlist aggregation) ==="
+Write-Host "=== 3. 个股资金流 fallback (THS same-day net) ==="
+& $py scripts\enrich_fund_flow_fallback.py @dateArgs
+
+Write-Host ""
+Write-Host "=== 4. 板块资金流 (watchlist aggregation) ==="
 & $py scripts\enrich_sector_flow.py @dateArgs
 
 Write-Host ""
-Write-Host "=== 4. 估值口径 (PE / PB / PS) ==="
+Write-Host "=== 5. 估值口径 (PE / PB / PS) ==="
 & $py scripts\enrich_valuation.py @dateArgs
 
 Write-Host ""
-Write-Host "=== 5. 主力流向连续天数 (streak) ==="
+Write-Host "=== 6. 主力流向连续天数 (streak) ==="
 & $py scripts\enrich_streak.py @dateArgs
 
 Write-Host ""
-Write-Host "=== 6. 价主背离 (divergence) ==="
+Write-Host "=== 7. 价主背离 (divergence) ==="
 & $py scripts\enrich_divergence.py @dateArgs
 
 Write-Host ""
-Write-Host "=== 7. 个股 vs 板块 (alpha) ==="
+Write-Host "=== 8. 个股 vs 板块 (alpha) ==="
 & $py scripts\enrich_alpha.py @dateArgs
 
 Write-Host ""
-Write-Host "=== 8. 三维信号评分 (score) ==="
+Write-Host "=== 9. 三维信号评分 (score) ==="
 & $py scripts\enrich_score.py @dateArgs
 
 Write-Host ""

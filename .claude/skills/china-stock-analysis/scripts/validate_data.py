@@ -23,6 +23,18 @@ REQUIRED_NESTED = (
 )
 
 
+def inferred_expected_count(data_dir: Path) -> int:
+    """Infer watchlist size for normal daily data dirs.
+
+    The watchlist expanded to 33 names on 2026-05-13. Older historical dirs can
+    still be validated structurally, but current dirs should fail if partial.
+    """
+    tag = data_dir.name
+    if tag.isdigit() and len(tag) == 8 and tag >= "20260513":
+        return 33
+    return 0
+
+
 def default_data_dir() -> Path:
     repo_root = Path(__file__).resolve().parents[4]
     return repo_root / "data" / date.today().strftime("%Y%m%d")
@@ -158,24 +170,30 @@ def main() -> int:
     parser.add_argument("--data-dir", type=Path, default=default_data_dir(), help="data/YYYYMMDD directory")
     parser.add_argument("--json", action="store_true", help="emit machine-readable JSON")
     parser.add_argument("--strict", action="store_true", help="return non-zero when warnings are present")
-    parser.add_argument("--expected-count", type=int, default=0,
+    parser.add_argument("--expected-count", type=int, default=None,
                         help="expected snapshot count (watchlist size). If set and the actual "
                              "snapshot count is less, emit a critical finding so daily_refresh "
-                             "aborts instead of committing a partial run.")
+                             "aborts instead of committing a partial run. Defaults to the known "
+                             "watchlist size for current daily dirs; pass 0 to disable.")
     args = parser.parse_args()
 
     result = validate_data_dir(args.data_dir)
+    expected_count = (
+        inferred_expected_count(args.data_dir)
+        if args.expected_count is None
+        else args.expected_count
+    )
 
     # Snapshot-count guard: validator previously only checked >0 snapshots, so a
     # partial fetch (4 of 33) passed silently. With --expected-count N, anything
     # less than N is a critical finding.
-    if args.expected_count > 0 and result["snapshot_count"] < args.expected_count:
+    if expected_count > 0 and result["snapshot_count"] < expected_count:
         result["findings"].append({
             "level": "critical",
             "file": str(args.data_dir),
             "message": (
-                f"snapshot_count={result['snapshot_count']} < expected={args.expected_count} "
-                "— fetch incomplete"
+                f"snapshot_count={result['snapshot_count']} < expected={expected_count} "
+                "- fetch incomplete"
             ),
         })
         result["critical_count"] = sum(1 for f in result["findings"] if f["level"] == "critical")

@@ -1362,9 +1362,7 @@
   "sentiment": {
     "symbol": "688046",
     "as_of": "2026-05-22T18:15:51",
-    "errors": {
-      "fund_flow": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
-    },
+    "errors": {},
     "lhb_recent_3m": [],
     "margin_trading_date": "20260521",
     "margin_trading_today": [
@@ -1764,7 +1762,41 @@
         "amount": 3229520.0
       }
     ],
-    "price_recent_source": "tencent_kline"
+    "price_recent_source": "tencent_kline",
+    "fund_flow_recent_20d": [
+      {
+        "日期": "2026-05-22",
+        "股票代码": "688046",
+        "股票简称": "药康生物",
+        "最新价": 20.9,
+        "涨跌幅": 0.34,
+        "换手率": 0.79,
+        "主力净流入-净额": 6952300.0,
+        "主力净流入-净占比": 10.3476,
+        "流入资金": 37069900.0,
+        "流出资金": 30117500.0,
+        "成交额": 67187300.0,
+        "fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径"
+      }
+    ],
+    "fund_flow_source": "ths_individual_net_today_only",
+    "fund_flow_fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径",
+    "_main_flow_streak": {
+      "direction": "positive",
+      "days": 1,
+      "as_of": "2026-05-22",
+      "main_pct_today": 10.3476,
+      "main_yi_total_streak": 0.0695
+    },
+    "_divergence": {
+      "as_of": "2026-05-22",
+      "chg_pct": 0.34,
+      "main_pct": 10.3476,
+      "score": -10.0076,
+      "interpretation": "吸筹",
+      "interpretation_en": "accumulation",
+      "note": "主力净流入明显超过价格涨幅，疑似主力低调建仓、价格尚未反应"
+    }
   },
   "sector": {
     "symbol": "688046",
@@ -2216,6 +2248,27 @@
         "市净率": 2.55,
         "静态股息率": 2.29
       }
-    ]
+    ],
+    "_alpha_vs_sector": {
+      "as_of": "2026-05-22",
+      "stock_chg": 0.34,
+      "sector_chg": -1.0317,
+      "alpha": 1.3717,
+      "sector_price_source": "etf_tencent_159929"
+    }
+  },
+  "_signal_score": {
+    "as_of": "2026-05-22",
+    "streak_score": 1,
+    "label_score": 1,
+    "valuation_score": 0,
+    "total": 2,
+    "tier": "偏多",
+    "lights": {
+      "streak": "🟢",
+      "label": "🟢",
+      "valuation": "🟡"
+    },
+    "note": "信号质量评分，非投资建议；streak/label/valuation 三维合成"
   }
 }
