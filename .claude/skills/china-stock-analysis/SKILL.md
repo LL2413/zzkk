@@ -20,8 +20,11 @@ context belongs in commit messages, not in `context.md`.
 - Skill guide: `.claude/skills/china-stock-analysis/SKILL.md`
 - Data fetcher: `scripts/stock.py`
 - Batch refresh: `scripts/fetch_all.ps1`, `scripts/fetch_all.sh`
+- One-shot collection+analysis: `scripts/run_watchlist_analysis.ps1`, `scripts/run_watchlist_analysis.sh`
+- Watchlist report generator: `scripts/analyze_watchlist.py`
 - Scheduled refresh: `scripts/daily_refresh.ps1`
 - Daily snapshots: `data/YYYYMMDD/*.json`
+- Daily reports: `reports/watchlist_YYYYMMDD.md`
 - Cache: `.cache/stock/*.json`
 - Logs: `logs/*.log`
 - Data health check: `.claude/skills/china-stock-analysis/scripts/validate_data.py`
@@ -73,6 +76,22 @@ context belongs in commit messages, not in `context.md`.
 
    Treat critical failures as blockers. Warnings can still be analyzed, but the report must list them in "数据缺口".
 
+   For the full 33-code watchlist, prefer the one-shot pipeline instead of
+   hand-writing the report. It fetches when appropriate, runs all enrichers,
+   validates data, and writes `reports/watchlist_YYYYMMDD.md`.
+
+   Windows:
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File scripts\run_watchlist_analysis.ps1
+   powershell -ExecutionPolicy Bypass -File scripts\run_watchlist_analysis.ps1 -NoFetch -DateTag 20260522
+   ```
+
+   macOS/Linux:
+   ```bash
+   ./scripts/run_watchlist_analysis.sh
+   ./scripts/run_watchlist_analysis.sh --no-fetch --date 20260522
+   ```
+
 4. Fill the three cards.
    - Fundamentals: revenue, net profit,扣非净利润, ROE, gross/net margin, debt ratio, dividends, valuation, and cross-source consistency.
    - Sentiment/funds: price trend, turnover when available, main fund flow, margin data, northbound holdings, LHB, limit-up/limit-down market context.
@@ -92,6 +111,7 @@ context belongs in commit messages, not in `context.md`.
 - Before scheduled refresh, require a clean tracked worktree. If `git pull --rebase` fails, stop; do not fetch, commit, or push on top of stale code.
 - Write new JSON outputs as UTF-8. Legacy UTF-16 snapshots may be read, but should not be produced going forward.
 - Validate generated `data/YYYYMMDD` before staging. Empty or unreadable snapshots must fail the run.
+- After validation, generate `reports/watchlist_YYYYMMDD.md`; scheduled refresh should commit the report together with the data.
 - Do not stage scratch files such as ad hoc audits unless the user asks.
 - `daily_refresh.ps1` can silently skip enrichers (observed 2026-05-20: `_signal_score` missing from snapshots, required manual backfill). After every refresh, post-flight check: open the latest `data/YYYYMMDD/<code>_snapshot.json` and confirm `_signal_score` is present. If absent, re-run the enricher chain (`basic_info → valuation → margin_net → sector_flow → streak → divergence → alpha → score`) and tail the log for the enricher's `WARN` / `exit` lines before declaring the day complete.
 

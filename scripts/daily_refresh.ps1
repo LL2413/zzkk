@@ -8,8 +8,9 @@
 #   4. Run post-fetch enrichers (basic_info / SZ margin net / sector
 #      aggregation / valuation triage) — failures are logged but
 #      non-fatal so fresh fetch data still ships
-#   5. If any data/<today> file changed, commit and push to the tracked branch
-#   6. Log everything to logs/daily_refresh_<date>.log (under .gitignore)
+#   5. Generate reports/watchlist_<today>.md from the validated snapshots
+#   6. If any data/<today> or report file changed, commit and push to the tracked branch
+#   7. Log everything to logs/daily_refresh_<date>.log (under .gitignore)
 #
 # Register once (run PowerShell as the user you want the task to run as):
 #   pwsh scripts\register_daily_task.ps1
@@ -176,10 +177,28 @@ if (Test-Path $validator) {
   Log "WARN: data validator missing: $validator"
 }
 
+# --- generate Markdown watchlist report ---
+$reportRel = "reports\watchlist_{0}.md" -f $dateTag
+$reportPath = Join-Path $root $reportRel
+$analyzer = Join-Path $root 'scripts\analyze_watchlist.py'
+if (Test-Path $analyzer) {
+  Log "generating report $reportPath ..."
+  & $py $analyzer --date $dateTag --output $reportPath 2>&1 | ForEach-Object { Log "  $_" }
+  if ($LASTEXITCODE -ne 0) {
+    Log "abort: report generation failed. Not committing incomplete refresh."
+    exit 7
+  }
+} else {
+  Log "WARN: report generator missing: $analyzer"
+}
+
 # data/ is in .gitignore, so `git status --porcelain` won't list changes there
 # unless we stage with -f first. Stage, then inspect the index.
 git add -f $dataDir 2>&1 | Out-Null
-$staged = @(git diff --cached --name-only -- $dataDir)
+if (Test-Path $reportPath) {
+  git add $reportRel 2>&1 | Out-Null
+}
+$staged = @(git diff --cached --name-only -- $dataDir $reportRel)
 if ($staged.Count -eq 0) {
   Log "no data changes in $dataDir — nothing to commit"
   Log "=== daily_refresh done (no-op) ==="
@@ -187,7 +206,7 @@ if ($staged.Count -eq 0) {
 }
 
 Log "$($staged.Count) file(s) staged, committing..."
-$msg = "Daily data refresh + enrich $dateTag"
+$msg = "Daily data refresh + analysis $dateTag"
 git commit -m $msg 2>&1 | ForEach-Object { Log "  $_" }
 if ($LASTEXITCODE -ne 0) {
   Log "commit failed (exit=$LASTEXITCODE). Aborting."

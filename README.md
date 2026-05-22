@@ -15,9 +15,12 @@
 - Skill 说明：`.claude/skills/china-stock-analysis/SKILL.md`
 - 数据抓取：`scripts/stock.py`
 - 批量刷新：`scripts/fetch_all.ps1`
+- 一键收集+分析：`scripts/run_watchlist_analysis.ps1` / `scripts/run_watchlist_analysis.sh`
+- Watchlist 报告生成：`scripts/analyze_watchlist.py`
 - 每日自动刷新：`scripts/daily_refresh.ps1`
 - 数据体检：`.claude/skills/china-stock-analysis/scripts/validate_data.py`
 - 每日快照：`data/YYYYMMDD/*.json`
+- 每日报告：`reports/watchlist_YYYYMMDD.md`
 
 ## 常用命令
 
@@ -30,7 +33,26 @@ C:\Users\computer\.venv\Scripts\python.exe scripts\stock.py snapshot 002281 --js
 强制刷新默认股票池：
 
 ```powershell
-pwsh scripts\fetch_all.ps1 -Refresh
+powershell -ExecutionPolicy Bypass -File scripts\fetch_all.ps1 -Refresh
+```
+
+一键完成“抓取/补齐/校验/生成报告”（周末默认跳过抓取，分析最新已有交易日）：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\run_watchlist_analysis.ps1
+```
+
+只基于已有数据重新生成某天报告：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\run_watchlist_analysis.ps1 -NoFetch -DateTag 20260522
+```
+
+Mac/Linux：
+
+```bash
+./scripts/run_watchlist_analysis.sh
+./scripts/run_watchlist_analysis.sh --no-fetch --date 20260522
 ```
 
 检查某天数据完整性：
