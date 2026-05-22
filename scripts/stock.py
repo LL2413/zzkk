@@ -558,10 +558,49 @@ def fetch_sentiment(symbol: str, _force: bool = False) -> dict:
     mkt = market_prefix(symbol)
 
     flow, err = safe_retry(ak.stock_individual_fund_flow, stock=symbol, market=mkt)
-    if isinstance(flow, pd.DataFrame):
+    if isinstance(flow, pd.DataFrame) and len(flow) > 0:
         out["fund_flow_recent_20d"] = df_to_records(flow.tail(20))
-    if err:
-        out["errors"]["fund_flow"] = err
+        out["fund_flow_source"] = "em_individual"
+    else:
+        if err:
+            out["errors"]["fund_flow"] = err
+        # Fallback: EM fund-flow RANK endpoint. It lives on the push2
+        # data-center host — a different host from the push2his used by
+        # stock_individual_fund_flow above — so it often stays up when the
+        # primary is throttled (RemoteDisconnected). Trade-off: it returns
+        # only TODAY's row, not 20-day history; but today's 主力净流入 is the
+        # watchlist scan's primary signal. Rank columns are prefixed with the
+        # indicator ("今日主力净流入-净额"); strip the prefix to match the
+        # primary endpoint's schema. Any failure leaves fund_flow_recent_20d
+        # absent — no worse than before.
+        rank_fn = getattr(ak, "stock_individual_fund_flow_rank", None)
+        if rank_fn is not None:
+            rank, rank_err = safe_retry(rank_fn, indicator="今日")
+            if isinstance(rank, pd.DataFrame) and len(rank) > 0:
+                code_col = next((c for c in rank.columns
+                                 if c in ("代码", "股票代码")), None)
+                row = pd.DataFrame()
+                if code_col is not None:
+                    codes = rank[code_col].astype(str).str.zfill(6)
+                    row = rank[codes == symbol]
+                if len(row) > 0:
+                    r = row.iloc[0]
+                    rec = {"日期": date.today().strftime("%Y-%m-%d")}
+                    for c in rank.columns:
+                        if isinstance(c, str) and c.startswith("今日"):
+                            rec[c[len("今日"):]] = r[c]
+                    if "主力净流入-净额" in rec:
+                        out["fund_flow_recent_20d"] = [rec]
+                        out["fund_flow_source"] = "em_rank_today_only"
+                        out["errors"].pop("fund_flow", None)
+                    else:
+                        out["errors"]["fund_flow_fallback"] = (
+                            "rank frame missing 主力净流入 columns")
+                else:
+                    out["errors"]["fund_flow_fallback"] = (
+                        f"{symbol} not found in rank frame")
+            elif rank_err:
+                out["errors"]["fund_flow_fallback"] = rank_err
 
     lhb, err = safe_retry(ak.stock_lhb_detail_em,
                           start_date=(date.today() - timedelta(days=90)).strftime("%Y%m%d"),
