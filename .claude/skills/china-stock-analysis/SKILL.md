@@ -84,12 +84,14 @@ context belongs in commit messages, not in `context.md`.
    ```powershell
    powershell -ExecutionPolicy Bypass -File scripts\run_watchlist_analysis.ps1
    powershell -ExecutionPolicy Bypass -File scripts\run_watchlist_analysis.ps1 -NoFetch -DateTag 20260522
+   powershell -ExecutionPolicy Bypass -File scripts\run_watchlist_analysis.ps1 -NoFetch -DateTag 20260522 -RequireStrongFundFlow
    ```
 
    macOS/Linux:
    ```bash
    ./scripts/run_watchlist_analysis.sh
    ./scripts/run_watchlist_analysis.sh --no-fetch --date 20260522
+   ./scripts/run_watchlist_analysis.sh --no-fetch --date 20260522 --require-strong-fund-flow
    ```
 
 4. Fill the three cards.
@@ -112,6 +114,7 @@ context belongs in commit messages, not in `context.md`.
 - Write new JSON outputs as UTF-8. Legacy UTF-16 snapshots may be read, but should not be produced going forward.
 - Validate generated `data/YYYYMMDD` before staging. Empty or unreadable snapshots must fail the run.
 - After validation, generate `reports/watchlist_YYYYMMDD.md`; scheduled refresh should commit the report together with the data.
+- Treat EastMoney `em_individual` / `em_rank_today_order_split` as the strong fund-flow口径. THS fallback is weak救场; when the user asks for a strong conclusion, require `--require-strong-fund-flow` or `-RequireStrongFundFlow`.
 - Do not stage scratch files such as ad hoc audits unless the user asks.
 - `daily_refresh.ps1` can silently skip enrichers (observed 2026-05-20: `_signal_score` missing from snapshots, required manual backfill). After every refresh, post-flight check: open the latest `data/YYYYMMDD/<code>_snapshot.json` and confirm `_signal_score` is present. If absent, re-run the enricher chain (`basic_info → valuation → margin_net → sector_flow → streak → divergence → alpha → score`) and tail the log for the enricher's `WARN` / `exit` lines before declaring the day complete.
 

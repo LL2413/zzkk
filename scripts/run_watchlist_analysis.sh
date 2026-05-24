@@ -5,6 +5,7 @@
 #   ./scripts/run_watchlist_analysis.sh
 #   ./scripts/run_watchlist_analysis.sh --no-fetch
 #   ./scripts/run_watchlist_analysis.sh --date 20260522
+#   ./scripts/run_watchlist_analysis.sh --require-strong-fund-flow
 #   ./scripts/run_watchlist_analysis.sh --force
 
 set -u -o pipefail
@@ -15,6 +16,7 @@ cd "$ROOT"
 NO_FETCH=0
 NO_ENRICH=0
 FORCE=0
+REQUIRE_STRONG=0
 DATE_TAG=""
 OUTPUT=""
 
@@ -23,6 +25,7 @@ while [[ $# -gt 0 ]]; do
     --no-fetch) NO_FETCH=1; shift ;;
     --no-enrich) NO_ENRICH=1; shift ;;
     --force) FORCE=1; shift ;;
+    --require-strong-fund-flow) REQUIRE_STRONG=1; shift ;;
     --date) DATE_TAG="${2:-}"; shift 2 ;;
     --output) OUTPUT="${2:-}"; shift 2 ;;
     *) echo "ERROR: unknown arg: $1" >&2; exit 2 ;;
@@ -92,7 +95,11 @@ if [[ -z "$OUTPUT" ]]; then
   OUTPUT="reports/watchlist_${DATE_TAG}.md"
 fi
 echo "generating report ..."
-"$PY" scripts/analyze_watchlist.py --date "$DATE_TAG" --output "$OUTPUT"
+ANALYZE_ARGS=(scripts/analyze_watchlist.py --date "$DATE_TAG" --output "$OUTPUT")
+if [[ "$REQUIRE_STRONG" -eq 1 ]]; then
+  ANALYZE_ARGS+=(--require-strong-fund-flow)
+fi
+"$PY" "${ANALYZE_ARGS[@]}"
 REPORT_EXIT=$?
 if [[ "$REPORT_EXIT" -ne 0 ]]; then
   echo "ERROR: report generation failed (exit=$REPORT_EXIT)." >&2

@@ -9,9 +9,10 @@
 ## 数据质量
 
 - snapshot：33 只；资金流可用：33 只；缺失：0 只。
+- 结论强度：弱；EastMoney 超大单+大单强口径覆盖 0/33（0%）。
 - 资金流来源：ths_individual_net_today_only=33。
 - 剩余接口 warning：sector.sector_fund_flow=33, sector.sector_history=4, sector.sector_history_sw=4, sentiment.northbound=3。
-- 口径提醒：THS fallback 是同花顺个股当日净额，不等同 EastMoney 超大单+大单主力口径。适合救场和横向排序，强结论需要后续 EM 恢复后复核。
+- 口径提醒：THS fallback 是同花顺个股当日净额，不等同 EastMoney 超大单+大单主力口径。它只能救场；未升级为 EM 强口径前，不输出强结论。
 
 ## 资金扫描摘要
 

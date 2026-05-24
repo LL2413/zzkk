@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import json
 import statistics
+import sys
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 from datetime import date
@@ -23,6 +24,11 @@ CODE_KEY = "股票代码"
 CHG_KEY = "涨跌幅"
 MAIN_NET_KEY = "主力净流入-净额"
 MAIN_PCT_KEY = "主力净流入-净占比"
+STRONG_FUND_FLOW_SOURCES = {
+    "em_individual",
+    "em_rank_today_order_split",
+    "em_rank_today_only",
+}
 
 
 @dataclass
@@ -71,6 +77,8 @@ def parse_args() -> argparse.Namespace:
     ap.add_argument("--repo-root", type=Path, default=repo_root_from_script())
     ap.add_argument("--output", type=Path, help="Markdown output path")
     ap.add_argument("--lookback", type=int, default=40, help="How many data dirs to use for cross-day streaks")
+    ap.add_argument("--require-strong-fund-flow", action="store_true",
+                    help="fail if any snapshot lacks EastMoney order-split fund-flow口径")
     return ap.parse_args()
 
 
@@ -567,6 +575,11 @@ def build_report(
     errors = error_counts(snapshots)
 
     valid_flows = [r for r in rows if r.main_yi is not None]
+    strong_flows = [r for r in valid_flows if r.source in STRONG_FUND_FLOW_SOURCES]
+    strong_coverage = (len(strong_flows) / len(rows) * 100) if rows else 0
+    conclusion_strength = "强" if len(strong_flows) == len(rows) and rows else (
+        "混合" if strong_flows else "弱"
+    )
     total_flow = sum(r.main_yi or 0 for r in valid_flows)
     pos = sum(1 for r in valid_flows if (r.main_yi or 0) > 0)
     neg = sum(1 for r in valid_flows if (r.main_yi or 0) < 0)
@@ -599,12 +612,17 @@ def build_report(
         "## 数据质量",
         "",
         f"- snapshot：{len(snapshots)} 只；资金流可用：{len(valid_flows)} 只；缺失：{missing_flow} 只。",
+        f"- 结论强度：{conclusion_strength}；EastMoney 超大单+大单强口径覆盖 {len(strong_flows)}/{len(rows)}（{strong_coverage:.0f}%）。",
         f"- 资金流来源：{', '.join(f'{k}={v}' for k, v in sources.items()) or '无'}。",
         f"- 剩余接口 warning：{', '.join(f'{k}={v}' for k, v in errors.items()) or '无'}。",
     ]
 
+    if conclusion_strength == "强":
+        lines.append("- 资金口径：本日资金流使用 EastMoney 分档口径，主力=超大单+大单，可用于较强的当日资金强弱判断。")
+    elif strong_flows:
+        lines.append("- 口径提醒：部分股票已使用 EastMoney 超大单+大单强口径，剩余股票仍为 fallback；跨股票强弱排序需要按来源分层看。")
     if any("ths_individual_net_today_only" in r.source for r in rows):
-        lines.append("- 口径提醒：THS fallback 是同花顺个股当日净额，不等同 EastMoney 超大单+大单主力口径。适合救场和横向排序，强结论需要后续 EM 恢复后复核。")
+        lines.append("- 口径提醒：THS fallback 是同花顺个股当日净额，不等同 EastMoney 超大单+大单主力口径。它只能救场；未升级为 EM 强口径前，不输出强结论。")
 
     lines.extend([
         "",
@@ -745,6 +763,15 @@ def main() -> int:
         for symbol, data in snapshots.items()
     ]
     rows.sort(key=lambda r: r.symbol)
+
+    strong_count = sum(1 for row in rows if row.source in STRONG_FUND_FLOW_SOURCES)
+    if args.require_strong_fund_flow and strong_count < len(rows):
+        print(
+            f"ERROR: strong EM fund-flow coverage {strong_count}/{len(rows)}; "
+            "refusing to generate a strong-conclusion report.",
+            file=sys.stderr,
+        )
+        return 9
 
     report = build_report(repo_root, target, prev, rows, snapshots)
     output = args.output or (repo_root / "reports" / f"watchlist_{target_tag}.md")

@@ -52,6 +52,7 @@ socket.setdefaulttimeout(STOCK_NET_TIMEOUT)
 try:
     import akshare as ak
     import pandas as pd
+    import requests
 except ImportError as e:
     sys.stderr.write(
         f"ERROR: missing dependency: {e}\n"
@@ -182,6 +183,190 @@ def normalize_stock_code(v: Any) -> str:
     if not digits:
         return ""
     return digits[-6:].zfill(6)
+
+
+EM_FUND_FLOW_RANK_FIELDS = "f12,f14,f2,f3,f62,f184,f66,f69,f72,f75,f78,f81,f84,f87,f124"
+EM_FUND_FLOW_RANK_FS = (
+    "m:0+t:6+f:!2,m:0+t:13+f:!2,m:0+t:80+f:!2,"
+    "m:1+t:2+f:!2,m:1+t:23+f:!2,m:0+t:7+f:!2,m:1+t:3+f:!2"
+)
+EM_FUND_FLOW_RANK_URLS = (
+    "https://push2.eastmoney.com/api/qt/clist/get",
+    "http://push2.eastmoney.com/api/qt/clist/get",
+    "https://29.push2.eastmoney.com/api/qt/clist/get",
+    "https://90.push2.eastmoney.com/api/qt/clist/get",
+)
+_EM_FUND_FLOW_RANK_RECORDS: list[dict[str, Any]] | None = None
+_EM_FUND_FLOW_RANK_FAILURE: str | None = None
+
+
+def _em_num(v: Any) -> float | None:
+    """Parse EastMoney numeric fields; '-' and - become None."""
+    if v is None or v == "-":
+        return None
+    try:
+        return float(v)
+    except (TypeError, ValueError):
+        return None
+
+
+def _em_timestamp_date(v: Any) -> str | None:
+    try:
+        ts = int(float(v))
+    except (TypeError, ValueError):
+        return None
+    if ts <= 0:
+        return None
+    return datetime.fromtimestamp(ts).strftime("%Y-%m-%d")
+
+
+def _em_rank_row_to_flow(row: dict[str, Any], as_of: str | None = None) -> dict | None:
+    """Convert EastMoney clist rank fields into the project's fund-flow schema."""
+    symbol = normalize_stock_code(row.get("f12") or row.get("代码") or row.get("股票代码"))
+    main_net = _em_num(row.get("f62"))
+    if not symbol or main_net is None:
+        return None
+    source_date = as_of or _em_timestamp_date(row.get("f124")) or date.today().strftime("%Y-%m-%d")
+    return {
+        "日期": source_date,
+        "股票代码": symbol,
+        "股票简称": row.get("f14") or row.get("名称") or row.get("股票简称"),
+        "最新价": _em_num(row.get("f2")),
+        "涨跌幅": _em_num(row.get("f3")),
+        "主力净流入-净额": main_net,
+        "主力净流入-净占比": _em_num(row.get("f184")),
+        "超大单净流入-净额": _em_num(row.get("f66")),
+        "超大单净流入-净占比": _em_num(row.get("f69")),
+        "大单净流入-净额": _em_num(row.get("f72")),
+        "大单净流入-净占比": _em_num(row.get("f75")),
+        "中单净流入-净额": _em_num(row.get("f78")),
+        "中单净流入-净占比": _em_num(row.get("f81")),
+        "小单净流入-净额": _em_num(row.get("f84")),
+        "小单净流入-净占比": _em_num(row.get("f87")),
+        "fund_flow_quality": "strong_em_order_split",
+        "fund_flow_note": "EastMoney超大单+大单主力口径；主力=f66超大单+f72大单",
+        "em_update_time": _em_timestamp_date(row.get("f124")),
+    }
+
+
+def _ak_rank_row_to_flow(row: dict[str, Any], as_of: str | None = None) -> dict | None:
+    symbol = normalize_stock_code(row.get("代码") or row.get("股票代码"))
+    if not symbol:
+        return None
+    rec: dict[str, Any] = {
+        "日期": as_of or date.today().strftime("%Y-%m-%d"),
+        "股票代码": symbol,
+        "股票简称": row.get("名称") or row.get("股票简称"),
+        "最新价": parse_cn_amount(row.get("最新价")),
+    }
+    for key, value in row.items():
+        if isinstance(key, str) and key.startswith("今日"):
+            rec[key[len("今日"):]] = parse_cn_amount(value)
+    if rec.get("主力净流入-净额") is None:
+        return None
+    rec["fund_flow_quality"] = "strong_em_order_split"
+    rec["fund_flow_note"] = "EastMoney超大单+大单主力口径；来自akshare rank"
+    return rec
+
+
+def fetch_em_rank_fund_flow_today(symbol: str, as_of: str | None = None) -> tuple[dict | None, str | None]:
+    """Fetch today's EM order-split fund flow from the all-market rank endpoint.
+
+    This is the strong same-day口径: EastMoney exposes 主力净流入 plus its
+    超大单/大单/中单/小单 split. It is one-day only, unlike
+    stock_individual_fund_flow's history endpoint, but it is still the correct
+    strong口径 for same-day watchlist scans.
+    """
+    global _EM_FUND_FLOW_RANK_RECORDS, _EM_FUND_FLOW_RANK_FAILURE
+
+    cache = cache_path("all", "em_fund_flow_rank")
+    records: list[dict[str, Any]] | None = _EM_FUND_FLOW_RANK_RECORDS
+    errors: list[str] = []
+
+    if records is None and _EM_FUND_FLOW_RANK_FAILURE:
+        return None, _EM_FUND_FLOW_RANK_FAILURE
+
+    if cache.exists():
+        try:
+            loaded = json.loads(cache.read_text(encoding="utf-8-sig"))
+            if isinstance(loaded, list) and loaded:
+                records = loaded
+                _EM_FUND_FLOW_RANK_RECORDS = records
+        except Exception:
+            records = None
+
+    if records is None:
+        params = {
+            "fid": "f62",
+            "po": "1",
+            "pz": "10000",
+            "pn": "1",
+            "np": "1",
+            "fltt": "2",
+            "invt": "2",
+            "ut": "b2884a393a59ad64002292a3e90d46a5",
+            "fs": EM_FUND_FLOW_RANK_FS,
+            "fields": EM_FUND_FLOW_RANK_FIELDS,
+            "_": int(time.time() * 1000),
+        }
+        headers = {
+            "User-Agent": "Mozilla/5.0",
+            "Referer": "https://data.eastmoney.com/zjlx/detail.html",
+            "Accept": "application/json,text/plain,*/*",
+        }
+        session = requests.Session()
+        session.trust_env = False
+        for url in EM_FUND_FLOW_RANK_URLS:
+            try:
+                resp = session.get(url, params=params, headers=headers, timeout=STOCK_NET_TIMEOUT)
+                if resp.status_code != 200:
+                    errors.append(f"{url}: HTTP {resp.status_code}")
+                    continue
+                payload = resp.json()
+                diff = (payload.get("data") or {}).get("diff") or []
+                if isinstance(diff, list) and diff:
+                    records = diff
+                    _EM_FUND_FLOW_RANK_RECORDS = records
+                    cache.write_text(
+                        json.dumps(records, ensure_ascii=False, default=str, indent=2),
+                        encoding="utf-8",
+                    )
+                    break
+                errors.append(f"{url}: empty diff")
+            except Exception as exc:
+                errors.append(f"{url}: {type(exc).__name__}: {exc}")
+
+    if records:
+        row = next((r for r in records if normalize_stock_code(r.get("f12")) == symbol), None)
+        if row:
+            rec = _em_rank_row_to_flow(row, as_of=as_of)
+            if rec:
+                return rec, None
+        errors.append(f"{symbol} not found in EM rank table")
+
+    # Last resort for the strong口径: AkShare's wrapper around the same EM rank
+    # endpoint. It is slower and can fail during full-market pagination, so use
+    # it only after the direct one-page call above.
+    rank_fn = getattr(ak, "stock_individual_fund_flow_rank", None)
+    if rank_fn is not None:
+        rank, rank_err = safe_retry(rank_fn, indicator="今日", retries=0, delay=0.8)
+        if isinstance(rank, pd.DataFrame) and len(rank) > 0:
+            code_col = next((c for c in rank.columns if c in ("代码", "股票代码")), None)
+            if code_col is not None:
+                codes = rank[code_col].astype(str).str.zfill(6)
+                row_df = rank[codes == symbol]
+                if len(row_df) > 0:
+                    rec = _ak_rank_row_to_flow(row_df.iloc[0].to_dict(), as_of=as_of)
+                    if rec:
+                        return rec, None
+            errors.append(f"{symbol} not found in AkShare rank frame")
+        elif rank_err:
+            errors.append(f"akshare rank: {rank_err}")
+
+    err_msg = "; ".join(errors) if errors else "EM rank unavailable"
+    if records is None:
+        _EM_FUND_FLOW_RANK_FAILURE = err_msg
+    return None, err_msg
 
 
 def fetch_ths_fund_flow_today(symbol: str, as_of: str | None = None) -> tuple[dict | None, str | None]:
@@ -636,18 +821,35 @@ def fetch_sentiment(symbol: str, _force: bool = False) -> dict:
     if isinstance(flow, pd.DataFrame) and len(flow) > 0:
         out["fund_flow_recent_20d"] = df_to_records(flow.tail(20))
         out["fund_flow_source"] = "em_individual"
+        out["fund_flow_quality"] = "strong_em_order_split_history"
     else:
         if err:
             out["errors"]["fund_flow"] = err
-        # Fallback 1: THS per-stock net flow. This is weaker than EM's
+
+        # Fallback 1: EM all-market rank endpoint. This is still the strong
+        # EastMoney order-split口径 (主力=超大单+大单), but today's row only.
+        if "fund_flow_recent_20d" not in out:
+            em_rec, em_err = fetch_em_rank_fund_flow_today(symbol)
+            if em_rec:
+                out["fund_flow_recent_20d"] = [em_rec]
+                out["fund_flow_source"] = "em_rank_today_order_split"
+                out["fund_flow_quality"] = "strong_em_order_split_today_only"
+                out["errors"].pop("fund_flow", None)
+                out["errors"].pop("fund_flow_fallback", None)
+                out["errors"].pop("fund_flow_fallback_ths", None)
+            elif em_err:
+                out["errors"]["fund_flow_fallback_em_rank"] = em_err
+
+        # Fallback 2: THS per-stock net flow. This is weaker than EM's
         # super+large-order "main" classification, but it uses a different
         # host and keeps same-day scans/enrichers alive when EM push2/push2his
-        # is throttled.
+        # is throttled. Reports must mark this as weak口径.
         if "fund_flow_recent_20d" not in out:
             ths_rec, ths_err = fetch_ths_fund_flow_today(symbol)
             if ths_rec:
                 out["fund_flow_recent_20d"] = [ths_rec]
                 out["fund_flow_source"] = "ths_individual_net_today_only"
+                out["fund_flow_quality"] = "weak_ths_net_today_only"
                 out["fund_flow_fallback_note"] = (
                     "THS净额fallback；不是EastMoney超大单+大单主力口径"
                 )
@@ -655,40 +857,6 @@ def fetch_sentiment(symbol: str, _force: bool = False) -> dict:
                 out["errors"].pop("fund_flow_fallback", None)
             elif ths_err:
                 out["errors"]["fund_flow_fallback_ths"] = ths_err
-
-        # Fallback 2: EM fund-flow rank endpoint. It has the better EM main
-        # money-flow口径, but AkShare pages through the full market and can
-        # fail if any page is rate-limited. Try it only if THS is unavailable.
-        if "fund_flow_recent_20d" not in out:
-            rank_fn = getattr(ak, "stock_individual_fund_flow_rank", None)
-            if rank_fn is not None:
-                rank, rank_err = safe_retry(rank_fn, indicator="今日", retries=0, delay=0.8)
-                if isinstance(rank, pd.DataFrame) and len(rank) > 0:
-                    code_col = next((c for c in rank.columns
-                                     if c in ("代码", "股票代码")), None)
-                    row = pd.DataFrame()
-                    if code_col is not None:
-                        codes = rank[code_col].astype(str).str.zfill(6)
-                        row = rank[codes == symbol]
-                    if len(row) > 0:
-                        r = row.iloc[0]
-                        rec = {"日期": date.today().strftime("%Y-%m-%d")}
-                        for c in rank.columns:
-                            if isinstance(c, str) and c.startswith("今日"):
-                                rec[c[len("今日"):]] = r[c]
-                        if "主力净流入-净额" in rec:
-                            out["fund_flow_recent_20d"] = [rec]
-                            out["fund_flow_source"] = "em_rank_today_only"
-                            out["errors"].pop("fund_flow", None)
-                            out["errors"].pop("fund_flow_fallback_ths", None)
-                        else:
-                            out["errors"]["fund_flow_fallback"] = (
-                                "rank frame missing 主力净流入 columns")
-                    else:
-                        out["errors"]["fund_flow_fallback"] = (
-                            f"{symbol} not found in rank frame")
-                elif rank_err:
-                    out["errors"]["fund_flow_fallback"] = rank_err
 
     lhb, err = safe_retry(ak.stock_lhb_detail_em,
                           start_date=(date.today() - timedelta(days=90)).strftime("%Y%m%d"),

@@ -11,6 +11,7 @@ param(
   [switch]$NoFetch,
   [switch]$NoEnrich,
   [switch]$Force,
+  [switch]$RequireStrongFundFlow,
   [string]$DateTag = $null,
   [string]$Python = $null,
   [string]$Output = $null
@@ -95,7 +96,9 @@ if (-not $Output) {
   $Output = Join-Path $root ("reports\watchlist_{0}.md" -f $DateTag)
 }
 Write-Host "generating report ..."
-& $py scripts\analyze_watchlist.py --date $DateTag --output $Output
+$analyzeArgs = @('scripts\analyze_watchlist.py', '--date', $DateTag, '--output', $Output)
+if ($RequireStrongFundFlow) { $analyzeArgs += '--require-strong-fund-flow' }
+& $py @analyzeArgs
 if ($LASTEXITCODE -ne 0) {
   Write-Error "report generation failed (exit=$LASTEXITCODE)."
   exit 8

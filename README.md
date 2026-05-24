@@ -48,11 +48,18 @@ powershell -ExecutionPolicy Bypass -File scripts\run_watchlist_analysis.ps1
 powershell -ExecutionPolicy Bypass -File scripts\run_watchlist_analysis.ps1 -NoFetch -DateTag 20260522
 ```
 
+要求 EastMoney `超大单+大单` 强口径全覆盖；如果拿不到就拒绝生成强结论报告：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\run_watchlist_analysis.ps1 -NoFetch -DateTag 20260522 -RequireStrongFundFlow
+```
+
 Mac/Linux：
 
 ```bash
 ./scripts/run_watchlist_analysis.sh
 ./scripts/run_watchlist_analysis.sh --no-fetch --date 20260522
+./scripts/run_watchlist_analysis.sh --no-fetch --date 20260522 --require-strong-fund-flow
 ```
 
 检查某天数据完整性：
