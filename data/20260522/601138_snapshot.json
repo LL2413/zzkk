@@ -1322,17 +1322,22 @@
         "股票简称": "工业富联",
         "最新价": 67.16,
         "涨跌幅": 2.53,
-        "换手率": 0.98,
-        "主力净流入-净额": 2289000000.0,
-        "主力净流入-净占比": 17.6566,
-        "流入资金": 7627000000.0,
-        "流出资金": 5337000000.0,
-        "成交额": 12963999999.999998,
-        "fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径"
+        "主力净流入-净额": 692294256.0,
+        "主力净流入-净占比": 5.34,
+        "超大单净流入-净额": 593666688.0,
+        "超大单净流入-净占比": 4.58,
+        "大单净流入-净额": 98627568.0,
+        "大单净流入-净占比": 0.76,
+        "中单净流入-净额": -639796912.0,
+        "中单净流入-净占比": -4.94,
+        "小单净流入-净额": -52497344.0,
+        "小单净流入-净占比": -0.4,
+        "fund_flow_quality": "strong_em_order_split",
+        "fund_flow_note": "EastMoney超大单+大单主力口径；来自ulist.np小批量接口",
+        "em_update_time": "2026-05-22"
       }
     ],
-    "fund_flow_source": "ths_individual_net_today_only",
-    "fund_flow_fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径",
+    "fund_flow_source": "em_rank_today_order_split",
     "lhb_recent_3m": [],
     "margin_trading_date": "20260521",
     "margin_trading_today": [
@@ -1717,18 +1722,19 @@
       "direction": "positive",
       "days": 1,
       "as_of": "2026-05-22",
-      "main_pct_today": 17.6566,
-      "main_yi_total_streak": 22.89
+      "main_pct_today": 5.34,
+      "main_yi_total_streak": 6.9229
     },
     "_divergence": {
       "as_of": "2026-05-22",
       "chg_pct": 2.53,
-      "main_pct": 17.6566,
-      "score": -15.1266,
-      "interpretation": "吸筹",
-      "interpretation_en": "accumulation",
-      "note": "主力净流入明显超过价格涨幅，疑似主力低调建仓、价格尚未反应"
-    }
+      "main_pct": 5.34,
+      "score": -2.81,
+      "interpretation": "均衡",
+      "interpretation_en": "balanced",
+      "note": "价格涨跌与主力资金方向基本一致，本次波动可信"
+    },
+    "fund_flow_quality": "strong_em_order_split_today_only"
   },
   "sector": {
     "symbol": "601138",

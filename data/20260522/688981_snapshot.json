@@ -1756,33 +1756,39 @@
         "股票简称": "中芯国际",
         "最新价": 131.33,
         "涨跌幅": 3.23,
-        "换手率": 6.0,
-        "主力净流入-净额": 999000000.0,
-        "主力净流入-净占比": 6.4381,
-        "流入资金": 8258000000.0,
-        "流出资金": 7259000000.0,
-        "成交额": 15516999999.999998,
-        "fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径"
+        "主力净流入-净额": 1570368304.0,
+        "主力净流入-净占比": 10.12,
+        "超大单净流入-净额": 1205286704.0,
+        "超大单净流入-净占比": 7.77,
+        "大单净流入-净额": 365081600.0,
+        "大单净流入-净占比": 2.35,
+        "中单净流入-净额": -655766912.0,
+        "中单净流入-净占比": -4.23,
+        "小单净流入-净额": -914601648.0,
+        "小单净流入-净占比": -5.89,
+        "fund_flow_quality": "strong_em_order_split",
+        "fund_flow_note": "EastMoney超大单+大单主力口径；来自ulist.np小批量接口",
+        "em_update_time": "2026-05-22"
       }
     ],
-    "fund_flow_source": "ths_individual_net_today_only",
-    "fund_flow_fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径",
+    "fund_flow_source": "em_rank_today_order_split",
     "_main_flow_streak": {
       "direction": "positive",
       "days": 1,
       "as_of": "2026-05-22",
-      "main_pct_today": 6.4381,
-      "main_yi_total_streak": 9.99
+      "main_pct_today": 10.12,
+      "main_yi_total_streak": 15.7037
     },
     "_divergence": {
       "as_of": "2026-05-22",
       "chg_pct": 3.23,
-      "main_pct": 6.4381,
-      "score": -3.2081,
+      "main_pct": 10.12,
+      "score": -6.89,
       "interpretation": "漂移",
       "interpretation_en": "drift",
       "note": "价格与主力资金轻微背离，方向仍需观察"
-    }
+    },
+    "fund_flow_quality": "strong_em_order_split_today_only"
   },
   "sector": {
     "symbol": "688981",

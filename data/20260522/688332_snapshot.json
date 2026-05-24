@@ -1750,33 +1750,39 @@
         "股票简称": "中科蓝讯",
         "最新价": 90.26,
         "涨跌幅": -0.02,
-        "换手率": 1.95,
-        "主力净流入-净额": -12870700.0,
-        "主力净流入-净占比": -4.0859,
-        "流入资金": 151000000.0,
-        "流出资金": 164000000.0,
-        "成交额": 315000000.0,
-        "fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径"
+        "主力净流入-净额": -29290236.0,
+        "主力净流入-净占比": -9.29,
+        "超大单净流入-净额": -6674823.0,
+        "超大单净流入-净占比": -2.12,
+        "大单净流入-净额": -22615413.0,
+        "大单净流入-净占比": -7.17,
+        "中单净流入-净额": 11699686.0,
+        "中单净流入-净占比": 3.71,
+        "小单净流入-净额": 17590549.0,
+        "小单净流入-净占比": 5.58,
+        "fund_flow_quality": "strong_em_order_split",
+        "fund_flow_note": "EastMoney超大单+大单主力口径；来自ulist.np小批量接口",
+        "em_update_time": "2026-05-22"
       }
     ],
-    "fund_flow_source": "ths_individual_net_today_only",
-    "fund_flow_fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径",
+    "fund_flow_source": "em_rank_today_order_split",
     "_main_flow_streak": {
       "direction": "negative",
       "days": 1,
       "as_of": "2026-05-22",
-      "main_pct_today": -4.0859,
-      "main_yi_total_streak": -0.1287
+      "main_pct_today": -9.29,
+      "main_yi_total_streak": -0.2929
     },
     "_divergence": {
       "as_of": "2026-05-22",
       "chg_pct": -0.02,
-      "main_pct": -4.0859,
-      "score": 4.0659,
+      "main_pct": -9.29,
+      "score": 9.27,
       "interpretation": "漂移",
       "interpretation_en": "drift",
       "note": "价格与主力资金轻微背离，方向仍需观察"
-    }
+    },
+    "fund_flow_quality": "strong_em_order_split_today_only"
   },
   "sector": {
     "symbol": "688332",

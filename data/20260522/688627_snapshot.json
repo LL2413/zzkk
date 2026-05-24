@@ -1512,33 +1512,39 @@
         "股票简称": "精智达",
         "最新价": 416.97,
         "涨跌幅": 1.71,
-        "换手率": 9.73,
-        "主力净流入-净额": -297000000.0,
-        "主力净流入-净占比": -10.3125,
-        "流入资金": 1291000000.0,
-        "流出资金": 1588000000.0,
-        "成交额": 2880000000.0,
-        "fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径"
+        "主力净流入-净额": 59324352.0,
+        "主力净流入-净占比": 2.06,
+        "超大单净流入-净额": 269901200.0,
+        "超大单净流入-净占比": 9.37,
+        "大单净流入-净额": -210576848.0,
+        "大单净流入-净占比": -7.31,
+        "中单净流入-净额": -55886288.0,
+        "中单净流入-净占比": -1.94,
+        "小单净流入-净额": -3438067.0,
+        "小单净流入-净占比": -0.12,
+        "fund_flow_quality": "strong_em_order_split",
+        "fund_flow_note": "EastMoney超大单+大单主力口径；来自ulist.np小批量接口",
+        "em_update_time": "2026-05-22"
       }
     ],
-    "fund_flow_source": "ths_individual_net_today_only",
-    "fund_flow_fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径",
+    "fund_flow_source": "em_rank_today_order_split",
     "_main_flow_streak": {
-      "direction": "negative",
+      "direction": "positive",
       "days": 1,
       "as_of": "2026-05-22",
-      "main_pct_today": -10.3125,
-      "main_yi_total_streak": -2.97
+      "main_pct_today": 2.06,
+      "main_yi_total_streak": 0.5932
     },
     "_divergence": {
       "as_of": "2026-05-22",
       "chg_pct": 1.71,
-      "main_pct": -10.3125,
-      "score": 12.0225,
-      "interpretation": "拥挤",
-      "interpretation_en": "crowded",
-      "note": "价格涨幅超出主力支持、或跌幅不及主力流出，警惕散户/游资虚撑与拥挤交易"
-    }
+      "main_pct": 2.06,
+      "score": -0.35,
+      "interpretation": "均衡",
+      "interpretation_en": "balanced",
+      "note": "价格涨跌与主力资金方向基本一致，本次波动可信"
+    },
+    "fund_flow_quality": "strong_em_order_split_today_only"
   },
   "sector": {
     "symbol": "688627",
@@ -2001,14 +2007,14 @@
   },
   "_signal_score": {
     "as_of": "2026-05-22",
-    "streak_score": -1,
-    "label_score": -2,
+    "streak_score": 1,
+    "label_score": 1,
     "valuation_score": -1,
-    "total": -4,
-    "tier": "警示",
+    "total": 1,
+    "tier": "中性",
     "lights": {
-      "streak": "🔴",
-      "label": "🔴",
+      "streak": "🟢",
+      "label": "🟢",
       "valuation": "🔴"
     },
     "note": "信号质量评分，非投资建议；streak/label/valuation 三维合成"

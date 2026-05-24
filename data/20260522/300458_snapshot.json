@@ -1804,33 +1804,39 @@
         "股票简称": "全志科技",
         "最新价": 36.66,
         "涨跌幅": 2.37,
-        "换手率": 4.86,
-        "主力净流入-净额": 18314900.0,
-        "主力净流入-净占比": 1.3073,
-        "流入资金": 710000000.0,
-        "流出资金": 691000000.0,
-        "成交额": 1401000000.0,
-        "fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径"
+        "主力净流入-净额": -78902628.0,
+        "主力净流入-净占比": -5.63,
+        "超大单净流入-净额": -7238692.0,
+        "超大单净流入-净占比": -0.52,
+        "大单净流入-净额": -71663936.0,
+        "大单净流入-净占比": -5.12,
+        "中单净流入-净额": -53019392.0,
+        "中单净流入-净占比": -3.79,
+        "小单净流入-净额": 131922016.0,
+        "小单净流入-净占比": 9.42,
+        "fund_flow_quality": "strong_em_order_split",
+        "fund_flow_note": "EastMoney超大单+大单主力口径；来自ulist.np小批量接口",
+        "em_update_time": "2026-05-22"
       }
     ],
-    "fund_flow_source": "ths_individual_net_today_only",
-    "fund_flow_fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径",
+    "fund_flow_source": "em_rank_today_order_split",
     "_main_flow_streak": {
-      "direction": "positive",
+      "direction": "negative",
       "days": 1,
       "as_of": "2026-05-22",
-      "main_pct_today": 1.3073,
-      "main_yi_total_streak": 0.1831
+      "main_pct_today": -5.63,
+      "main_yi_total_streak": -0.789
     },
     "_divergence": {
       "as_of": "2026-05-22",
       "chg_pct": 2.37,
-      "main_pct": 1.3073,
-      "score": 1.0627,
-      "interpretation": "均衡",
-      "interpretation_en": "balanced",
-      "note": "价格涨跌与主力资金方向基本一致，本次波动可信"
-    }
+      "main_pct": -5.63,
+      "score": 8.0,
+      "interpretation": "漂移",
+      "interpretation_en": "drift",
+      "note": "价格与主力资金轻微背离，方向仍需观察"
+    },
+    "fund_flow_quality": "strong_em_order_split_today_only"
   },
   "sector": {
     "symbol": "300458",
@@ -2293,14 +2299,14 @@
   },
   "_signal_score": {
     "as_of": "2026-05-22",
-    "streak_score": 1,
-    "label_score": 1,
+    "streak_score": -1,
+    "label_score": 0,
     "valuation_score": 0,
-    "total": 2,
-    "tier": "偏多",
+    "total": -1,
+    "tier": "警示",
     "lights": {
-      "streak": "🟢",
-      "label": "🟢",
+      "streak": "🔴",
+      "label": "🟡",
       "valuation": "🟡"
     },
     "note": "信号质量评分，非投资建议；streak/label/valuation 三维合成"

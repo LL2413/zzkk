@@ -1790,33 +1790,39 @@
         "股票简称": "道通科技",
         "最新价": 39.91,
         "涨跌幅": 0.86,
-        "换手率": 2.37,
-        "主力净流入-净额": 75576600.0,
-        "主力净流入-净占比": 11.8459,
-        "流入资金": 357000000.0,
-        "流出资金": 281000000.0,
-        "成交额": 638000000.0,
-        "fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径"
+        "主力净流入-净额": -8971598.0,
+        "主力净流入-净占比": -1.41,
+        "超大单净流入-净额": -22616069.0,
+        "超大单净流入-净占比": -3.55,
+        "大单净流入-净额": 13644471.0,
+        "大单净流入-净占比": 2.14,
+        "中单净流入-净额": 26348116.0,
+        "中单净流入-净占比": 4.13,
+        "小单净流入-净额": -17376519.0,
+        "小单净流入-净占比": -2.72,
+        "fund_flow_quality": "strong_em_order_split",
+        "fund_flow_note": "EastMoney超大单+大单主力口径；来自ulist.np小批量接口",
+        "em_update_time": "2026-05-22"
       }
     ],
-    "fund_flow_source": "ths_individual_net_today_only",
-    "fund_flow_fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径",
+    "fund_flow_source": "em_rank_today_order_split",
     "_main_flow_streak": {
-      "direction": "positive",
+      "direction": "negative",
       "days": 1,
       "as_of": "2026-05-22",
-      "main_pct_today": 11.8459,
-      "main_yi_total_streak": 0.7558
+      "main_pct_today": -1.41,
+      "main_yi_total_streak": -0.0897
     },
     "_divergence": {
       "as_of": "2026-05-22",
       "chg_pct": 0.86,
-      "main_pct": 11.8459,
-      "score": -10.9859,
-      "interpretation": "吸筹",
-      "interpretation_en": "accumulation",
-      "note": "主力净流入明显超过价格涨幅，疑似主力低调建仓、价格尚未反应"
-    }
+      "main_pct": -1.41,
+      "score": 2.27,
+      "interpretation": "均衡",
+      "interpretation_en": "balanced",
+      "note": "价格涨跌与主力资金方向基本一致，本次波动可信"
+    },
+    "fund_flow_quality": "strong_em_order_split_today_only"
   },
   "sector": {
     "symbol": "688208",
@@ -2279,13 +2285,13 @@
   },
   "_signal_score": {
     "as_of": "2026-05-22",
-    "streak_score": 1,
+    "streak_score": -1,
     "label_score": 1,
     "valuation_score": 1,
-    "total": 3,
-    "tier": "偏多",
+    "total": 1,
+    "tier": "中性",
     "lights": {
-      "streak": "🟢",
+      "streak": "🔴",
       "label": "🟢",
       "valuation": "🟢"
     },

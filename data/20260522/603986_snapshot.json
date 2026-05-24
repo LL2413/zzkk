@@ -1800,33 +1800,39 @@
         "股票简称": "兆易创新",
         "最新价": 468.74,
         "涨跌幅": 8.53,
-        "换手率": 9.55,
-        "主力净流入-净额": 1399000000.0,
-        "主力净流入-净占比": 4.8355,
-        "流入资金": 15165000000.0,
-        "流出资金": 13766999999.999998,
-        "成交额": 28932000000.0,
-        "fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径"
+        "主力净流入-净额": 1834991104.0,
+        "主力净流入-净占比": 6.34,
+        "超大单净流入-净额": 2134023424.0,
+        "超大单净流入-净占比": 7.38,
+        "大单净流入-净额": -299032320.0,
+        "大单净流入-净占比": -1.03,
+        "中单净流入-净额": -1833525248.0,
+        "中单净流入-净占比": -6.34,
+        "小单净流入-净额": -1465625.0,
+        "小单净流入-净占比": -0.01,
+        "fund_flow_quality": "strong_em_order_split",
+        "fund_flow_note": "EastMoney超大单+大单主力口径；来自ulist.np小批量接口",
+        "em_update_time": "2026-05-22"
       }
     ],
-    "fund_flow_source": "ths_individual_net_today_only",
-    "fund_flow_fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径",
+    "fund_flow_source": "em_rank_today_order_split",
     "_main_flow_streak": {
       "direction": "positive",
       "days": 1,
       "as_of": "2026-05-22",
-      "main_pct_today": 4.8355,
-      "main_yi_total_streak": 13.99
+      "main_pct_today": 6.34,
+      "main_yi_total_streak": 18.3499
     },
     "_divergence": {
       "as_of": "2026-05-22",
       "chg_pct": 8.53,
-      "main_pct": 4.8355,
-      "score": 3.6945,
-      "interpretation": "漂移",
-      "interpretation_en": "drift",
-      "note": "价格与主力资金轻微背离，方向仍需观察"
-    }
+      "main_pct": 6.34,
+      "score": 2.19,
+      "interpretation": "均衡",
+      "interpretation_en": "balanced",
+      "note": "价格涨跌与主力资金方向基本一致，本次波动可信"
+    },
+    "fund_flow_quality": "strong_em_order_split_today_only"
   },
   "sector": {
     "symbol": "603986",
@@ -2290,13 +2296,13 @@
   "_signal_score": {
     "as_of": "2026-05-22",
     "streak_score": 1,
-    "label_score": 0,
+    "label_score": 1,
     "valuation_score": -1,
-    "total": 0,
+    "total": 1,
     "tier": "中性",
     "lights": {
       "streak": "🟢",
-      "label": "🟡",
+      "label": "🟢",
       "valuation": "🔴"
     },
     "note": "信号质量评分，非投资建议；streak/label/valuation 三维合成"

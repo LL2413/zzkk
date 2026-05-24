@@ -1923,33 +1923,39 @@
         "股票简称": "沃格光电",
         "最新价": 80.0,
         "涨跌幅": -1.26,
-        "换手率": 13.53,
-        "主力净流入-净额": -202999999.99999997,
-        "主力净流入-净占比": -8.2925,
-        "流入资金": 1123000000.0,
-        "流出资金": 1326000000.0,
-        "成交额": 2448000000.0,
-        "fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径"
+        "主力净流入-净额": -154689776.0,
+        "主力净流入-净占比": -6.32,
+        "超大单净流入-净额": -210141200.0,
+        "超大单净流入-净占比": -8.58,
+        "大单净流入-净额": 55451424.0,
+        "大单净流入-净占比": 2.26,
+        "中单净流入-净额": 55262624.0,
+        "中单净流入-净占比": 2.26,
+        "小单净流入-净额": 99427152.0,
+        "小单净流入-净占比": 4.06,
+        "fund_flow_quality": "strong_em_order_split",
+        "fund_flow_note": "EastMoney超大单+大单主力口径；来自ulist.np小批量接口",
+        "em_update_time": "2026-05-22"
       }
     ],
-    "fund_flow_source": "ths_individual_net_today_only",
-    "fund_flow_fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径",
+    "fund_flow_source": "em_rank_today_order_split",
     "_main_flow_streak": {
       "direction": "negative",
       "days": 1,
       "as_of": "2026-05-22",
-      "main_pct_today": -8.2925,
-      "main_yi_total_streak": -2.03
+      "main_pct_today": -6.32,
+      "main_yi_total_streak": -1.5469
     },
     "_divergence": {
       "as_of": "2026-05-22",
       "chg_pct": -1.26,
-      "main_pct": -8.2925,
-      "score": 7.0325,
+      "main_pct": -6.32,
+      "score": 5.06,
       "interpretation": "漂移",
       "interpretation_en": "drift",
       "note": "价格与主力资金轻微背离，方向仍需观察"
-    }
+    },
+    "fund_flow_quality": "strong_em_order_split_today_only"
   },
   "sector": {
     "symbol": "603773",

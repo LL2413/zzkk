@@ -1818,33 +1818,39 @@
         "股票简称": "长电科技",
         "最新价": 72.88,
         "涨跌幅": 9.04,
-        "换手率": 16.04,
-        "主力净流入-净额": 632000000.0,
-        "主力净流入-净占比": 3.1885,
-        "流入资金": 10226000000.0,
-        "流出资金": 9595000000.0,
-        "成交额": 19821000000.0,
-        "fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径"
+        "主力净流入-净额": 1161338880.0,
+        "主力净流入-净占比": 5.86,
+        "超大单净流入-净额": 954644736.0,
+        "超大单净流入-净占比": 4.82,
+        "大单净流入-净额": 206694144.0,
+        "大单净流入-净占比": 1.04,
+        "中单净流入-净额": -561615872.0,
+        "中单净流入-净占比": -2.83,
+        "小单净流入-净额": -599723232.0,
+        "小单净流入-净占比": -3.03,
+        "fund_flow_quality": "strong_em_order_split",
+        "fund_flow_note": "EastMoney超大单+大单主力口径；来自ulist.np小批量接口",
+        "em_update_time": "2026-05-22"
       }
     ],
-    "fund_flow_source": "ths_individual_net_today_only",
-    "fund_flow_fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径",
+    "fund_flow_source": "em_rank_today_order_split",
     "_main_flow_streak": {
       "direction": "positive",
       "days": 1,
       "as_of": "2026-05-22",
-      "main_pct_today": 3.1885,
-      "main_yi_total_streak": 6.32
+      "main_pct_today": 5.86,
+      "main_yi_total_streak": 11.6134
     },
     "_divergence": {
       "as_of": "2026-05-22",
       "chg_pct": 9.04,
-      "main_pct": 3.1885,
-      "score": 5.8515,
+      "main_pct": 5.86,
+      "score": 3.18,
       "interpretation": "漂移",
       "interpretation_en": "drift",
       "note": "价格与主力资金轻微背离，方向仍需观察"
-    }
+    },
+    "fund_flow_quality": "strong_em_order_split_today_only"
   },
   "sector": {
     "symbol": "600584",

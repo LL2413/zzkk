@@ -196,8 +196,82 @@ EM_FUND_FLOW_RANK_URLS = (
     "https://29.push2.eastmoney.com/api/qt/clist/get",
     "https://90.push2.eastmoney.com/api/qt/clist/get",
 )
+EM_FUND_FLOW_ULIST_URLS = (
+    "https://push2.eastmoney.com/api/qt/ulist.np/get",
+    "https://29.push2.eastmoney.com/api/qt/ulist.np/get",
+    "https://90.push2.eastmoney.com/api/qt/ulist.np/get",
+)
 _EM_FUND_FLOW_RANK_RECORDS: list[dict[str, Any]] | None = None
 _EM_FUND_FLOW_RANK_FAILURE: str | None = None
+_EM_FUND_FLOW_ULIST_RECORDS: dict[str, dict[str, Any]] | None = None
+
+
+def _em_secid(symbol: str) -> str:
+    """EastMoney secid: 1.x for SH, 0.x for SZ/BJ-style watchlist symbols."""
+    code = normalize_stock_code(symbol)
+    market = "1" if code.startswith(("6", "9")) else "0"
+    return f"{market}.{code}"
+
+
+def _chunks(items: list[str], size: int) -> list[list[str]]:
+    return [items[i:i + size] for i in range(0, len(items), size)]
+
+
+def _proxy_url(value: str | None) -> str | None:
+    if not value:
+        return None
+    value = value.strip()
+    if not value:
+        return None
+    if "://" not in value:
+        value = "http://" + value
+    return value
+
+
+def _windows_system_proxy() -> dict[str, str] | None:
+    if not sys.platform.startswith("win"):
+        return None
+    try:
+        import winreg
+
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Internet Settings") as key:
+            enabled = winreg.QueryValueEx(key, "ProxyEnable")[0]
+            if not enabled:
+                return None
+            server = winreg.QueryValueEx(key, "ProxyServer")[0]
+    except Exception:
+        return None
+
+    if not isinstance(server, str) or not server.strip():
+        return None
+    if "=" not in server:
+        proxy = _proxy_url(server)
+        return {"http": proxy, "https": proxy} if proxy else None
+
+    parsed: dict[str, str] = {}
+    for part in server.split(";"):
+        if "=" not in part:
+            continue
+        scheme, value = part.split("=", 1)
+        proxy = _proxy_url(value)
+        if proxy and scheme.strip().lower() in {"http", "https"}:
+            parsed[scheme.strip().lower()] = proxy
+    if "http" in parsed and "https" not in parsed:
+        parsed["https"] = parsed["http"]
+    if "https" in parsed and "http" not in parsed:
+        parsed["http"] = parsed["https"]
+    return parsed or None
+
+
+def _em_proxy_candidates() -> list[tuple[str, dict[str, str] | None]]:
+    candidates: list[tuple[str, dict[str, str] | None]] = [("direct", None)]
+    explicit = _proxy_url(os.environ.get("STOCK_HTTP_PROXY") or os.environ.get("STOCK_PROXY"))
+    if explicit:
+        candidates.append(("STOCK_PROXY", {"http": explicit, "https": explicit}))
+    win_proxy = _windows_system_proxy()
+    if win_proxy:
+        candidates.append(("windows_proxy", win_proxy))
+    return candidates
 
 
 def _em_num(v: Any) -> float | None:
@@ -269,6 +343,123 @@ def _ak_rank_row_to_flow(row: dict[str, Any], as_of: str | None = None) -> dict 
     return rec
 
 
+def fetch_em_ulist_fund_flow_today(symbols: list[str], as_of: str | None = None) -> tuple[dict[str, dict], str | None]:
+    """Fetch EM order-split fund flow for specific symbols via small batched quotes.
+
+    The full-market clist rank endpoint is prone to gateway resets on some
+    networks. ulist.np lets us request only the watchlist secids while still
+    returning f62/f66/f72/f78/f84, so it is the preferred strong口径 path.
+    """
+    global _EM_FUND_FLOW_ULIST_RECORDS
+
+    wanted = []
+    for symbol in symbols:
+        code = normalize_stock_code(symbol)
+        if code and code not in wanted:
+            wanted.append(code)
+    if not wanted:
+        return {}, "no symbols requested"
+
+    cache = cache_path("all", "em_fund_flow_ulist")
+    raw_by_symbol: dict[str, dict[str, Any]] = _EM_FUND_FLOW_ULIST_RECORDS or {}
+    errors: list[str] = []
+
+    if not raw_by_symbol and cache.exists():
+        try:
+            loaded = json.loads(cache.read_text(encoding="utf-8-sig"))
+            if isinstance(loaded, list):
+                raw_by_symbol = {
+                    normalize_stock_code(row.get("f12")): row
+                    for row in loaded
+                    if normalize_stock_code(row.get("f12"))
+                }
+            elif isinstance(loaded, dict):
+                raw_by_symbol = {
+                    normalize_stock_code(k): v
+                    for k, v in loaded.items()
+                    if normalize_stock_code(k) and isinstance(v, dict)
+                }
+            _EM_FUND_FLOW_ULIST_RECORDS = raw_by_symbol
+        except Exception:
+            raw_by_symbol = {}
+
+    missing = [symbol for symbol in wanted if symbol not in raw_by_symbol]
+    if missing:
+        headers = {
+            "User-Agent": "Mozilla/5.0",
+            "Referer": "https://data.eastmoney.com/zjlx/detail.html",
+            "Accept": "application/json,text/plain,*/*",
+        }
+        session = requests.Session()
+        session.trust_env = False
+        proxy_candidates = _em_proxy_candidates()
+        for chunk in _chunks(missing, 40):
+            params = {
+                "secids": ",".join(_em_secid(symbol) for symbol in chunk),
+                "ut": "b2884a393a59ad64002292a3e90d46a5",
+                "fltt": "2",
+                "invt": "2",
+                "fields": EM_FUND_FLOW_RANK_FIELDS,
+                "_": int(time.time() * 1000),
+            }
+            chunk_ok = False
+            for url in EM_FUND_FLOW_ULIST_URLS:
+                for proxy_label, proxies in proxy_candidates:
+                    try:
+                        resp = session.get(
+                            url,
+                            params=params,
+                            headers=headers,
+                            timeout=STOCK_NET_TIMEOUT,
+                            proxies=proxies,
+                        )
+                        if resp.status_code != 200:
+                            errors.append(f"{url} [{proxy_label}]: HTTP {resp.status_code}")
+                            continue
+                        payload = resp.json()
+                        diff = (payload.get("data") or {}).get("diff") or []
+                        if not isinstance(diff, list) or not diff:
+                            errors.append(f"{url} [{proxy_label}]: empty diff")
+                            continue
+                        for row in diff:
+                            code = normalize_stock_code(row.get("f12"))
+                            if code:
+                                raw_by_symbol[code] = row
+                        chunk_ok = True
+                        break
+                    except Exception as exc:
+                        errors.append(f"{url} [{proxy_label}]: {type(exc).__name__}: {exc}")
+                if chunk_ok:
+                    break
+            if not chunk_ok:
+                errors.append(f"ulist chunk failed: {','.join(chunk)}")
+
+        if raw_by_symbol:
+            _EM_FUND_FLOW_ULIST_RECORDS = raw_by_symbol
+            try:
+                cache.write_text(
+                    json.dumps(list(raw_by_symbol.values()), ensure_ascii=False, default=str, indent=2),
+                    encoding="utf-8",
+                )
+            except Exception:
+                pass
+
+    result: dict[str, dict] = {}
+    for symbol in wanted:
+        row = raw_by_symbol.get(symbol)
+        if not row:
+            continue
+        rec = _em_rank_row_to_flow(row, as_of=as_of)
+        if rec:
+            rec["fund_flow_note"] = "EastMoney超大单+大单主力口径；来自ulist.np小批量接口"
+            result[symbol] = rec
+
+    missing_after = [symbol for symbol in wanted if symbol not in result]
+    if missing_after:
+        errors.append(f"missing EM ulist flow: {','.join(missing_after)}")
+    return result, "; ".join(errors) if errors else None
+
+
 def fetch_em_rank_fund_flow_today(symbol: str, as_of: str | None = None) -> tuple[dict | None, str | None]:
     """Fetch today's EM order-split fund flow from the all-market rank endpoint.
 
@@ -279,9 +470,16 @@ def fetch_em_rank_fund_flow_today(symbol: str, as_of: str | None = None) -> tupl
     """
     global _EM_FUND_FLOW_RANK_RECORDS, _EM_FUND_FLOW_RANK_FAILURE
 
+    symbol = normalize_stock_code(symbol)
     cache = cache_path("all", "em_fund_flow_rank")
     records: list[dict[str, Any]] | None = _EM_FUND_FLOW_RANK_RECORDS
     errors: list[str] = []
+
+    ulist, ulist_err = fetch_em_ulist_fund_flow_today([symbol], as_of=as_of)
+    if symbol in ulist:
+        return ulist[symbol], None
+    if ulist_err:
+        errors.append(f"EM ulist: {ulist_err}")
 
     if records is None and _EM_FUND_FLOW_RANK_FAILURE:
         return None, _EM_FUND_FLOW_RANK_FAILURE

@@ -72,6 +72,13 @@ def main() -> int:
     patched = skipped = failed = 0
     first_error = None
     snapshots = sorted(target_dir.glob("*_snapshot.json"))
+    symbols = [snap.name[:6] for snap in snapshots]
+    batch_records, batch_error = stock.fetch_em_ulist_fund_flow_today(symbols, as_of=target_iso)
+    if batch_records:
+        print(f"EM ulist batch: loaded {len(batch_records)}/{len(symbols)} strong-flow records")
+    elif batch_error:
+        print(f"EM ulist batch unavailable: {batch_error}")
+
     for snap in snapshots:
         symbol = snap.name[:6]
         try:
@@ -88,7 +95,10 @@ def main() -> int:
                 skipped += 1
                 continue
 
-        rec, err = stock.fetch_em_rank_fund_flow_today(symbol, as_of=target_iso)
+        rec = batch_records.get(symbol)
+        err = batch_error if rec is None else None
+        if rec is None:
+            rec, err = stock.fetch_em_rank_fund_flow_today(symbol, as_of=target_iso)
         if not rec:
             if first_error is None and err:
                 first_error = err

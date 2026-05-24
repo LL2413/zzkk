@@ -1256,17 +1256,22 @@
         "股票简称": "华虹公司",
         "最新价": 179.0,
         "涨跌幅": 5.92,
-        "换手率": 9.78,
-        "主力净流入-净额": 719000000.0,
-        "主力净流入-净占比": 10.3722,
-        "流入资金": 3825000000.0,
-        "流出资金": 3107000000.0,
-        "成交额": 6931999999.999999,
-        "fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径"
+        "主力净流入-净额": 926582336.0,
+        "主力净流入-净占比": 13.37,
+        "超大单净流入-净额": 639798560.0,
+        "超大单净流入-净占比": 9.23,
+        "大单净流入-净额": 286783776.0,
+        "大单净流入-净占比": 4.14,
+        "中单净流入-净额": -343642768.0,
+        "中单净流入-净占比": -4.96,
+        "小单净流入-净额": -582939552.0,
+        "小单净流入-净占比": -8.41,
+        "fund_flow_quality": "strong_em_order_split",
+        "fund_flow_note": "EastMoney超大单+大单主力口径；来自ulist.np小批量接口",
+        "em_update_time": "2026-05-22"
       }
     ],
-    "fund_flow_source": "ths_individual_net_today_only",
-    "fund_flow_fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径",
+    "fund_flow_source": "em_rank_today_order_split",
     "lhb_recent_3m": [
       {
         "���": "1�һ������룬�ɹ���48.87%",
@@ -1470,18 +1475,19 @@
       "direction": "positive",
       "days": 1,
       "as_of": "2026-05-22",
-      "main_pct_today": 10.3722,
-      "main_yi_total_streak": 7.19
+      "main_pct_today": 13.37,
+      "main_yi_total_streak": 9.2658
     },
     "_divergence": {
       "as_of": "2026-05-22",
       "chg_pct": 5.92,
-      "main_pct": 10.3722,
-      "score": -4.4522,
+      "main_pct": 13.37,
+      "score": -7.45,
       "interpretation": "漂移",
       "interpretation_en": "drift",
       "note": "价格与主力资金轻微背离，方向仍需观察"
-    }
+    },
+    "fund_flow_quality": "strong_em_order_split_today_only"
   },
   "sector": {
     "symbol": "688347",

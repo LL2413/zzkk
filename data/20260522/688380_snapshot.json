@@ -1740,33 +1740,39 @@
         "股票简称": "中微半导",
         "最新价": 50.52,
         "涨跌幅": -0.39,
-        "换手率": 3.85,
-        "主力净流入-净额": -63401400.0,
-        "主力净流入-净占比": -8.1284,
-        "流入资金": 358000000.0,
-        "流出资金": 422000000.0,
-        "成交额": 780000000.0,
-        "fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径"
+        "主力净流入-净额": -44442358.0,
+        "主力净流入-净占比": -5.7,
+        "超大单净流入-净额": -16816943.0,
+        "超大单净流入-净占比": -2.16,
+        "大单净流入-净额": -27625415.0,
+        "大单净流入-净占比": -3.54,
+        "中单净流入-净额": 34791279.0,
+        "中单净流入-净占比": 4.46,
+        "小单净流入-净额": 9651074.0,
+        "小单净流入-净占比": 1.24,
+        "fund_flow_quality": "strong_em_order_split",
+        "fund_flow_note": "EastMoney超大单+大单主力口径；来自ulist.np小批量接口",
+        "em_update_time": "2026-05-22"
       }
     ],
-    "fund_flow_source": "ths_individual_net_today_only",
-    "fund_flow_fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径",
+    "fund_flow_source": "em_rank_today_order_split",
     "_main_flow_streak": {
       "direction": "negative",
       "days": 1,
       "as_of": "2026-05-22",
-      "main_pct_today": -8.1284,
-      "main_yi_total_streak": -0.634
+      "main_pct_today": -5.7,
+      "main_yi_total_streak": -0.4444
     },
     "_divergence": {
       "as_of": "2026-05-22",
       "chg_pct": -0.39,
-      "main_pct": -8.1284,
-      "score": 7.7384,
+      "main_pct": -5.7,
+      "score": 5.31,
       "interpretation": "漂移",
       "interpretation_en": "drift",
       "note": "价格与主力资金轻微背离，方向仍需观察"
-    }
+    },
+    "fund_flow_quality": "strong_em_order_split_today_only"
   },
   "sector": {
     "symbol": "688380",

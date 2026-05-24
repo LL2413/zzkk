@@ -1826,33 +1826,39 @@
         "股票简称": "菲利华",
         "最新价": 140.15,
         "涨跌幅": 9.15,
-        "换手率": 10.19,
-        "主力净流入-净额": 1110000000.0,
-        "主力净流入-净占比": 15.5484,
-        "流入资金": 4124000000.0,
-        "流出资金": 3014000000.0,
-        "成交额": 7139000000.0,
-        "fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径"
+        "主力净流入-净额": 270167184.0,
+        "主力净流入-净占比": 3.78,
+        "超大单净流入-净额": 203276944.0,
+        "超大单净流入-净占比": 2.85,
+        "大单净流入-净额": 66890240.0,
+        "大单净流入-净占比": 0.94,
+        "中单净流入-净额": -314179200.0,
+        "中单净流入-净占比": -4.4,
+        "小单净流入-净额": 44012016.0,
+        "小单净流入-净占比": 0.62,
+        "fund_flow_quality": "strong_em_order_split",
+        "fund_flow_note": "EastMoney超大单+大单主力口径；来自ulist.np小批量接口",
+        "em_update_time": "2026-05-22"
       }
     ],
-    "fund_flow_source": "ths_individual_net_today_only",
-    "fund_flow_fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径",
+    "fund_flow_source": "em_rank_today_order_split",
     "_main_flow_streak": {
       "direction": "positive",
       "days": 1,
       "as_of": "2026-05-22",
-      "main_pct_today": 15.5484,
-      "main_yi_total_streak": 11.1
+      "main_pct_today": 3.78,
+      "main_yi_total_streak": 2.7017
     },
     "_divergence": {
       "as_of": "2026-05-22",
       "chg_pct": 9.15,
-      "main_pct": 15.5484,
-      "score": -6.3984,
+      "main_pct": 3.78,
+      "score": 5.37,
       "interpretation": "漂移",
       "interpretation_en": "drift",
       "note": "价格与主力资金轻微背离，方向仍需观察"
-    }
+    },
+    "fund_flow_quality": "strong_em_order_split_today_only"
   },
   "sector": {
     "symbol": "300395",

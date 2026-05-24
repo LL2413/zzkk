@@ -1849,33 +1849,39 @@
         "股票简称": "立讯精密",
         "最新价": 72.4,
         "涨跌幅": 6.67,
-        "换手率": 2.57,
-        "主力净流入-净额": 974000000.0,
-        "主力净流入-净占比": 7.3222,
-        "流入资金": 6803000000.0,
-        "流出资金": 5829000000.0,
-        "成交额": 13302000000.000002,
-        "fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径"
+        "主力净流入-净额": 1143874864.0,
+        "主力净流入-净占比": 8.6,
+        "超大单净流入-净额": 1014622752.0,
+        "超大单净流入-净占比": 7.63,
+        "大单净流入-净额": 129252112.0,
+        "大单净流入-净占比": 0.97,
+        "中单净流入-净额": -298014448.0,
+        "中单净流入-净占比": -2.24,
+        "小单净流入-净额": -845860416.0,
+        "小单净流入-净占比": -6.36,
+        "fund_flow_quality": "strong_em_order_split",
+        "fund_flow_note": "EastMoney超大单+大单主力口径；来自ulist.np小批量接口",
+        "em_update_time": "2026-05-22"
       }
     ],
-    "fund_flow_source": "ths_individual_net_today_only",
-    "fund_flow_fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径",
+    "fund_flow_source": "em_rank_today_order_split",
     "_main_flow_streak": {
       "direction": "positive",
       "days": 1,
       "as_of": "2026-05-22",
-      "main_pct_today": 7.3222,
-      "main_yi_total_streak": 9.74
+      "main_pct_today": 8.6,
+      "main_yi_total_streak": 11.4387
     },
     "_divergence": {
       "as_of": "2026-05-22",
       "chg_pct": 6.67,
-      "main_pct": 7.3222,
-      "score": -0.6522,
+      "main_pct": 8.6,
+      "score": -1.93,
       "interpretation": "均衡",
       "interpretation_en": "balanced",
       "note": "价格涨跌与主力资金方向基本一致，本次波动可信"
-    }
+    },
+    "fund_flow_quality": "strong_em_order_split_today_only"
   },
   "sector": {
     "symbol": "002475",

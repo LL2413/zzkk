@@ -1811,33 +1811,39 @@
         "股票简称": "长飞光纤",
         "最新价": 388.66,
         "涨跌幅": 3.42,
-        "换手率": 2.48,
-        "主力净流入-净额": 713000000.0,
-        "主力净流入-净占比": 18.4143,
-        "流入资金": 2293000000.0,
-        "流出资金": 1580000000.0,
-        "成交额": 3872000000.0,
-        "fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径"
+        "主力净流入-净额": 372218096.0,
+        "主力净流入-净占比": 9.61,
+        "超大单净流入-净额": 278570336.0,
+        "超大单净流入-净占比": 7.19,
+        "大单净流入-净额": 93647760.0,
+        "大单净流入-净占比": 2.42,
+        "中单净流入-净额": -201383680.0,
+        "中单净流入-净占比": -5.2,
+        "小单净流入-净额": -170834416.0,
+        "小单净流入-净占比": -4.41,
+        "fund_flow_quality": "strong_em_order_split",
+        "fund_flow_note": "EastMoney超大单+大单主力口径；来自ulist.np小批量接口",
+        "em_update_time": "2026-05-22"
       }
     ],
-    "fund_flow_source": "ths_individual_net_today_only",
-    "fund_flow_fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径",
+    "fund_flow_source": "em_rank_today_order_split",
     "_main_flow_streak": {
       "direction": "positive",
       "days": 1,
       "as_of": "2026-05-22",
-      "main_pct_today": 18.4143,
-      "main_yi_total_streak": 7.13
+      "main_pct_today": 9.61,
+      "main_yi_total_streak": 3.7222
     },
     "_divergence": {
       "as_of": "2026-05-22",
       "chg_pct": 3.42,
-      "main_pct": 18.4143,
-      "score": -14.9943,
-      "interpretation": "吸筹",
-      "interpretation_en": "accumulation",
-      "note": "主力净流入明显超过价格涨幅，疑似主力低调建仓、价格尚未反应"
-    }
+      "main_pct": 9.61,
+      "score": -6.19,
+      "interpretation": "漂移",
+      "interpretation_en": "drift",
+      "note": "价格与主力资金轻微背离，方向仍需观察"
+    },
+    "fund_flow_quality": "strong_em_order_split_today_only"
   },
   "sector": {
     "symbol": "601869",
@@ -2301,13 +2307,13 @@
   "_signal_score": {
     "as_of": "2026-05-22",
     "streak_score": 1,
-    "label_score": 1,
+    "label_score": 0,
     "valuation_score": -1,
-    "total": 1,
+    "total": 0,
     "tier": "中性",
     "lights": {
       "streak": "🟢",
-      "label": "🟢",
+      "label": "🟡",
       "valuation": "🔴"
     },
     "note": "信号质量评分，非投资建议；streak/label/valuation 三维合成"

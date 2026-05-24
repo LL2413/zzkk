@@ -1802,33 +1802,39 @@
         "股票简称": "三环集团",
         "最新价": 115.0,
         "涨跌幅": 16.79,
-        "换手率": 4.41,
-        "主力净流入-净额": -447000000.0,
-        "主力净流入-净占比": -4.8267,
-        "流入资金": 4407000000.0,
-        "流出资金": 4854000000.0,
-        "成交额": 9261000000.0,
-        "fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径"
+        "主力净流入-净额": -227651728.0,
+        "主力净流入-净占比": -2.46,
+        "超大单净流入-净额": -72401744.0,
+        "超大单净流入-净占比": -0.78,
+        "大单净流入-净额": -155249984.0,
+        "大单净流入-净占比": -1.68,
+        "中单净流入-净额": 55503808.0,
+        "中单净流入-净占比": 0.6,
+        "小单净流入-净额": 172147920.0,
+        "小单净流入-净占比": 1.86,
+        "fund_flow_quality": "strong_em_order_split",
+        "fund_flow_note": "EastMoney超大单+大单主力口径；来自ulist.np小批量接口",
+        "em_update_time": "2026-05-22"
       }
     ],
-    "fund_flow_source": "ths_individual_net_today_only",
-    "fund_flow_fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径",
+    "fund_flow_source": "em_rank_today_order_split",
     "_main_flow_streak": {
       "direction": "negative",
       "days": 1,
       "as_of": "2026-05-22",
-      "main_pct_today": -4.8267,
-      "main_yi_total_streak": -4.47
+      "main_pct_today": -2.46,
+      "main_yi_total_streak": -2.2765
     },
     "_divergence": {
       "as_of": "2026-05-22",
       "chg_pct": 16.79,
-      "main_pct": -4.8267,
-      "score": 21.6167,
+      "main_pct": -2.46,
+      "score": 19.25,
       "interpretation": "拥挤",
       "interpretation_en": "crowded",
       "note": "价格涨幅超出主力支持、或跌幅不及主力流出，警惕散户/游资虚撑与拥挤交易"
-    }
+    },
+    "fund_flow_quality": "strong_em_order_split_today_only"
   },
   "sector": {
     "symbol": "300408",

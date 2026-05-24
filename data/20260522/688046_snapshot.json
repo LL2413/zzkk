@@ -1770,33 +1770,39 @@
         "股票简称": "药康生物",
         "最新价": 20.9,
         "涨跌幅": 0.34,
-        "换手率": 0.79,
-        "主力净流入-净额": 6952300.0,
-        "主力净流入-净占比": 10.3476,
-        "流入资金": 37069900.0,
-        "流出资金": 30117500.0,
-        "成交额": 67187300.0,
-        "fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径"
+        "主力净流入-净额": 994842.0,
+        "主力净流入-净占比": 1.48,
+        "超大单净流入-净额": -2840118.0,
+        "超大单净流入-净占比": -4.23,
+        "大单净流入-净额": 3834960.0,
+        "大单净流入-净占比": 5.71,
+        "中单净流入-净额": -1033022.0,
+        "中单净流入-净占比": -1.54,
+        "小单净流入-净额": 38179.0,
+        "小单净流入-净占比": 0.06,
+        "fund_flow_quality": "strong_em_order_split",
+        "fund_flow_note": "EastMoney超大单+大单主力口径；来自ulist.np小批量接口",
+        "em_update_time": "2026-05-22"
       }
     ],
-    "fund_flow_source": "ths_individual_net_today_only",
-    "fund_flow_fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径",
+    "fund_flow_source": "em_rank_today_order_split",
     "_main_flow_streak": {
       "direction": "positive",
       "days": 1,
       "as_of": "2026-05-22",
-      "main_pct_today": 10.3476,
-      "main_yi_total_streak": 0.0695
+      "main_pct_today": 1.48,
+      "main_yi_total_streak": 0.0099
     },
     "_divergence": {
       "as_of": "2026-05-22",
       "chg_pct": 0.34,
-      "main_pct": 10.3476,
-      "score": -10.0076,
-      "interpretation": "吸筹",
-      "interpretation_en": "accumulation",
-      "note": "主力净流入明显超过价格涨幅，疑似主力低调建仓、价格尚未反应"
-    }
+      "main_pct": 1.48,
+      "score": -1.14,
+      "interpretation": "均衡",
+      "interpretation_en": "balanced",
+      "note": "价格涨跌与主力资金方向基本一致，本次波动可信"
+    },
+    "fund_flow_quality": "strong_em_order_split_today_only"
   },
   "sector": {
     "symbol": "688046",

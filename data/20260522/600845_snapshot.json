@@ -1794,33 +1794,39 @@
         "股票简称": "宝信软件",
         "最新价": 22.84,
         "涨跌幅": 1.29,
-        "换手率": 1.33,
-        "主力净流入-净额": -24300100.000000004,
-        "主力净流入-净占比": -3.7969,
-        "流入资金": 308000000.0,
-        "流出资金": 332000000.0,
-        "成交额": 640000000.0,
-        "fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径"
+        "主力净流入-净额": -32189971.0,
+        "主力净流入-净占比": -5.03,
+        "超大单净流入-净额": -6261800.0,
+        "超大单净流入-净占比": -0.98,
+        "大单净流入-净额": -25928171.0,
+        "大单净流入-净占比": -4.05,
+        "中单净流入-净额": 1451818.0,
+        "中单净流入-净占比": 0.23,
+        "小单净流入-净额": 30738153.0,
+        "小单净流入-净占比": 4.8,
+        "fund_flow_quality": "strong_em_order_split",
+        "fund_flow_note": "EastMoney超大单+大单主力口径；来自ulist.np小批量接口",
+        "em_update_time": "2026-05-22"
       }
     ],
-    "fund_flow_source": "ths_individual_net_today_only",
-    "fund_flow_fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径",
+    "fund_flow_source": "em_rank_today_order_split",
     "_main_flow_streak": {
       "direction": "negative",
       "days": 1,
       "as_of": "2026-05-22",
-      "main_pct_today": -3.7969,
-      "main_yi_total_streak": -0.243
+      "main_pct_today": -5.03,
+      "main_yi_total_streak": -0.3219
     },
     "_divergence": {
       "as_of": "2026-05-22",
       "chg_pct": 1.29,
-      "main_pct": -3.7969,
-      "score": 5.0869,
+      "main_pct": -5.03,
+      "score": 6.32,
       "interpretation": "漂移",
       "interpretation_en": "drift",
       "note": "价格与主力资金轻微背离，方向仍需观察"
-    }
+    },
+    "fund_flow_quality": "strong_em_order_split_today_only"
   },
   "sector": {
     "symbol": "600845",

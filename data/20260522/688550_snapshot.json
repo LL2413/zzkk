@@ -1770,33 +1770,39 @@
         "股票简称": "瑞联新材",
         "最新价": 50.52,
         "涨跌幅": 1.96,
-        "换手率": 4.62,
-        "主力净流入-净额": -23425800.0,
-        "主力净流入-净占比": -5.7841,
-        "流入资金": 191000000.0,
-        "流出资金": 214000000.0,
-        "成交额": 405000000.0,
-        "fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径"
+        "主力净流入-净额": 12939126.0,
+        "主力净流入-净占比": 3.19,
+        "超大单净流入-净额": 17073763.0,
+        "超大单净流入-净占比": 4.21,
+        "大单净流入-净额": -4134637.0,
+        "大单净流入-净占比": -1.02,
+        "中单净流入-净额": 5061330.0,
+        "中单净流入-净占比": 1.25,
+        "小单净流入-净额": -18000457.0,
+        "小单净流入-净占比": -4.44,
+        "fund_flow_quality": "strong_em_order_split",
+        "fund_flow_note": "EastMoney超大单+大单主力口径；来自ulist.np小批量接口",
+        "em_update_time": "2026-05-22"
       }
     ],
-    "fund_flow_source": "ths_individual_net_today_only",
-    "fund_flow_fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径",
+    "fund_flow_source": "em_rank_today_order_split",
     "_main_flow_streak": {
-      "direction": "negative",
+      "direction": "positive",
       "days": 1,
       "as_of": "2026-05-22",
-      "main_pct_today": -5.7841,
-      "main_yi_total_streak": -0.2343
+      "main_pct_today": 3.19,
+      "main_yi_total_streak": 0.1294
     },
     "_divergence": {
       "as_of": "2026-05-22",
       "chg_pct": 1.96,
-      "main_pct": -5.7841,
-      "score": 7.7441,
-      "interpretation": "漂移",
-      "interpretation_en": "drift",
-      "note": "价格与主力资金轻微背离，方向仍需观察"
-    }
+      "main_pct": 3.19,
+      "score": -1.23,
+      "interpretation": "均衡",
+      "interpretation_en": "balanced",
+      "note": "价格涨跌与主力资金方向基本一致，本次波动可信"
+    },
+    "fund_flow_quality": "strong_em_order_split_today_only"
   },
   "sector": {
     "symbol": "688550",
@@ -2259,14 +2265,14 @@
   },
   "_signal_score": {
     "as_of": "2026-05-22",
-    "streak_score": -1,
-    "label_score": 0,
+    "streak_score": 1,
+    "label_score": 1,
     "valuation_score": 1,
-    "total": 0,
-    "tier": "中性",
+    "total": 3,
+    "tier": "偏多",
     "lights": {
-      "streak": "🔴",
-      "label": "🟡",
+      "streak": "🟢",
+      "label": "🟢",
       "valuation": "🟢"
     },
     "note": "信号质量评分，非投资建议；streak/label/valuation 三维合成"

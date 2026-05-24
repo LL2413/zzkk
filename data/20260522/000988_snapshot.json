@@ -1867,33 +1867,39 @@
         "股票简称": "华工科技",
         "最新价": 156.31,
         "涨跌幅": 1.53,
-        "换手率": 9.04,
-        "主力净流入-净额": -342000000.0,
-        "主力净流入-净占比": -2.4137,
-        "流入资金": 6913000000.0,
-        "流出资金": 7256000000.0,
-        "成交额": 14169000000.0,
-        "fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径"
+        "主力净流入-净额": -290031664.0,
+        "主力净流入-净占比": -2.05,
+        "超大单净流入-净额": -345985520.0,
+        "超大单净流入-净占比": -2.44,
+        "大单净流入-净额": 55953856.0,
+        "大单净流入-净占比": 0.39,
+        "中单净流入-净额": 326246416.0,
+        "中单净流入-净占比": 2.3,
+        "小单净流入-净额": -36214768.0,
+        "小单净流入-净占比": -0.26,
+        "fund_flow_quality": "strong_em_order_split",
+        "fund_flow_note": "EastMoney超大单+大单主力口径；来自ulist.np小批量接口",
+        "em_update_time": "2026-05-22"
       }
     ],
-    "fund_flow_source": "ths_individual_net_today_only",
-    "fund_flow_fallback_note": "THS净额fallback；不是EastMoney超大单+大单主力口径",
+    "fund_flow_source": "em_rank_today_order_split",
     "_main_flow_streak": {
       "direction": "negative",
       "days": 1,
       "as_of": "2026-05-22",
-      "main_pct_today": -2.4137,
-      "main_yi_total_streak": -3.42
+      "main_pct_today": -2.05,
+      "main_yi_total_streak": -2.9003
     },
     "_divergence": {
       "as_of": "2026-05-22",
       "chg_pct": 1.53,
-      "main_pct": -2.4137,
-      "score": 3.9437,
+      "main_pct": -2.05,
+      "score": 3.58,
       "interpretation": "漂移",
       "interpretation_en": "drift",
       "note": "价格与主力资金轻微背离，方向仍需观察"
-    }
+    },
+    "fund_flow_quality": "strong_em_order_split_today_only"
   },
   "sector": {
     "symbol": "000988",
