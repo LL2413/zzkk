@@ -100,6 +100,10 @@ def zh_date(tag: str) -> str:
     return f"{tag[:4]}-{tag[4:6]}-{tag[6:8]}"
 
 
+def short_zh_date(tag: str) -> str:
+    return f"{int(tag[4:6])}-{int(tag[6:8])}"
+
+
 def find_target_dir(args: argparse.Namespace) -> Path:
     root = args.repo_root.resolve()
     if args.data_dir:
@@ -559,12 +563,199 @@ def make_watch_items(rows: list[StockRow]) -> list[str]:
     return deduped[:8]
 
 
+def score_transition(row: StockRow) -> str:
+    if row.score_delta is None or row.signal_total is None:
+        return "N/A"
+    prev_score = row.signal_total - row.score_delta
+    return f"{signed(prev_score, 0)}->{signed(row.signal_total, 0)} (Δ{signed(row.score_delta, 0)})"
+
+
+def score_bucket_from_value(value: float | None) -> str:
+    if value is None:
+        return "未知"
+    if value >= 2:
+        return "偏多"
+    if value >= 0:
+        return "中性"
+    return "警示"
+
+
+def movement_reason(row: StockRow) -> str:
+    bits: list[str] = []
+    delta = row.score_delta or 0
+    if delta >= 2:
+        bits.append(f"评分明显修复 {signed(delta, 0)}")
+    elif delta <= -2:
+        bits.append(f"评分明显转弱 {signed(delta, 0)}")
+
+    if row.main_delta_yi is not None and abs(row.main_delta_yi) >= 3:
+        bits.append(f"资金较上一日{compact_yi(row.main_delta_yi)}")
+
+    if row.main_yi is not None:
+        if row.main_yi >= 5:
+            bits.append(f"本日强流入{compact_yi(row.main_yi)}")
+        elif row.main_yi <= -5:
+            bits.append(f"本日强流出{compact_yi(row.main_yi)}")
+        else:
+            bits.append(f"主力{compact_yi(row.main_yi)}")
+
+    if row.chg_pct is not None:
+        if row.chg_pct >= 9:
+            bits.append(f"价格大涨{pct(row.chg_pct)}")
+        elif row.chg_pct <= -5:
+            bits.append(f"价格大跌{pct(row.chg_pct)}")
+        else:
+            bits.append(f"涨跌{pct(row.chg_pct)}")
+
+    if row.main_yi is not None and row.chg_pct is not None:
+        if row.main_yi < 0 and row.chg_pct > 0:
+            bits.append("价涨但主力流出，按背离看")
+        elif row.main_yi > 0 and row.chg_pct < 0:
+            bits.append("跌中有资金承接")
+
+    if row.streak_days >= 2:
+        bits.append(f"streak {streak_text(row)}")
+    if row.divergence:
+        bits.append(row.divergence)
+    return "；".join(bits) or row_reason(row)
+
+
+def score_movement_tables(rows: list[StockRow], prev_tag: str | None, target_tag: str) -> list[str]:
+    changed = [r for r in rows if r.score_delta is not None and r.signal_total is not None]
+    if not changed:
+        return []
+
+    improved = [r for r in sorted(changed, key=lambda r: r.score_delta or 0, reverse=True) if (r.score_delta or 0) > 0][:6]
+    weakened = [r for r in sorted(changed, key=lambda r: r.score_delta or 0) if (r.score_delta or 0) < 0][:6]
+    title = "评分大变动"
+    if prev_tag:
+        title = f"{short_zh_date(prev_tag)} -> {short_zh_date(target_tag)} 评分大变动"
+    out: list[str] = ["", f"## {title}", ""]
+
+    if improved:
+        out.append("改善最多：")
+        out.append("")
+        out.append(table(
+            ["股票", "上一日->本日", "解读"],
+            [[f"{r.name}{r.symbol}", score_transition(r), movement_reason(r)] for r in improved],
+        ))
+        out.append("")
+    else:
+        out.append("改善最多：无明显改善。")
+        out.append("")
+
+    if weakened:
+        out.append("恶化最多：")
+        out.append("")
+        out.append(table(
+            ["股票", "上一日->本日", "解读"],
+            [[f"{r.name}{r.symbol}", score_transition(r), movement_reason(r)] for r in weakened],
+        ))
+    else:
+        out.append("恶化最多：无明显恶化。")
+    return out
+
+
+def signal_candidate_weight(prev: StockRow, current: StockRow) -> float:
+    weight = 0.0
+    if prev.signal_total is not None:
+        weight += abs(prev.signal_total) * 2
+    if prev.main_yi is not None:
+        weight += min(abs(prev.main_yi), 30) / 3
+    if prev.streak_days >= 3:
+        weight += prev.streak_days
+    if prev.divergence in {"拥挤", "漂移"}:
+        weight += 1
+    if current.score_delta is not None:
+        weight += abs(current.score_delta)
+    if current.main_delta_yi is not None:
+        weight += min(abs(current.main_delta_yi), 20) / 4
+    return weight
+
+
+def signal_status(prev: StockRow, current: StockRow) -> str:
+    prev_score = prev.signal_total
+    cur_score = current.signal_total
+    cur_flow = current.main_yi or 0
+
+    if prev_score is not None and prev_score >= 2:
+        if cur_score is not None and cur_score >= 2 and cur_flow > 0:
+            return "偏多延续"
+        if cur_score is not None and cur_score >= 0 and cur_flow > 0:
+            return "部分延续"
+        return "偏多未延续"
+
+    if prev_score is not None and prev_score <= -2:
+        if cur_score is not None and cur_score <= -2:
+            return "风险延续"
+        if cur_score is not None and cur_score >= 0 and cur_flow > 0:
+            return "风险修复"
+        return "风险收敛但未转强"
+
+    if prev.main_yi is not None and prev.main_yi >= 5:
+        if cur_flow >= 5:
+            return "资金延续"
+        if cur_flow > 0:
+            return "承接减弱"
+        return "资金反转流出"
+
+    if prev.main_yi is not None and prev.main_yi <= -5:
+        if cur_flow < 0:
+            return "流出延续"
+        return "流出止血"
+
+    if prev.streak_dir == "negative" and prev.streak_days >= 3:
+        if cur_flow > 0:
+            return "连续流出止血"
+        return "连续流出延续"
+
+    if prev.streak_dir == "positive" and prev.streak_days >= 3:
+        if cur_flow > 0:
+            return "连续流入延续"
+        return "连续流入中断"
+
+    return "继续观察"
+
+
+def signal_review_rows(prev_rows: dict[str, StockRow], rows: list[StockRow]) -> list[list[str]]:
+    current_by_symbol = {r.symbol: r for r in rows}
+    candidates: list[tuple[float, StockRow, StockRow]] = []
+    for symbol, prev in prev_rows.items():
+        current = current_by_symbol.get(symbol)
+        if current is None:
+            continue
+        weight = signal_candidate_weight(prev, current)
+        if weight >= 5:
+            candidates.append((weight, prev, current))
+
+    candidates.sort(key=lambda item: item[0], reverse=True)
+    body: list[list[str]] = []
+    for _, prev, current in candidates[:8]:
+        prev_score = prev.signal_total
+        current_score = current.signal_total
+        signal = (
+            f"{prev.name}{prev.symbol}：上一日{score_bucket_from_value(prev_score)}"
+            f" {signed(prev_score, 0)}，主力{compact_yi(prev.main_yi)}"
+        )
+        if prev.streak_days:
+            signal += f"，streak {streak_text(prev)}"
+
+        review = (
+            f"{signal_status(prev, current)}；本日{score_bucket_from_value(current_score)}"
+            f" {signed(current_score, 0)}，主力{compact_yi(current.main_yi)}，涨跌{pct(current.chg_pct)}"
+        )
+        detail = movement_reason(current)
+        body.append([signal, review, detail])
+    return body
+
+
 def build_report(
     repo_root: Path,
     target_dir: Path,
     prev_dir_path: Path | None,
     rows: list[StockRow],
     snapshots: dict[str, dict[str, Any]],
+    prev_rows: dict[str, StockRow] | None = None,
 ) -> str:
     target_tag = target_dir.name
     prev_tag = prev_dir_path.name if prev_dir_path else None
@@ -573,6 +764,7 @@ def build_report(
     counts = tier_counts(rows)
     sources = source_counts(rows)
     errors = error_counts(snapshots)
+    prev_rows = prev_rows or {}
 
     valid_flows = [r for r in rows if r.main_yi is not None]
     strong_flows = [r for r in valid_flows if r.source in STRONG_FUND_FLOW_SOURCES]
@@ -677,6 +869,16 @@ def build_report(
         if flow_swing:
             lines.append("- 资金变化最大：" + "、".join(f"{r.name}{compact_yi(r.main_delta_yi)}" for r in flow_swing) + "。")
 
+        lines.extend(score_movement_tables(rows, prev_tag, target_tag))
+
+    review_body = signal_review_rows(prev_rows, rows)
+    if review_body:
+        review_title = "重点信号验收"
+        if prev_tag:
+            review_title += f"（接 {short_zh_date(prev_tag)} -> {short_zh_date(target_tag)}）"
+        lines.extend(["", f"## {review_title}", ""])
+        lines.append(table(["上一日信号", "本日验收", "解读"], review_body))
+
     lines.extend(["", "## 全量扫描表", ""])
     table_rows = []
     for i, row in enumerate(sorted_by_flow(rows), 1):
@@ -773,7 +975,7 @@ def main() -> int:
         )
         return 9
 
-    report = build_report(repo_root, target, prev, rows, snapshots)
+    report = build_report(repo_root, target, prev, rows, snapshots, prev_rows)
     output = args.output or (repo_root / "reports" / f"watchlist_{target_tag}.md")
     save_text(output, report)
     print(f"report: {output}")
