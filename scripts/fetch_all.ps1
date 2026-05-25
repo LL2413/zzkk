@@ -24,6 +24,7 @@ param(
   [switch]$Refresh,
   [string]$Python = $null,
   [string]$WatchlistFile = $null,
+  [int]$CommandTimeoutSeconds = 600,
   [Parameter(Position=0, ValueFromRemainingArguments=$true)]
   [string[]]$Symbols = @()
 )
@@ -112,20 +113,63 @@ function Log([string]$msg) {
   Add-Content -Path $manifest -Value $line -Encoding UTF8
 }
 
+function Stop-ProcessTree([int]$ProcessId) {
+  $children = @(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object { $_.ParentProcessId -eq $ProcessId })
+  foreach ($child in $children) {
+    Stop-ProcessTree -ProcessId ([int]$child.ProcessId)
+  }
+  Stop-Process -Id $ProcessId -Force -ErrorAction SilentlyContinue
+}
+
+function Quote-ProcessArg([string]$arg) {
+  if ($arg -notmatch '[\s"]') { return $arg }
+  return '"' + ($arg -replace '\\(?=")', '\\' -replace '"', '\"') + '"'
+}
+
 function Invoke-StockJson {
   param(
     [string[]]$CommandArgs,
     [string]$OutFile
   )
 
-  # PowerShell 5.1 writes native-command redirection (`>`) as UTF-16.
-  # Capture stdout and write it explicitly as UTF-8 so JSON stays portable.
-  $stdout = & $py @CommandArgs 2>> $manifest
-  $exitCode = $LASTEXITCODE
-  if ($exitCode -eq 0) {
-    $stdout | Set-Content -Path $OutFile -Encoding UTF8
+  # PowerShell 5.1 can hang indefinitely when a native child blocks in an
+  # akshare endpoint. Run each stock fetch as its own process and kill the
+  # process tree after a bounded wait so one bad symbol cannot stall the batch.
+  $psi = New-Object System.Diagnostics.ProcessStartInfo
+  $psi.FileName = $py
+  $psi.Arguments = (($CommandArgs | ForEach-Object { Quote-ProcessArg $_ }) -join ' ')
+  $psi.UseShellExecute = $false
+  $psi.RedirectStandardOutput = $true
+  $psi.RedirectStandardError = $true
+  $psi.CreateNoWindow = $true
+  $psi.StandardOutputEncoding = [System.Text.Encoding]::UTF8
+  $psi.StandardErrorEncoding = [System.Text.Encoding]::UTF8
+
+  $proc = New-Object System.Diagnostics.Process
+  $proc.StartInfo = $psi
+  try {
+    [void]$proc.Start()
+    $stdoutTask = $proc.StandardOutput.ReadToEndAsync()
+    $stderrTask = $proc.StandardError.ReadToEndAsync()
+
+    if (-not $proc.WaitForExit($CommandTimeoutSeconds * 1000)) {
+      Log "  TIMEOUT after ${CommandTimeoutSeconds}s: $($CommandArgs -join ' ')"
+      Stop-ProcessTree -ProcessId $proc.Id
+      return 124
+    }
+
+    $proc.WaitForExit()
+    $exitCode = $proc.ExitCode
+    $stdout = $stdoutTask.Result
+    $stderr = $stderrTask.Result
+    if ($stderr) { Add-Content -Path $manifest -Value $stderr -Encoding UTF8 }
+    if ($exitCode -eq 0) {
+      [System.IO.File]::WriteAllText($OutFile, $stdout, [System.Text.Encoding]::UTF8)
+    }
+    return $exitCode
+  } finally {
+    if ($proc) { $proc.Dispose() }
   }
-  return $exitCode
 }
 
 Log "python:  $py"
