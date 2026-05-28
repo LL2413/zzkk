@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import statistics
 import sys
 from collections import Counter, defaultdict
@@ -749,6 +750,154 @@ def signal_review_rows(prev_rows: dict[str, StockRow], rows: list[StockRow]) -> 
     return body
 
 
+def extract_followup_items(report_path: Path) -> list[str]:
+    if not report_path.exists():
+        return []
+    lines = report_path.read_text(encoding="utf-8-sig").splitlines()
+    in_section = False
+    items: list[str] = []
+    current: list[str] = []
+    for line in lines:
+        if line.startswith("## "):
+            if in_section:
+                break
+            in_section = line.strip() == "## 下一交易日跟踪重点"
+            continue
+        if not in_section:
+            continue
+        match = re.match(r"^\s*\d+\.\s+(.*\S)\s*$", line)
+        if match:
+            if current:
+                items.append(" ".join(current))
+            current = [match.group(1)]
+        elif current and line.strip():
+            current.append(line.strip())
+    if current:
+        items.append(" ".join(current))
+    return items
+
+
+def item_symbol(item: str) -> str | None:
+    match = re.search(r"\b([0368]\d{5})\b", item)
+    return match.group(1) if match else None
+
+
+def followup_kind(item: str) -> str:
+    if "流出是否收敛" in item or "价格能否止跌" in item:
+        return "outflow_stop"
+    if "价量资金背离" in item or "短线脉冲" in item:
+        return "divergence_pulse"
+    if "连续流出" in item or "风险项" in item:
+        return "negative_streak"
+    if "连续两天以上承接" in item or "单日脉冲" in item:
+        return "inflow_continuation"
+    if "修复候选" in item:
+        return "repair_candidate"
+    return "generic"
+
+
+def verification_detail(current: StockRow) -> str:
+    return (
+        f"本日主力{compact_yi(current.main_yi)}，涨跌{pct(current.chg_pct)}，"
+        f"评分{signed(current.signal_total, 0)}，streak {streak_text(current)}"
+    )
+
+
+def evaluate_followup(prev: StockRow | None, current: StockRow | None, item: str) -> tuple[str, str]:
+    if current is None:
+        return "无法判断", "今日快照中未找到该股票。"
+    kind = followup_kind(item)
+    flow = current.main_yi
+    chg = current.chg_pct
+    score = current.signal_total
+    flow_delta = current.main_delta_yi
+    flow_improved = flow_delta is not None and flow_delta > 0
+    flow_weakened = flow_delta is not None and flow_delta < 0
+    price_nonnegative = chg is not None and chg >= 0
+    price_negative = chg is not None and chg < 0
+    detail = verification_detail(current)
+
+    if kind == "outflow_stop":
+        flow_stopped = flow is not None and flow > 0
+        if flow_stopped and price_nonnegative:
+            return "验证", f"流出已转为流入且价格未跌；{detail}。"
+        if flow_stopped or flow_improved or price_nonnegative:
+            return "部分验证", f"止血信号不完整；{detail}。"
+        if flow is not None and flow < 0 and price_negative:
+            return "未验证", f"流出和下跌仍在延续；{detail}。"
+        return "无法判断", detail + "。"
+
+    if kind == "divergence_pulse":
+        support_confirmed = flow is not None and flow > 0 and price_nonnegative
+        pulse_confirmed = flow is not None and flow <= 0 and price_negative
+        still_divergent = flow is not None and flow < 0 and price_nonnegative
+        if pulse_confirmed:
+            return "验证", f"价格未能延续且资金仍弱，前日短线脉冲担忧成立；{detail}。"
+        if still_divergent:
+            return "部分验证", f"价涨资金跑仍存在，方向尚未确认；{detail}。"
+        if support_confirmed:
+            return "未验证", f"资金转为承接，不能按单日脉冲处理；{detail}。"
+        return "无法判断", detail + "。"
+
+    if kind == "negative_streak":
+        if flow is not None and flow < 0 and current.streak_dir == "negative":
+            return "验证", f"连续流出风险延续；{detail}。"
+        if flow is not None and flow > 0:
+            return "未验证", f"出现资金回补，前日风险项暂时缓和；{detail}。"
+        return "部分验证", f"风险未完全解除；{detail}。"
+
+    if kind == "inflow_continuation":
+        if flow is not None and flow > 0 and current.streak_dir == "positive" and current.streak_days >= 2:
+            return "验证", f"资金连续承接；{detail}。"
+        if flow is not None and flow > 0:
+            return "部分验证", f"仍有流入，但连续性不足；{detail}。"
+        if flow is not None and flow <= 0:
+            return "未验证", f"流入未延续；{detail}。"
+        return "无法判断", detail + "。"
+
+    if kind == "repair_candidate":
+        repaired = (score is not None and score >= 0) and (flow is not None and flow > 0)
+        if repaired and not flow_weakened:
+            return "验证", f"评分和资金仍支撑修复；{detail}。"
+        if score is not None and score >= 0 or flow is not None and flow > 0:
+            return "部分验证", f"修复只保留部分条件；{detail}。"
+        return "未验证", f"修复未延续；{detail}。"
+
+    if prev is not None:
+        status = signal_status(prev, current)
+        if any(word in status for word in ("延续", "修复", "止血")):
+            return "验证", f"{status}；{detail}。"
+        if any(word in status for word in ("收敛", "减弱")):
+            return "部分验证", f"{status}；{detail}。"
+        return "未验证", f"{status}；{detail}。"
+    return "无法判断", detail + "。"
+
+
+def previous_report_review_rows(
+    repo_root: Path,
+    prev_tag: str | None,
+    prev_rows: dict[str, StockRow],
+    rows: list[StockRow],
+) -> tuple[Counter[str], list[list[str]]]:
+    if not prev_tag:
+        return Counter(), []
+    report_path = repo_root / "reports" / f"watchlist_{prev_tag}.md"
+    items = extract_followup_items(report_path)
+    if not items:
+        return Counter(), []
+    current_by_symbol = {row.symbol: row for row in rows}
+    counts: Counter[str] = Counter()
+    body: list[list[str]] = []
+    for item in items:
+        symbol = item_symbol(item)
+        current = current_by_symbol.get(symbol or "")
+        prev = prev_rows.get(symbol or "")
+        verdict, detail = evaluate_followup(prev, current, item)
+        counts[verdict] += 1
+        body.append([item, detail, verdict])
+    return counts, body
+
+
 def build_report(
     repo_root: Path,
     target_dir: Path,
@@ -878,6 +1027,26 @@ def build_report(
             review_title += f"（接 {short_zh_date(prev_tag)} -> {short_zh_date(target_tag)}）"
         lines.extend(["", f"## {review_title}", ""])
         lines.append(table(["上一日信号", "本日验收", "解读"], review_body))
+
+    previous_review_counts, previous_review_body = previous_report_review_rows(
+        repo_root, prev_tag, prev_rows, rows
+    )
+    if previous_review_body:
+        review_title = "前日报告跟踪验证"
+        if prev_tag:
+            review_title += f"（读 {short_zh_date(prev_tag)} 报告 -> 验 {short_zh_date(target_tag)}）"
+        lines.extend(["", f"## {review_title}", ""])
+        lines.append(
+            "- 验证汇总："
+            + "，".join(
+                f"{key}{previous_review_counts[key]}"
+                for key in ("验证", "部分验证", "未验证", "无法判断")
+                if previous_review_counts.get(key)
+            )
+            + "。"
+        )
+        lines.append("")
+        lines.append(table(["前日报告跟踪点", "本日验证", "结论"], previous_review_body))
 
     lines.extend(["", "## 全量扫描表", ""])
     table_rows = []
