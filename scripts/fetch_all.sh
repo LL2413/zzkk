@@ -87,6 +87,8 @@ fi
 : "${STOCK_FETCH_SECTOR_FUND_FLOW:=0}"
 : "${SNAPSHOT_TIMEOUT:=240}"
 : "${SNAPSHOT_FAST_TIMEOUT:=90}"
+: "${STOCK_FETCH_JOBS:=4}"
+: "${STOCK_RESUME_EXISTING:=0}"
 export STOCK_FINANCIALS_MODE STOCK_SKIP_EM_FUND_FLOW_RANK STOCK_FETCH_SECTOR_FUND_FLOW
 
 DATE_TAG="${DATE_TAG:-$(date +%Y%m%d)}"
@@ -96,7 +98,13 @@ mkdir -p "$OUT_DIR"
 MANIFEST="$OUT_DIR/_manifest.txt"
 : > "$MANIFEST"
 
-log() { printf '[%s] %s\n' "$(date +%H:%M:%S)" "$*" | tee -a "$MANIFEST"; }
+log() {
+  if [[ -z "${1:-}" ]]; then
+    printf '[%s]\n' "$(date +%H:%M:%S)" | tee -a "$MANIFEST"
+  else
+    printf '[%s] %s\n' "$(date +%H:%M:%S)" "$*" | tee -a "$MANIFEST"
+  fi
+}
 valid_json() { [[ -s "$1" ]] && "$PY" -m json.tool "$1" >/dev/null 2>&1; }
 
 log "python: $PY"
@@ -107,6 +115,7 @@ log "stock_date_tag: $STOCK_DATE_TAG"
 log "financials_mode: $STOCK_FINANCIALS_MODE"
 log "skip_em_rank: $STOCK_SKIP_EM_FUND_FLOW_RANK"
 log "snapshot_timeout: ${SNAPSHOT_TIMEOUT}s fast_timeout: ${SNAPSHOT_FAST_TIMEOUT}s"
+log "fetch_jobs: $STOCK_FETCH_JOBS resume_existing: $STOCK_RESUME_EXISTING"
 log "symbols: ${WATCHLIST[*]}"
 log ""
 
@@ -137,6 +146,33 @@ else
 fi
 
 # --- per-symbol snapshots ---
+if ! [[ "$STOCK_FETCH_JOBS" =~ ^[0-9]+$ ]]; then
+  log "ERROR: STOCK_FETCH_JOBS must be an integer"
+  exit 2
+fi
+
+if (( STOCK_FETCH_JOBS > 1 )); then
+  log "fetch snapshots in parallel ..."
+  PARALLEL_ARGS=(
+    scripts/fetch_snapshots_parallel.py
+    --date-tag "$DATE_TAG"
+    --out-dir "$OUT_DIR"
+    --python "$PY"
+    --snapshot-timeout "$SNAPSHOT_TIMEOUT"
+    --fast-timeout "$SNAPSHOT_FAST_TIMEOUT"
+    --jobs "$STOCK_FETCH_JOBS"
+    --manifest "$MANIFEST"
+  )
+  if [[ -n "$FORCE_FLAG" ]]; then
+    PARALLEL_ARGS+=(--force)
+  fi
+  if [[ "$STOCK_RESUME_EXISTING" == "1" ]]; then
+    PARALLEL_ARGS+=(--resume-existing)
+  fi
+  "$PY" "${PARALLEL_ARGS[@]}" "${WATCHLIST[@]}"
+  exit $?
+fi
+
 OK=0; FAIL=0
 for sym in "${WATCHLIST[@]}"; do
   log "fetch $sym ..."
