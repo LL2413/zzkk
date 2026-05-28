@@ -69,7 +69,7 @@ evergreen. Daily commentary belongs in commit messages or chat replies.
 `symbol / as_of / fundamentals / sentiment / sector / _signal_score`
 
 关键嵌套：
-- `fundamentals.basic_info`（含 股票简称、总市值、行业、上市时间）
+- `fundamentals.basic_info`（含 股票简称、总市值、行业；不再采集上市时间）
 - `fundamentals.financial_indicators_recent`（最近 4-8 期 EPS/ROE 等）
 - `fundamentals.financials_absolute_recent`（营收/净利润/扣非绝对值）
 - `fundamentals.valuation_recent` + `valuation_latest`（PE/PB/股息率）
@@ -159,6 +159,9 @@ divergence → alpha → score。
 - 价格历史一律使用 **前复权**；不与不复权数据混用。
 - 板块对比不要混用 SW / 中信 / 概念口径，必须声明。
 - 估值"高/低"必须有 benchmark：自身历史分位、行业中位、HS300/中证全指。
+- 财报/分红/经营指标不按日频强刷；按财报季或 2-3 个月节奏刷新。
+  披露前提醒提前 14 天触发；日更只应强刷价格、资金、估值、两融、
+  北向、大盘与板块价格等日频字段。
 - 涉及"今天/最新/实时"时，先核对 `data/` 里最大日期目录；与日历日不一致
   说明遇到周末或假日，使用最近交易日数据并标明日期。
 

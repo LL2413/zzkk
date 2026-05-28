@@ -23,6 +23,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import signal
 import socket
 import sys
 import time
@@ -49,6 +50,46 @@ os.environ["no_proxy"] = "*"
 STOCK_NET_TIMEOUT = float(os.environ.get("STOCK_NET_TIMEOUT", "12"))
 socket.setdefaulttimeout(STOCK_NET_TIMEOUT)
 
+
+def env_flag(name: str, default: str = "0") -> bool:
+    return os.environ.get(name, default).lower() in {"1", "true", "yes", "on"}
+
+
+# Some AkShare wrappers paginate/retry internally, so the socket timeout above
+# can still leave one logical call waiting for many minutes. Put a wall-clock
+# cap around each source call; the caller records it as a warning and continues
+# through the existing fallback chain.
+STOCK_CALL_TIMEOUT = float(os.environ.get("STOCK_CALL_TIMEOUT", "30"))
+STOCK_FAST_DAILY = env_flag("STOCK_FAST_DAILY")
+STOCK_FETCH_SECTOR_FUND_FLOW = env_flag("STOCK_FETCH_SECTOR_FUND_FLOW")
+STOCK_REUSE_LOW_FREQ_FINANCIALS = env_flag("STOCK_REUSE_LOW_FREQ_FINANCIALS")
+STOCK_FINANCIALS_MODE = os.environ.get("STOCK_FINANCIALS_MODE", "").strip().lower()
+if not STOCK_FINANCIALS_MODE:
+    STOCK_FINANCIALS_MODE = "reuse" if STOCK_REUSE_LOW_FREQ_FINANCIALS else "refresh"
+if STOCK_FINANCIALS_MODE not in {"refresh", "reuse", "auto"}:
+    STOCK_FINANCIALS_MODE = "refresh"
+STOCK_FINANCIALS_SOURCE_DATE = os.environ.get("STOCK_FINANCIALS_SOURCE_DATE", "").strip()
+STOCK_SKIP_EM_FUND_FLOW_RANK = env_flag("STOCK_SKIP_EM_FUND_FLOW_RANK", "1" if STOCK_FAST_DAILY else "0")
+STOCK_SKIP_LHB = env_flag("STOCK_SKIP_LHB", "1" if STOCK_FAST_DAILY else "0")
+STOCK_SKIP_MARGIN = env_flag("STOCK_SKIP_MARGIN", "1" if STOCK_FAST_DAILY else "0")
+STOCK_SKIP_NORTHBOUND = env_flag("STOCK_SKIP_NORTHBOUND", "1" if STOCK_FAST_DAILY else "0")
+STOCK_SKIP_SECTOR_PRICE = env_flag("STOCK_SKIP_SECTOR_PRICE", "1" if STOCK_FAST_DAILY else "0")
+STOCK_SKIP_SW_INDEX = env_flag("STOCK_SKIP_SW_INDEX", "1" if STOCK_FAST_DAILY else "0")
+STOCK_SKIP_BASIC_INFO = env_flag("STOCK_SKIP_BASIC_INFO", "1" if STOCK_FAST_DAILY else "0")
+STOCK_SKIP_VALUATION = env_flag("STOCK_SKIP_VALUATION", "1" if STOCK_FAST_DAILY else "0")
+STOCK_SKIP_EM_FUND_FLOW_HISTORY = env_flag(
+    "STOCK_SKIP_EM_FUND_FLOW_HISTORY", "1" if STOCK_FAST_DAILY else "0"
+)
+STOCK_SKIP_INDUSTRY_LOOKUP = env_flag("STOCK_SKIP_INDUSTRY_LOOKUP", "1" if STOCK_FAST_DAILY else "0")
+
+
+class StockCallTimeout(TimeoutError):
+    pass
+
+
+def _raise_stock_call_timeout(signum, frame):
+    raise StockCallTimeout(f"source call exceeded {STOCK_CALL_TIMEOUT:.0f}s")
+
 try:
     import akshare as ak
     import pandas as pd
@@ -63,6 +104,15 @@ except ImportError as e:
 ROOT = Path(__file__).resolve().parent.parent
 CACHE_DIR = ROOT / ".cache" / "stock"
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
+BASIC_INFO_DROP_KEYS = {"上市时间"}
+LOW_FREQ_FINANCIAL_KEYS = (
+    "financial_indicators_recent",
+    "financial_indicators_source",
+    "financials_absolute_recent",
+    "financials_absolute_source",
+    "dividends_recent",
+)
 
 
 # ---------- utilities ----------
@@ -79,8 +129,22 @@ def market_prefix(symbol: str) -> str:
     raise ValueError(f"Unrecognized A-share symbol: {symbol}")
 
 
+def run_date() -> date:
+    tag = os.environ.get("STOCK_DATE_TAG", "").strip()
+    if tag:
+        try:
+            return datetime.strptime(tag, "%Y%m%d").date()
+        except ValueError:
+            pass
+    return date.today()
+
+
 def today_tag() -> str:
-    return date.today().strftime("%Y%m%d")
+    return run_date().strftime("%Y%m%d")
+
+
+def today_iso() -> str:
+    return run_date().strftime("%Y-%m-%d")
 
 
 def cache_path(symbol: str, kind: str) -> Path:
@@ -115,12 +179,68 @@ def df_to_records(df: pd.DataFrame | None) -> list[dict]:
     return json.loads(df.to_json(orient="records", force_ascii=False, date_format="iso"))
 
 
+def prune_basic_info(info: dict | None) -> dict | None:
+    if not isinstance(info, dict):
+        return info
+    return {k: v for k, v in info.items() if k not in BASIC_INFO_DROP_KEYS}
+
+
+def load_low_frequency_financials(symbol: str) -> tuple[dict | None, str | None]:
+    """Load financial statement/dividend fields from a prior daily snapshot."""
+    data_root = ROOT / "data"
+    if not data_root.exists():
+        return None, None
+
+    today = today_tag()
+    tags: list[str]
+    if STOCK_FINANCIALS_SOURCE_DATE:
+        tags = [STOCK_FINANCIALS_SOURCE_DATE]
+    else:
+        tags = sorted(
+            (
+                p.name for p in data_root.iterdir()
+                if p.is_dir() and p.name.isdigit() and len(p.name) == 8 and p.name < today
+            ),
+            reverse=True,
+        )
+
+    for tag in tags:
+        path = data_root / tag / f"{symbol}_snapshot.json"
+        if not path.exists():
+            continue
+        try:
+            snap = json.loads(path.read_text(encoding="utf-8-sig"))
+        except Exception:
+            continue
+        fund = snap.get("fundamentals") if isinstance(snap, dict) else None
+        if not isinstance(fund, dict):
+            continue
+        if fund.get("financial_indicators_recent") or fund.get("financials_absolute_recent"):
+            reused = {key: fund.get(key) for key in LOW_FREQ_FINANCIAL_KEYS if key in fund}
+            return reused, tag
+    return None, None
+
+
 def safe(fn, *args, **kwargs) -> tuple[Any, str | None]:
     """Execute fn; return (result, err). Never raise."""
+    use_alarm = STOCK_CALL_TIMEOUT > 0 and hasattr(signal, "SIGALRM")
+    old_handler = None
+    old_timer = None
     try:
+        if use_alarm:
+            old_handler = signal.getsignal(signal.SIGALRM)
+            old_timer = signal.setitimer(signal.ITIMER_REAL, STOCK_CALL_TIMEOUT)
+            signal.signal(signal.SIGALRM, _raise_stock_call_timeout)
         return fn(*args, **kwargs), None
     except Exception as e:
         return None, f"{type(e).__name__}: {e}"
+    finally:
+        if use_alarm:
+            signal.setitimer(signal.ITIMER_REAL, 0)
+            if old_handler is not None:
+                signal.signal(signal.SIGALRM, old_handler)
+            if old_timer and old_timer[0] > 0:
+                signal.setitimer(signal.ITIMER_REAL, old_timer[0], old_timer[1])
 
 
 def safe_retry(fn, *args, retries: int = 3, delay: float = 1.5, **kwargs) -> tuple[Any, str | None]:
@@ -300,7 +420,7 @@ def _em_rank_row_to_flow(row: dict[str, Any], as_of: str | None = None) -> dict 
     main_net = _em_num(row.get("f62"))
     if not symbol or main_net is None:
         return None
-    source_date = as_of or _em_timestamp_date(row.get("f124")) or date.today().strftime("%Y-%m-%d")
+    source_date = as_of or _em_timestamp_date(row.get("f124")) or today_iso()
     return {
         "日期": source_date,
         "股票代码": symbol,
@@ -328,7 +448,7 @@ def _ak_rank_row_to_flow(row: dict[str, Any], as_of: str | None = None) -> dict 
     if not symbol:
         return None
     rec: dict[str, Any] = {
-        "日期": as_of or date.today().strftime("%Y-%m-%d"),
+        "日期": as_of or today_iso(),
         "股票代码": symbol,
         "股票简称": row.get("名称") or row.get("股票简称"),
         "最新价": parse_cn_amount(row.get("最新价")),
@@ -613,7 +733,7 @@ def fetch_ths_fund_flow_today(symbol: str, as_of: str | None = None) -> tuple[di
         net_pct = round(net / amount * 100, 4)
 
     rec = {
-        "日期": as_of or date.today().strftime("%Y-%m-%d"),
+        "日期": as_of or today_iso(),
         "股票代码": normalize_stock_code(row.get("股票代码")),
         "股票简称": row.get("股票简称"),
         "最新价": parse_cn_amount(row.get("最新价")),
@@ -884,45 +1004,106 @@ def fetch_fundamentals(symbol: str, _force: bool = False) -> dict:
         except Exception:
             pass
 
-    out: dict = {"symbol": symbol, "as_of": datetime.now().isoformat(timespec="seconds"), "errors": {}}
+    out: dict = {
+        "symbol": symbol,
+        "as_of": datetime.now().isoformat(timespec="seconds"),
+        "data_date": today_iso(),
+        "errors": {},
+    }
 
     # basic_info: needed for 总股本 → consistency_check. EM endpoint flakes on
     # ConnectionError/SSL frequently; fall back chain:
     #   em (full info) → xq (full info) → spot_em (single row from market table)
-    em_info, em_err = safe_retry(ak.stock_individual_info_em, symbol=symbol)
-    if isinstance(em_info, pd.DataFrame) and len(em_info) > 0:
-        out["basic_info"] = dict(zip(em_info["item"], em_info["value"]))
-        out["basic_info_source"] = "em"
+    if STOCK_SKIP_BASIC_INFO:
+        out["basic_info_source"] = "skipped_fast_daily"
     else:
-        xq_fn = getattr(ak, "stock_individual_basic_info_xq", None)
-        xq_err = None
-        if xq_fn:
-            xq_sym = market_prefix(symbol).upper() + symbol
-            xq_info, xq_err = safe_retry(xq_fn, symbol=xq_sym)
-            if isinstance(xq_info, pd.DataFrame) and len(xq_info) > 0:
-                kv = dict(zip(xq_info.iloc[:, 0].astype(str), xq_info.iloc[:, 1]))
-                out["basic_info"] = kv
-                out["basic_info_source"] = "xq"
-        # 3rd source: spot_em returns a market-wide snapshot; pluck the row for
-        # this symbol. Only gives name/price/mcap/PE etc, but better than empty.
-        spot_err = None
-        if "basic_info" not in out:
-            spot, spot_err = safe_retry(ak.stock_zh_a_spot_em)
-            if isinstance(spot, pd.DataFrame) and len(spot) > 0 and "代码" in spot.columns:
-                row = spot[spot["代码"] == symbol]
-                if len(row) > 0:
-                    out["basic_info"] = row.iloc[0].to_dict()
-                    out["basic_info_source"] = "spot_em"
-        if "basic_info" not in out:
-            errs = []
-            if em_err: errs.append(f"em: {em_err}")
-            if xq_err: errs.append(f"xq: {xq_err}")
-            if spot_err: errs.append(f"spot_em: {spot_err}")
-            out["errors"]["basic_info"] = "; ".join(errs) if errs else "no source returned data"
+        em_info, em_err = safe_retry(ak.stock_individual_info_em, symbol=symbol)
+        if isinstance(em_info, pd.DataFrame) and len(em_info) > 0:
+            out["basic_info"] = prune_basic_info(dict(zip(em_info["item"], em_info["value"])))
+            out["basic_info_source"] = "em"
+        else:
+            xq_fn = getattr(ak, "stock_individual_basic_info_xq", None)
+            xq_err = None
+            if xq_fn:
+                xq_sym = market_prefix(symbol).upper() + symbol
+                xq_info, xq_err = safe_retry(xq_fn, symbol=xq_sym)
+                if isinstance(xq_info, pd.DataFrame) and len(xq_info) > 0:
+                    kv = dict(zip(xq_info.iloc[:, 0].astype(str), xq_info.iloc[:, 1]))
+                    out["basic_info"] = prune_basic_info(kv)
+                    out["basic_info_source"] = "xq"
+            # 3rd source: spot_em returns a market-wide snapshot; pluck the row for
+            # this symbol. Only gives name/price/mcap/PE etc, but better than empty.
+            spot_err = None
+            if "basic_info" not in out:
+                spot, spot_err = safe_retry(ak.stock_zh_a_spot_em)
+                if isinstance(spot, pd.DataFrame) and len(spot) > 0 and "代码" in spot.columns:
+                    row = spot[spot["代码"] == symbol]
+                    if len(row) > 0:
+                        out["basic_info"] = prune_basic_info(row.iloc[0].to_dict())
+                        out["basic_info_source"] = "spot_em"
+            if "basic_info" not in out:
+                errs = []
+                if em_err: errs.append(f"em: {em_err}")
+                if xq_err: errs.append(f"xq: {xq_err}")
+                if spot_err: errs.append(f"spot_em: {spot_err}")
+                out["errors"]["basic_info"] = "; ".join(errs) if errs else "no source returned data"
+
+    if STOCK_FINANCIALS_MODE in {"reuse", "auto"}:
+        reused, source_tag = load_low_frequency_financials(symbol)
+        if reused:
+            out.update(reused)
+            out["financials_frequency"] = "low_frequency_reused"
+            out["financials_source_date"] = source_tag
+            if STOCK_SKIP_VALUATION:
+                out["valuation_source"] = "skipped_fast_daily"
+            else:
+                val, err = safe_retry(ak.stock_value_em, symbol=symbol)
+                if isinstance(val, pd.DataFrame):
+                    out["valuation_recent"] = df_to_records(val.tail(20))
+                    out["valuation_latest"] = df_to_records(val.tail(1))
+                if err:
+                    out["errors"]["valuation"] = err
+
+            total_shares, shares_source = fetch_total_shares(
+                symbol, out.get("basic_info"), out.get("valuation_recent"),
+            )
+            out["total_shares"] = total_shares
+            out["total_shares_source"] = shares_source
+            out["consistency_check"] = compute_consistency(
+                out.get("financial_indicators_recent", []),
+                out.get("financials_absolute_recent", []),
+                total_shares,
+                shares_source,
+            )
+
+            path.write_text(json.dumps(out, ensure_ascii=False, default=str, indent=2))
+            return out
+        out["errors"]["low_frequency_financials"] = "no prior snapshot with financial fields found"
+        if STOCK_FINANCIALS_MODE == "reuse":
+            out["financials_frequency"] = "low_frequency_missing"
+            out["financial_indicators_recent"] = []
+            out["financials_absolute_recent"] = []
+            if STOCK_SKIP_VALUATION:
+                out["valuation_source"] = "skipped_fast_daily"
+            else:
+                val, err = safe_retry(ak.stock_value_em, symbol=symbol)
+                if isinstance(val, pd.DataFrame):
+                    out["valuation_recent"] = df_to_records(val.tail(20))
+                    out["valuation_latest"] = df_to_records(val.tail(1))
+                if err:
+                    out["errors"]["valuation"] = err
+            total_shares, shares_source = fetch_total_shares(
+                symbol, out.get("basic_info"), out.get("valuation_recent"),
+            )
+            out["total_shares"] = total_shares
+            out["total_shares_source"] = shares_source
+            out["consistency_check"] = compute_consistency([], [], total_shares, shares_source)
+            path.write_text(json.dumps(out, ensure_ascii=False, default=str, indent=2))
+            return out
 
     # Sina: ratios (每股 / 盈利能力 / 周转 / 偿债 / 现金流比率 等 80+ 字段).
     # Newer akshare builds require start_year; without it the endpoint silently returns empty.
-    start_year = str(datetime.now().year - 4)
+    start_year = str(run_date().year - 4)
     ind, err = safe_retry(ak.stock_financial_analysis_indicator, symbol=symbol, start_year=start_year)
     if isinstance(ind, pd.DataFrame) and len(ind) > 0:
         out["financial_indicators_recent"] = df_to_records(ind.tail(8))
@@ -969,12 +1150,15 @@ def fetch_fundamentals(symbol: str, _force: bool = False) -> dict:
             out["errors"]["financials_absolute_em"] = err_em
 
     # Valuation BEFORE total_shares so it can be a 4th fallback for shares.
-    val, err = safe_retry(ak.stock_value_em, symbol=symbol)
-    if isinstance(val, pd.DataFrame):
-        out["valuation_recent"] = df_to_records(val.tail(20))
-        out["valuation_latest"] = df_to_records(val.tail(1))
-    if err:
-        out["errors"]["valuation"] = err
+    if STOCK_SKIP_VALUATION:
+        out["valuation_source"] = "skipped_fast_daily"
+    else:
+        val, err = safe_retry(ak.stock_value_em, symbol=symbol)
+        if isinstance(val, pd.DataFrame):
+            out["valuation_recent"] = df_to_records(val.tail(20))
+            out["valuation_latest"] = df_to_records(val.tail(1))
+        if err:
+            out["errors"]["valuation"] = err
 
     # Cross-source consistency: Sina 扣非EPS × 总股本 vs THS 扣非净利润.
     # 总股本 is resolved through a fallback chain (EM basic_info → Xueqiu → spot-derive
@@ -997,6 +1181,8 @@ def fetch_fundamentals(symbol: str, _force: bool = False) -> dict:
         out["dividends_recent"] = df_to_records(divd.tail(10))
     if err:
         out["errors"]["dividends"] = err
+    out["financials_frequency"] = "low_frequency_refreshed"
+    out["financials_source_date"] = today_tag()
 
     path.write_text(json.dumps(out, ensure_ascii=False, default=str, indent=2))
     return out
@@ -1012,21 +1198,29 @@ def fetch_sentiment(symbol: str, _force: bool = False) -> dict:
         except Exception:
             pass
 
-    out: dict = {"symbol": symbol, "as_of": datetime.now().isoformat(timespec="seconds"), "errors": {}}
+    out: dict = {
+        "symbol": symbol,
+        "as_of": datetime.now().isoformat(timespec="seconds"),
+        "data_date": today_iso(),
+        "errors": {},
+    }
     mkt = market_prefix(symbol)
 
-    flow, err = safe_retry(ak.stock_individual_fund_flow, stock=symbol, market=mkt, retries=0, delay=0.8)
+    if STOCK_SKIP_EM_FUND_FLOW_HISTORY:
+        flow, err = None, "skipped_fast_daily"
+    else:
+        flow, err = safe_retry(ak.stock_individual_fund_flow, stock=symbol, market=mkt, retries=0, delay=0.8)
     if isinstance(flow, pd.DataFrame) and len(flow) > 0:
         out["fund_flow_recent_20d"] = df_to_records(flow.tail(20))
         out["fund_flow_source"] = "em_individual"
         out["fund_flow_quality"] = "strong_em_order_split_history"
     else:
-        if err:
+        if err and err != "skipped_fast_daily":
             out["errors"]["fund_flow"] = err
 
         # Fallback 1: EM all-market rank endpoint. This is still the strong
         # EastMoney order-split口径 (主力=超大单+大单), but today's row only.
-        if "fund_flow_recent_20d" not in out:
+        if "fund_flow_recent_20d" not in out and not STOCK_SKIP_EM_FUND_FLOW_RANK:
             em_rec, em_err = fetch_em_rank_fund_flow_today(symbol)
             if em_rec:
                 out["fund_flow_recent_20d"] = [em_rec]
@@ -1037,6 +1231,10 @@ def fetch_sentiment(symbol: str, _force: bool = False) -> dict:
                 out["errors"].pop("fund_flow_fallback_ths", None)
             elif em_err:
                 out["errors"]["fund_flow_fallback_em_rank"] = em_err
+        elif "fund_flow_recent_20d" not in out and STOCK_SKIP_EM_FUND_FLOW_RANK:
+            out["errors"]["fund_flow_fallback_em_rank"] = (
+                "skipped by STOCK_SKIP_EM_FUND_FLOW_RANK after repeated EM endpoint failures"
+            )
 
         # Fallback 2: THS per-stock net flow. This is weaker than EM's
         # super+large-order "main" classification, but it uses a different
@@ -1056,54 +1254,63 @@ def fetch_sentiment(symbol: str, _force: bool = False) -> dict:
             elif ths_err:
                 out["errors"]["fund_flow_fallback_ths"] = ths_err
 
-    lhb, err = safe_retry(ak.stock_lhb_detail_em,
-                          start_date=(date.today() - timedelta(days=90)).strftime("%Y%m%d"),
-                          end_date=today_tag())
-    if isinstance(lhb, pd.DataFrame) and len(lhb):
-        mask = lhb.astype(str).apply(lambda r: symbol in r.values, axis=1)
-        out["lhb_recent_3m"] = df_to_records(lhb[mask])
-    if err:
-        out["errors"]["lhb"] = err
+    if STOCK_SKIP_LHB:
+        out["lhb_source"] = "skipped_fast_daily"
+    else:
+        lhb, err = safe_retry(ak.stock_lhb_detail_em,
+                              start_date=(run_date() - timedelta(days=90)).strftime("%Y%m%d"),
+                              end_date=today_tag())
+        if isinstance(lhb, pd.DataFrame) and len(lhb):
+            mask = lhb.astype(str).apply(lambda r: symbol in r.values, axis=1)
+            out["lhb_recent_3m"] = df_to_records(lhb[mask])
+        if err:
+            out["errors"]["lhb"] = err
 
     # Margin: SSE/SZSE often haven't published today's data when called early evening,
     # producing either SSL errors or akshare's "Length mismatch" (empty frame, columns
     # assigned to nothing). Walk back up to 5 business days until we hit published data.
-    margin_fn = ak.stock_margin_detail_szse if mkt == "sz" else ak.stock_margin_detail_sse
-    margin = None
-    err = None
-    attempted: list[str] = []
-    d = date.today()
-    tries = 0
-    while tries < 5:
-        if d.weekday() < 5:  # Mon-Fri only; skip Sat/Sun
-            try_date = d.strftime("%Y%m%d")
-            margin, err = safe_retry(margin_fn, date=try_date)
-            attempted.append(try_date)
-            if isinstance(margin, pd.DataFrame) and len(margin) > 0:
-                out["margin_trading_date"] = try_date
-                break
-            tries += 1
-        d -= timedelta(days=1)
-    if isinstance(margin, pd.DataFrame) and len(margin) > 0:
-        row = margin[margin.astype(str).apply(lambda r: symbol in r.values, axis=1)]
-        out["margin_trading_today"] = df_to_records(row)
-    elif err:
-        # akshare raises "Length mismatch: Expected axis has 0 elements" when the
-        # exchange returned an empty file (data not yet published). Surface a clean
-        # message instead of the pandas internals.
-        msg = str(err)
-        if "Length mismatch" in msg or "axis has 0 elements" in msg or "BadZipFile" in msg:
-            err = f"margin data not yet published for {','.join(attempted)} (exchange returned empty)"
-        out["errors"]["margin"] = err
+    if STOCK_SKIP_MARGIN:
+        out["margin_source"] = "skipped_fast_daily"
+    else:
+        margin_fn = ak.stock_margin_detail_szse if mkt == "sz" else ak.stock_margin_detail_sse
+        margin = None
+        err = None
+        attempted: list[str] = []
+        d = run_date()
+        tries = 0
+        while tries < 5:
+            if d.weekday() < 5:  # Mon-Fri only; skip Sat/Sun
+                try_date = d.strftime("%Y%m%d")
+                margin, err = safe_retry(margin_fn, date=try_date, retries=0, delay=0.8)
+                attempted.append(try_date)
+                if isinstance(margin, pd.DataFrame) and len(margin) > 0:
+                    out["margin_trading_date"] = try_date
+                    break
+                tries += 1
+            d -= timedelta(days=1)
+        if isinstance(margin, pd.DataFrame) and len(margin) > 0:
+            row = margin[margin.astype(str).apply(lambda r: symbol in r.values, axis=1)]
+            out["margin_trading_today"] = df_to_records(row)
+        elif err:
+            # akshare raises "Length mismatch: Expected axis has 0 elements" when the
+            # exchange returned an empty file (data not yet published). Surface a clean
+            # message instead of the pandas internals.
+            msg = str(err)
+            if "Length mismatch" in msg or "axis has 0 elements" in msg or "BadZipFile" in msg:
+                err = f"margin data not yet published for {','.join(attempted)} (exchange returned empty)"
+            out["errors"]["margin"] = err
 
-    north, err = safe_retry(ak.stock_hsgt_individual_em, symbol=symbol)
-    if isinstance(north, pd.DataFrame):
-        out["northbound_holdings_recent"] = df_to_records(north.tail(20))
-    if err:
-        out["errors"]["northbound"] = err
+    if STOCK_SKIP_NORTHBOUND:
+        out["northbound_source"] = "skipped_fast_daily"
+    else:
+        north, err = safe_retry(ak.stock_hsgt_individual_em, symbol=symbol)
+        if isinstance(north, pd.DataFrame):
+            out["northbound_holdings_recent"] = df_to_records(north.tail(20))
+        if err:
+            out["errors"]["northbound"] = err
 
     hist, err = safe_retry(ak.stock_zh_a_hist, symbol=symbol, period="daily",
-                           start_date=(date.today() - timedelta(days=60)).strftime("%Y%m%d"),
+                           start_date=(run_date() - timedelta(days=60)).strftime("%Y%m%d"),
                            end_date=today_tag(), adjust="qfq")
     if isinstance(hist, pd.DataFrame) and len(hist) > 0:
         # EM kline returns Chinese column names; Tencent kline (the fallback
@@ -1124,7 +1331,7 @@ def fetch_sentiment(symbol: str, _force: bool = False) -> dict:
         if tx_fn:
             tx_sym = market_prefix(symbol) + symbol
             hist2, err2 = safe_retry(tx_fn, symbol=tx_sym,
-                                     start_date=(date.today() - timedelta(days=60)).strftime("%Y%m%d"),
+                                     start_date=(run_date() - timedelta(days=60)).strftime("%Y%m%d"),
                                      end_date=today_tag(), adjust="qfq")
             if isinstance(hist2, pd.DataFrame) and len(hist2) > 0:
                 out["price_recent"] = df_to_records(hist2.tail(20))
@@ -1147,20 +1354,29 @@ def fetch_sector(symbol: str, _force: bool = False) -> dict:
         except Exception:
             pass
 
-    out: dict = {"symbol": symbol, "as_of": datetime.now().isoformat(timespec="seconds"), "errors": {}}
+    out: dict = {
+        "symbol": symbol,
+        "as_of": datetime.now().isoformat(timespec="seconds"),
+        "data_date": today_iso(),
+        "errors": {},
+    }
 
-    info, err = safe_retry(ak.stock_individual_info_em, symbol=symbol)
     industry = None
-    em_err = err
+    em_err = None
     xq_err = None
-    if isinstance(info, pd.DataFrame):
-        row = info[info["item"] == "行业"]
-        if len(row):
-            industry = str(row["value"].iloc[0])
-            out["industry_em"] = industry
+    if not STOCK_SKIP_INDUSTRY_LOOKUP:
+        info, err = safe_retry(ak.stock_individual_info_em, symbol=symbol)
+        em_err = err
+        if isinstance(info, pd.DataFrame):
+            row = info[info["item"] == "行业"]
+            if len(row):
+                industry = str(row["value"].iloc[0])
+                out["industry_em"] = industry
+    else:
+        out["industry_lookup_source"] = "skipped_fast_daily"
 
     # Fallback 1: Xueqiu basic info (different backend)
-    if not industry:
+    if not industry and not STOCK_SKIP_INDUSTRY_LOOKUP:
         xq_fn = getattr(ak, "stock_individual_basic_info_xq", None)
         if xq_fn:
             xq_sym = market_prefix(symbol).upper() + symbol
@@ -1218,8 +1434,11 @@ def fetch_sector(symbol: str, _force: bool = False) -> dict:
         if errs_combined:
             out["errors"]["industry_lookup"] = "; ".join(errs_combined)
 
-    if industry:
-        sector_start = (date.today() - timedelta(days=90)).strftime("%Y%m%d")
+    if industry and STOCK_SKIP_SECTOR_PRICE:
+        out["sector_price_source"] = "skipped_fast_daily"
+
+    if industry and not STOCK_SKIP_SECTOR_PRICE:
+        sector_start = (run_date() - timedelta(days=90)).strftime("%Y%m%d")
         hist, err = safe_retry(ak.stock_board_industry_hist_em,
                                symbol=industry,
                                start_date=sector_start,
@@ -1243,7 +1462,7 @@ def fetch_sector(symbol: str, _force: bool = False) -> dict:
             if sw_code:
                 sw_hist, sw_err = safe_retry(
                     ak.index_zh_a_hist, symbol=sw_code, period="daily",
-                    start_date=(date.today() - timedelta(days=120)).strftime("%Y%m%d"),
+                    start_date=(run_date() - timedelta(days=120)).strftime("%Y%m%d"),
                     end_date=today_tag(),
                 )
                 if isinstance(sw_hist, pd.DataFrame) and len(sw_hist) > 0:
@@ -1261,7 +1480,7 @@ def fetch_sector(symbol: str, _force: bool = False) -> dict:
             else:
                 etf_code = SECTOR_TO_ETF_PROXY.get(industry)
             if etf_code:
-                etf_start = (date.today() - timedelta(days=120)).strftime("%Y%m%d")
+                etf_start = (run_date() - timedelta(days=120)).strftime("%Y%m%d")
                 etf_end = today_tag()
 
                 # Try EM first
@@ -1311,41 +1530,45 @@ def fetch_sector(symbol: str, _force: bool = False) -> dict:
                        "sector_history_etf", "sector_history_etf_tx"):
                 out["errors"].pop(_k, None)
 
-        # Sector fund flow: EM rank endpoint frequently 403s/JSONDecodeErrors
-        # under load. Try rank → summary as fallback chain.
-        # Note signatures differ:
-        #   rank(indicator, sector_type)  - returns full table, search row by industry
-        #   summary(symbol=industry, indicator) - returns rows for one industry
-        flow_err = None
-        for fn_name, kwargs, search_industry in (
-            ("stock_sector_fund_flow_rank",    {"indicator": "今日", "sector_type": "行业资金流"}, True),
-            ("stock_sector_fund_flow_summary", {"symbol": industry, "indicator": "今日"},          False),
-        ):
-            fn = getattr(ak, fn_name, None)
-            if not fn:
-                continue
-            flow, err = safe_retry(fn, **kwargs)
-            if isinstance(flow, pd.DataFrame) and len(flow) > 0:
-                if search_industry:
-                    row = flow[flow.astype(str).apply(lambda r: industry in r.values, axis=1)]
-                else:
-                    row = flow  # summary already filtered to this industry
-                if len(row) > 0:
-                    out["sector_fund_flow_today"] = df_to_records(row)
-                    out["sector_fund_flow_source"] = fn_name
-                    flow_err = None
-                    break
-                flow_err = f"{fn_name}: industry '{industry}' not in frame"
-            elif err:
-                flow_err = f"{fn_name}: {err}"
-        if flow_err and "sector_fund_flow_today" not in out:
-            out["errors"]["sector_fund_flow"] = flow_err
+        # Sector fund flow: use the post-fetch watchlist aggregation by default.
+        # The per-stock EM sector endpoint is repeatedly slow/noisy on this
+        # network and duplicates data later written to sector_flow_aggregated.json.
+        if STOCK_FETCH_SECTOR_FUND_FLOW:
+            flow_err = None
+            for fn_name, kwargs, search_industry in (
+                ("stock_sector_fund_flow_rank",    {"indicator": "今日", "sector_type": "行业资金流"}, True),
+                ("stock_sector_fund_flow_summary", {"symbol": industry, "indicator": "今日"},          False),
+            ):
+                fn = getattr(ak, fn_name, None)
+                if not fn:
+                    continue
+                flow, err = safe_retry(fn, **kwargs)
+                if isinstance(flow, pd.DataFrame) and len(flow) > 0:
+                    if search_industry:
+                        row = flow[flow.astype(str).apply(lambda r: industry in r.values, axis=1)]
+                    else:
+                        row = flow  # summary already filtered to this industry
+                    if len(row) > 0:
+                        out["sector_fund_flow_today"] = df_to_records(row)
+                        out["sector_fund_flow_source"] = fn_name
+                        flow_err = None
+                        break
+                    flow_err = f"{fn_name}: industry '{industry}' not in frame"
+                elif err:
+                    flow_err = f"{fn_name}: {err}"
+            if flow_err and "sector_fund_flow_today" not in out:
+                out["errors"]["sector_fund_flow"] = flow_err
+        else:
+            out["sector_fund_flow_source"] = "skipped_use_sector_flow_aggregated"
 
-    sw, err = safe_retry(ak.sw_index_first_info)
-    if isinstance(sw, pd.DataFrame):
-        out["sw_index_first_snapshot"] = df_to_records(sw)
-    if err:
-        out["errors"]["sw_index"] = err
+    if STOCK_SKIP_SW_INDEX:
+        out["sw_index_source"] = "skipped_fast_daily"
+    else:
+        sw, err = safe_retry(ak.sw_index_first_info)
+        if isinstance(sw, pd.DataFrame):
+            out["sw_index_first_snapshot"] = df_to_records(sw)
+        if err:
+            out["errors"]["sw_index"] = err
 
     path.write_text(json.dumps(out, ensure_ascii=False, default=str, indent=2))
     return out
@@ -1361,7 +1584,11 @@ def fetch_market(_force: bool = False) -> dict:
         except Exception:
             pass
 
-    out: dict = {"as_of": datetime.now().isoformat(timespec="seconds"), "errors": {}}
+    out: dict = {
+        "as_of": datetime.now().isoformat(timespec="seconds"),
+        "data_date": today_iso(),
+        "errors": {},
+    }
 
     act, err = safe_retry(ak.stock_market_activity_legu)
     if isinstance(act, pd.DataFrame):
@@ -1424,6 +1651,7 @@ def fetch_snapshot(symbol: str, _force: bool = False) -> dict:
     return {
         "symbol": symbol,
         "as_of": datetime.now().isoformat(timespec="seconds"),
+        "data_date": today_iso(),
         "fundamentals": fetch_fundamentals(symbol, _force=_force),
         "sentiment": fetch_sentiment(symbol, _force=_force),
         "sector": fetch_sector(symbol, _force=_force),

@@ -82,37 +82,58 @@ if [[ "${REFRESH:-0}" == "1" ]]; then
   FORCE_FLAG="--force"
 fi
 
-DATE_TAG="$(date +%Y%m%d)"
+: "${STOCK_FINANCIALS_MODE:=auto}"
+: "${STOCK_SKIP_EM_FUND_FLOW_RANK:=1}"
+: "${STOCK_FETCH_SECTOR_FUND_FLOW:=0}"
+: "${SNAPSHOT_TIMEOUT:=240}"
+: "${SNAPSHOT_FAST_TIMEOUT:=90}"
+export STOCK_FINANCIALS_MODE STOCK_SKIP_EM_FUND_FLOW_RANK STOCK_FETCH_SECTOR_FUND_FLOW
+
+DATE_TAG="${DATE_TAG:-$(date +%Y%m%d)}"
+export STOCK_DATE_TAG="${STOCK_DATE_TAG:-$DATE_TAG}"
 OUT_DIR="data/$DATE_TAG"
 mkdir -p "$OUT_DIR"
 MANIFEST="$OUT_DIR/_manifest.txt"
 : > "$MANIFEST"
 
 log() { printf '[%s] %s\n' "$(date +%H:%M:%S)" "$*" | tee -a "$MANIFEST"; }
+valid_json() { [[ -s "$1" ]] && "$PY" -m json.tool "$1" >/dev/null 2>&1; }
 
 log "python: $PY"
 log "out_dir: $OUT_DIR"
 log "refresh: ${REFRESH:-0}"
+log "date_tag: $DATE_TAG"
+log "stock_date_tag: $STOCK_DATE_TAG"
+log "financials_mode: $STOCK_FINANCIALS_MODE"
+log "skip_em_rank: $STOCK_SKIP_EM_FUND_FLOW_RANK"
+log "snapshot_timeout: ${SNAPSHOT_TIMEOUT}s fast_timeout: ${SNAPSHOT_FAST_TIMEOUT}s"
 log "symbols: ${WATCHLIST[*]}"
 log ""
 
 # --- market overview ---
 log "fetch market ..."
 MARKET_FILE="$OUT_DIR/market.json"
-if "$PY" scripts/stock.py market $FORCE_FLAG --json > "$MARKET_FILE" 2>>"$MANIFEST"; then
-  MARKET_BYTES=$(wc -c < "$MARKET_FILE")
-  if (( MARKET_BYTES > 1024 )); then
+MARKET_TMP="$OUT_DIR/.market.tmp.json"
+MARKET_CMD=("$PY" scripts/stock.py market)
+if [[ -n "$FORCE_FLAG" ]]; then
+  MARKET_CMD+=("$FORCE_FLAG")
+fi
+MARKET_CMD+=(--json)
+if "$PY" scripts/run_with_timeout.py "$SNAPSHOT_TIMEOUT" "${MARKET_CMD[@]}" > "$MARKET_TMP" 2>>"$MANIFEST"; then
+  MARKET_BYTES=$(wc -c < "$MARKET_TMP")
+  if (( MARKET_BYTES > 1024 )) && valid_json "$MARKET_TMP"; then
+    mv "$MARKET_TMP" "$MARKET_FILE"
     log "  ok  ${MARKET_BYTES} bytes → $MARKET_FILE"
   else
     # Mirror fetch_all.ps1 guard: sub-1KB market.json is a truncated/empty write
     # that later tripped the validator on "unreadable json". Delete it so the
     # next step sees a missing market, not a corrupt one.
-    log "  FAIL ($MARKET_BYTES bytes is too small; treating as truncated)"
-    rm -f "$MARKET_FILE"
+    log "  FAIL ($MARKET_BYTES bytes or invalid JSON; treating as truncated)"
+    rm -f "$MARKET_TMP"
   fi
 else
   log "  FAIL (exit=$?) see manifest"
-  rm -f "$MARKET_FILE"
+  rm -f "$MARKET_TMP"
 fi
 
 # --- per-symbol snapshots ---
@@ -120,11 +141,39 @@ OK=0; FAIL=0
 for sym in "${WATCHLIST[@]}"; do
   log "fetch $sym ..."
   out="$OUT_DIR/${sym}_snapshot.json"
-  if "$PY" scripts/stock.py snapshot "$sym" $FORCE_FLAG --json > "$out" 2>>"$MANIFEST"; then
-    log "  ok  $(wc -c < "$out") bytes → $out"
+  tmp="$OUT_DIR/.${sym}_snapshot.tmp.json"
+  cmd=("$PY" scripts/stock.py snapshot "$sym")
+  if [[ -n "$FORCE_FLAG" ]]; then
+    cmd+=("$FORCE_FLAG")
+  fi
+  cmd+=(--json)
+
+  if [[ -e "$out" ]] && ! valid_json "$out"; then
+    log "  removing invalid existing snapshot: $out"
+    rm -f "$out"
+  fi
+
+  status=0
+  "$PY" scripts/run_with_timeout.py "$SNAPSHOT_TIMEOUT" "${cmd[@]}" > "$tmp" 2>>"$MANIFEST" || status=$?
+  if [[ "$status" -ne 0 ]] || ! valid_json "$tmp"; then
+    log "  primary failed (exit=$status); retry fast daily fallback"
+    rm -f "$tmp"
+    status=0
+    env \
+      STOCK_FAST_DAILY=1 \
+      STOCK_FINANCIALS_MODE="${STOCK_FINANCIALS_MODE}" \
+      STOCK_SKIP_EM_FUND_FLOW_RANK=1 \
+      "$PY" scripts/run_with_timeout.py "$SNAPSHOT_FAST_TIMEOUT" "${cmd[@]}" > "$tmp" 2>>"$MANIFEST" || status=$?
+  fi
+
+  if [[ "$status" -eq 0 ]] && valid_json "$tmp"; then
+    bytes=$(wc -c < "$tmp")
+    mv "$tmp" "$out"
+    log "  ok  ${bytes} bytes → $out"
     OK=$((OK+1))
   else
-    log "  FAIL (exit=$?) see manifest"
+    log "  FAIL (exit=$status or invalid JSON) see manifest"
+    rm -f "$tmp"
     FAIL=$((FAIL+1))
   fi
 done

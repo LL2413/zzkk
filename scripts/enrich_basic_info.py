@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """Backfill missing basic_info in today's snapshots from historical ones.
 
-basic_info (公司简介/行业/股本等) is largely time-invariant. When EM/Xueqiu
+basic_info (公司简称/行业/股本等) is largely time-invariant. When EM/Xueqiu
 endpoints are unreachable on a given fetch, we can still surface the same
 descriptive metadata by lifting it from the most recent successful snapshot.
 
 Two-stage fallback:
   1. Historical reuse — scan past data/YYYYMMDD/ for first non-empty basic_info
   2. Hardcoded minimal — for symbols that never succeeded (e.g., always-blocked
-     endpoints), inject a tiny manually-curated dict with code/name/industry/
-     listing date so downstream analyzers see at least identity + industry.
+     endpoints), inject a tiny manually-curated dict with code/name/industry
+     so downstream analyzers see at least identity + industry.
 
 Usage:
     python scripts/enrich_basic_info.py                 # default: data/<today>
@@ -31,19 +31,19 @@ from datetime import date
 
 # Hardcoded minimal fallback for watchlist symbols that have NEVER had a
 # successful basic_info fetch across all historical snapshots. Keep this list
-# minimal (code/name/industry/listing date) — never claim live numbers.
+# minimal (code/name/industry) — never claim live numbers.
 HARDCODED_MINIMAL: dict[str, dict] = {
     "000988": {"股票代码": "000988", "股票简称": "华工科技",
-               "行业": "通信设备", "上市时间": "20000628"},
+               "行业": "通信设备"},
     "601869": {"股票代码": "601869", "股票简称": "长飞光纤",
-               "行业": "通信设备", "上市时间": "20180726"},
+               "行业": "通信设备"},
     "600522": {"股票代码": "600522", "股票简称": "中天科技",
-               "行业": "通信设备", "上市时间": "20020108"},
+               "行业": "通信设备"},
     "603256": {"股票代码": "603256", "股票简称": "宏和科技",
-               "行业": "电子元件", "上市时间": "20190910"},
+               "行业": "电子元件"},
     "603773": {"股票代码": "603773", "股票简称": "沃格光电",
-               "行业": "光学光电子", "上市时间": "20170313"},
-    # Newly added 2026-05; listing dates omitted where not verified.
+               "行业": "光学光电子"},
+    # Newly added 2026-05.
     "000021": {"股票代码": "000021", "股票简称": "深科技", "行业": "半导体"},
     "688627": {"股票代码": "688627", "股票简称": "精智达", "行业": "半导体"},
     "688206": {"股票代码": "688206", "股票简称": "概伦电子", "行业": "半导体"},
@@ -59,6 +59,8 @@ HARDCODED_MINIMAL: dict[str, dict] = {
     "601138": {"股票代码": "601138", "股票简称": "工业富联", "行业": "通信设备"},
 }
 
+BASIC_INFO_DROP_KEYS = {"上市时间"}
+
 
 def load_json(path):
     with open(path, encoding="utf-8-sig") as f:
@@ -68,6 +70,12 @@ def load_json(path):
 def save_json(path, data):
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2, default=str)
+
+
+def prune_basic_info(info):
+    if not isinstance(info, dict):
+        return info
+    return {k: v for k, v in info.items() if k not in BASIC_INFO_DROP_KEYS}
 
 
 def find_historical(symbol, repo_root, current_date_tag):
@@ -92,7 +100,7 @@ def find_historical(symbol, repo_root, current_date_tag):
         bi = d.get("fundamentals", {}).get("basic_info")
         if bi and len(bi) > 0:
             src = d.get("fundamentals", {}).get("basic_info_source", "em")
-            return bi, f"historical_{date_tag}_{src}"
+            return prune_basic_info(bi), f"historical_{date_tag}_{src}"
     return None, None
 
 
@@ -155,7 +163,7 @@ def main():
             failed += 1
             continue
 
-        fund["basic_info"] = bi
+        fund["basic_info"] = prune_basic_info(bi)
         fund["basic_info_source"] = source
         errs = fund.get("errors", {})
         errs.pop("basic_info", None)

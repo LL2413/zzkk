@@ -1,0 +1,142 @@
+[23:23:37] python: .venv/bin/python
+[23:23:37] out_dir: data/20260527
+[23:23:37] refresh: 0
+[23:23:37] symbols: 002281 000988 688008 603986 688728 688332 688046 688380 688123 688550 688208 002475 300458 601869 600522 600487 300395 300408 603256 603773 000021 688627 688206 688521 688047 600845 300499 002837 002156 600584 688981 688347 601138
+[23:23:37] 
+[23:23:37] fetch market ...
+/Users/xxx/zzkk/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+[23:23:37]   ok     20298 bytes → data/20260527/market.json
+[23:23:37] fetch 002281 ...
+/Users/xxx/zzkk/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+[23:23:38]   ok     88364 bytes → data/20260527/002281_snapshot.json
+[23:23:38] fetch 000988 ...
+/Users/xxx/zzkk/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+[23:23:38]   ok     82526 bytes → data/20260527/000988_snapshot.json
+[23:23:38] fetch 688008 ...
+/Users/xxx/zzkk/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+[23:23:38]   ok     79136 bytes → data/20260527/688008_snapshot.json
+[23:23:38] fetch 603986 ...
+/Users/xxx/zzkk/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+[23:23:39]   ok     80633 bytes → data/20260527/603986_snapshot.json
+[23:23:39] fetch 688728 ...
+/Users/xxx/zzkk/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+[23:23:39]   ok     78114 bytes → data/20260527/688728_snapshot.json
+[23:23:39] fetch 688332 ...
+/Users/xxx/zzkk/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+[23:23:39]   ok     77825 bytes → data/20260527/688332_snapshot.json
+[23:23:39] fetch 688046 ...
+/Users/xxx/zzkk/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+[23:23:40]   ok     78219 bytes → data/20260527/688046_snapshot.json
+[23:23:40] fetch 688380 ...
+/Users/xxx/zzkk/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+[23:23:40]   ok     77263 bytes → data/20260527/688380_snapshot.json
+[23:23:40] fetch 688123 ...
+/Users/xxx/zzkk/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+[23:23:40]   ok     78524 bytes → data/20260527/688123_snapshot.json
+[23:23:40] fetch 688550 ...
+/Users/xxx/zzkk/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+[23:23:40]   ok     78321 bytes → data/20260527/688550_snapshot.json
+[23:23:40] fetch 688208 ...
+/Users/xxx/zzkk/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+[23:23:41]   ok     79065 bytes → data/20260527/688208_snapshot.json
+[23:23:41] fetch 002475 ...
+/Users/xxx/zzkk/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+[23:23:41]   ok     81638 bytes → data/20260527/002475_snapshot.json
+[23:23:41] fetch 300458 ...
+/Users/xxx/zzkk/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+[23:23:41]   ok     79403 bytes → data/20260527/300458_snapshot.json
+[23:23:41] fetch 601869 ...
+/Users/xxx/zzkk/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+[23:23:42]   ok     80297 bytes → data/20260527/601869_snapshot.json
+[23:23:42] fetch 600522 ...
+/Users/xxx/zzkk/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+[23:23:42]   ok     81592 bytes → data/20260527/600522_snapshot.json
+[23:23:42] fetch 600487 ...
+/Users/xxx/zzkk/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+[23:23:42]   ok     80742 bytes → data/20260527/600487_snapshot.json
+[23:23:42] fetch 300395 ...
+/Users/xxx/zzkk/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+[23:23:43]   ok     80619 bytes → data/20260527/300395_snapshot.json
+[23:23:43] fetch 300408 ...
+/Users/xxx/zzkk/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+[23:23:43]   ok     79553 bytes → data/20260527/300408_snapshot.json
+[23:23:43] fetch 603256 ...
+/Users/xxx/zzkk/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+[23:23:43]   ok     81996 bytes → data/20260527/603256_snapshot.json
+[23:23:43] fetch 603773 ...
+/Users/xxx/zzkk/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+[23:23:44]   ok     82369 bytes → data/20260527/603773_snapshot.json
+[23:23:44] fetch 000021 ...
+/Users/xxx/zzkk/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+[23:23:44]   ok     81216 bytes → data/20260527/000021_snapshot.json
+[23:23:44] fetch 688627 ...
+/Users/xxx/zzkk/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+[23:23:44]   ok     72476 bytes → data/20260527/688627_snapshot.json
+[23:23:44] fetch 688206 ...
+/Users/xxx/zzkk/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+[23:23:45]   ok     76671 bytes → data/20260527/688206_snapshot.json
+[23:23:45] fetch 688521 ...
+/Users/xxx/zzkk/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+[23:23:45]   ok     79496 bytes → data/20260527/688521_snapshot.json
+[23:23:45] fetch 688047 ...
+/Users/xxx/zzkk/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+[23:23:45]   ok     77813 bytes → data/20260527/688047_snapshot.json
+[23:23:45] fetch 600845 ...
+/Users/xxx/zzkk/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+[23:23:46]   ok     76205 bytes → data/20260527/600845_snapshot.json
+[23:23:46] fetch 300499 ...
+/Users/xxx/zzkk/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+[23:23:46]   ok     68979 bytes → data/20260527/300499_snapshot.json
+[23:23:46] fetch 002837 ...
+/Users/xxx/zzkk/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+[23:23:46]   ok     77386 bytes → data/20260527/002837_snapshot.json
+[23:23:46] fetch 002156 ...
+/Users/xxx/zzkk/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+  0%|          | 0/10 [00:00<?, ?it/s] 10%|█         | 1/10 [00:00<00:03,  2.58it/s] 20%|██        | 2/10 [00:00<00:02,  2.81it/s] 30%|███       | 3/10 [00:01<00:02,  2.46it/s] 40%|████      | 4/10 [00:01<00:02,  2.60it/s] 50%|█████     | 5/10 [00:02<00:02,  2.08it/s] 60%|██████    | 6/10 [00:02<00:01,  2.31it/s] 70%|███████   | 7/10 [00:02<00:01,  2.48it/s] 80%|████████  | 8/10 [00:03<00:00,  2.51it/s] 90%|█████████ | 9/10 [00:03<00:00,  2.43it/s]100%|██████████| 10/10 [00:04<00:00,  2.56it/s]                                                 0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  2.84it/s]                                               0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  2.93it/s]                                             [23:26:36]   ok     79201 bytes → data/20260527/002156_snapshot.json
+[23:26:36] fetch 600584 ...
+/Users/xxx/zzkk/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+  0%|          | 0/10 [00:00<?, ?it/s] 10%|█         | 1/10 [00:00<00:07,  1.27it/s] 20%|██        | 2/10 [00:01<00:04,  1.85it/s] 30%|███       | 3/10 [00:01<00:03,  2.12it/s] 40%|████      | 4/10 [00:01<00:02,  2.23it/s] 50%|█████     | 5/10 [00:02<00:02,  2.43it/s] 60%|██████    | 6/10 [00:02<00:01,  2.44it/s] 70%|███████   | 7/10 [00:03<00:01,  2.25it/s] 80%|████████  | 8/10 [00:03<00:00,  2.13it/s] 90%|█████████ | 9/10 [00:04<00:00,  2.25it/s]100%|██████████| 10/10 [00:04<00:00,  2.32it/s]                                                 0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  2.95it/s]                                               0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  2.93it/s]                                             [01:11:39]   ok     80094 bytes → data/20260527/600584_snapshot.json
+[01:11:39] fetch 688981 ...
+/Users/xxx/zzkk/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+  0%|          | 0/104 [00:00<?, ?it/s]  1%|          | 1/104 [00:00<00:16,  6.17it/s]  2%|▏         | 2/104 [00:00<00:12,  7.90it/s]  3%|▎         | 3/104 [00:00<00:11,  8.58it/s]  4%|▍         | 4/104 [00:00<00:11,  8.86it/s]  5%|▍         | 5/104 [00:00<00:10,  9.06it/s]  6%|▌         | 6/104 [00:00<00:11,  8.41it/s]  7%|▋         | 7/104 [00:00<00:11,  8.64it/s]  8%|▊         | 8/104 [00:00<00:10,  8.93it/s] 10%|▉         | 10/104 [00:01<00:11,  8.39it/s] 11%|█         | 11/104 [00:01<00:10,  8.58it/s] 12%|█▏        | 12/104 [00:01<00:14,  6.29it/s] 12%|█▎        | 13/104 [00:01<00:13,  6.84it/s] 13%|█▎        | 14/104 [00:01<00:15,  5.80it/s] 14%|█▍        | 15/104 [00:02<00:14,  6.00it/s] 15%|█▌        | 16/104 [00:02<00:13,  6.65it/s] 16%|█▋        | 17/104 [00:02<00:12,  7.18it/s] 17%|█▋        | 18/104 [00:02<00:11,  7.78it/s] 18%|█▊        | 19/104 [00:02<00:10,  8.19it/s] 19%|█▉        | 20/104 [00:02<00:09,  8.54it/s] 20%|██        | 21/104 [00:02<00:09,  8.78it/s] 21%|██        | 22/104 [00:02<00:09,  8.29it/s] 22%|██▏       | 23/104 [00:02<00:09,  8.64it/s] 23%|██▎       | 24/104 [00:03<00:09,  8.77it/s] 24%|██▍       | 25/104 [00:03<00:08,  9.09it/s] 25%|██▌       | 26/104 [00:03<00:08,  9.10it/s] 26%|██▌       | 27/104 [00:03<00:08,  8.64it/s] 27%|██▋       | 28/104 [00:03<00:08,  8.83it/s] 28%|██▊       | 29/104 [00:03<00:08,  8.64it/s] 29%|██▉       | 30/104 [00:03<00:08,  8.85it/s] 30%|██▉       | 31/104 [00:03<00:08,  9.05it/s] 31%|███       | 32/104 [00:03<00:07,  9.05it/s] 32%|███▏      | 33/104 [00:04<00:07,  9.17it/s] 33%|███▎      | 34/104 [00:04<00:10,  6.69it/s] 34%|███▎      | 35/104 [00:04<00:09,  7.28it/s] 35%|███▍      | 36/104 [00:04<00:08,  7.64it/s] 36%|███▌      | 37/104 [00:04<00:09,  6.88it/s] 37%|███▋      | 38/104 [00:04<00:10,  6.42it/s] 38%|███▊      | 39/104 [00:05<00:09,  6.78it/s] 38%|███▊      | 40/104 [00:05<00:08,  7.38it/s] 39%|███▉      | 41/104 [00:05<00:08,  7.36it/s] 40%|████      | 42/104 [00:05<00:10,  6.03it/s] 41%|████▏     | 43/104 [00:05<00:09,  6.76it/s] 42%|████▏     | 44/104 [00:05<00:08,  7.39it/s] 43%|████▎     | 45/104 [00:05<00:09,  6.44it/s] 44%|████▍     | 46/104 [00:06<00:08,  7.13it/s] 45%|████▌     | 47/104 [00:06<00:07,  7.18it/s] 46%|████▌     | 48/104 [00:06<00:07,  7.82it/s] 47%|████▋     | 49/104 [00:06<00:08,  6.52it/s] 48%|████▊     | 50/104 [00:06<00:07,  7.11it/s] 49%|████▉     | 51/104 [00:06<00:06,  7.75it/s] 50%|█████     | 52/104 [00:06<00:06,  8.15it/s] 51%|█████     | 53/104 [00:07<00:07,  6.74it/s] 52%|█████▏    | 54/104 [00:07<00:06,  7.41it/s] 53%|█████▎    | 55/104 [00:07<00:06,  7.28it/s] 54%|█████▍    | 56/104 [00:07<00:08,  5.95it/s] 55%|█████▍    | 57/104 [00:07<00:08,  5.63it/s] 56%|█████▌    | 58/104 [00:07<00:07,  6.12it/s] 57%|█████▋    | 59/104 [00:07<00:06,  6.87it/s] 58%|█████▊    | 60/104 [00:08<00:05,  7.51it/s] 59%|█████▊    | 61/104 [00:08<00:05,  7.66it/s] 60%|█████▉    | 62/104 [00:08<00:06,  6.44it/s] 61%|██████    | 63/104 [00:08<00:05,  7.08it/s] 62%|██████▏   | 64/104 [00:08<00:06,  5.85it/s] 62%|██████▎   | 65/104 [00:08<00:05,  6.59it/s] 63%|██████▎   | 66/104 [00:08<00:05,  7.22it/s] 64%|██████▍   | 67/104 [00:09<00:05,  7.18it/s] 65%|██████▌   | 68/104 [00:09<00:04,  7.62it/s] 66%|██████▋   | 69/104 [00:09<00:04,  8.03it/s] 67%|██████▋   | 70/104 [00:09<00:04,  8.36it/s] 68%|██████▊   | 71/104 [00:09<00:03,  8.79it/s] 69%|██████▉   | 72/104 [00:09<00:03,  8.92it/s] 70%|███████   | 73/104 [00:09<00:03,  9.11it/s] 71%|███████   | 74/104 [00:09<00:03,  8.77it/s] 72%|███████▏  | 75/104 [00:09<00:03,  8.98it/s] 73%|███████▎  | 76/104 [00:10<00:03,  8.43it/s] 74%|███████▍  | 77/104 [00:10<00:03,  8.07it/s] 75%|███████▌  | 78/104 [00:10<00:03,  8.42it/s] 76%|███████▌  | 79/104 [00:10<00:02,  8.37it/s] 77%|███████▋  | 80/104 [00:10<00:02,  8.74it/s] 78%|███████▊  | 81/104 [00:10<00:02,  8.75it/s] 79%|███████▉  | 82/104 [00:10<00:02,  8.71it/s] 80%|███████▉  | 83/104 [00:10<00:02,  8.02it/s] 81%|████████  | 84/104 [00:11<00:02,  8.12it/s] 82%|████████▏ | 85/104 [00:11<00:02,  6.95it/s] 83%|████████▎ | 86/104 [00:11<00:02,  6.20it/s] 84%|████████▎ | 87/104 [00:11<00:02,  6.72it/s] 85%|████████▍ | 88/104 [00:11<00:02,  7.30it/s] 86%|████████▌ | 89/104 [00:11<00:01,  7.66it/s] 87%|████████▋ | 90/104 [00:11<00:01,  8.13it/s] 88%|████████▊ | 91/104 [00:12<00:01,  7.98it/s] 88%|████████▊ | 92/104 [00:12<00:01,  8.37it/s] 89%|████████▉ | 93/104 [00:12<00:01,  8.66it/s] 90%|█████████ | 94/104 [00:12<00:01,  8.75it/s] 91%|█████████▏| 95/104 [00:12<00:01,  8.18it/s] 92%|█████████▏| 96/104 [00:12<00:00,  8.43it/s] 93%|█████████▎| 97/104 [00:12<00:00,  8.52it/s] 94%|█████████▍| 98/104 [00:12<00:00,  7.11it/s] 95%|█████████▌| 99/104 [00:13<00:00,  7.71it/s] 96%|█████████▌| 100/104 [00:13<00:00,  8.05it/s] 97%|█████████▋| 101/104 [00:13<00:00,  5.16it/s] 98%|█████████▊| 102/104 [00:13<00:00,  5.53it/s] 99%|█████████▉| 103/104 [00:13<00:00,  6.29it/s]100%|██████████| 104/104 [00:13<00:00,  7.05it/s]                                                   0%|          | 0/10 [00:00<?, ?it/s] 10%|█         | 1/10 [00:00<00:02,  3.98it/s] 20%|██        | 2/10 [00:00<00:01,  4.16it/s] 30%|███       | 3/10 [00:00<00:01,  3.96it/s] 40%|████      | 4/10 [00:01<00:01,  3.94it/s] 50%|█████     | 5/10 [00:01<00:01,  3.97it/s] 60%|██████    | 6/10 [00:01<00:01,  3.56it/s] 70%|███████   | 7/10 [00:01<00:00,  3.63it/s] 80%|████████  | 8/10 [00:02<00:00,  3.69it/s] 90%|█████████ | 9/10 [00:02<00:00,  3.82it/s]100%|██████████| 10/10 [00:02<00:00,  3.59it/s]                                                 0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  2.86it/s]                                               0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  2.89it/s]                                             [04:43:01]   ok     78005 bytes → data/20260527/688981_snapshot.json
+[04:43:01] fetch 688347 ...
+/Users/xxx/zzkk/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+  0%|          | 0/10 [00:00<?, ?it/s] 10%|█         | 1/10 [00:00<00:03,  2.90it/s] 20%|██        | 2/10 [00:00<00:02,  2.92it/s] 30%|███       | 3/10 [00:01<00:02,  2.91it/s] 40%|████      | 4/10 [00:01<00:01,  3.01it/s] 50%|█████     | 5/10 [00:01<00:01,  2.77it/s] 60%|██████    | 6/10 [00:02<00:01,  2.80it/s] 70%|███████   | 7/10 [00:02<00:01,  2.78it/s] 80%|████████  | 8/10 [00:02<00:00,  2.71it/s] 90%|█████████ | 9/10 [00:03<00:00,  2.63it/s]100%|██████████| 10/10 [00:03<00:00,  2.66it/s]                                                 0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  3.01it/s]                                               0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  2.79it/s]                                             [07:42:19]   ok     70415 bytes → data/20260527/688347_snapshot.json
+[07:42:19] fetch 601138 ...
+/Users/xxx/zzkk/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+  0%|          | 0/10 [00:00<?, ?it/s] 10%|█         | 1/10 [00:00<00:02,  4.27it/s] 20%|██        | 2/10 [00:00<00:02,  3.77it/s] 30%|███       | 3/10 [00:00<00:01,  3.52it/s] 40%|████      | 4/10 [00:01<00:01,  3.56it/s] 50%|█████     | 5/10 [00:01<00:01,  3.49it/s] 60%|██████    | 6/10 [00:01<00:01,  3.46it/s] 70%|███████   | 7/10 [00:01<00:00,  3.49it/s] 80%|████████  | 8/10 [00:02<00:00,  3.27it/s] 90%|█████████ | 9/10 [00:02<00:00,  2.54it/s]100%|██████████| 10/10 [00:03<00:00,  2.76it/s]                                                 0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  2.91it/s]                                             /Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/multiprocessing/resource_tracker.py:216: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
