@@ -10,7 +10,7 @@ Use this skill to produce structured A-share analysis from local data and public
 ## Session Bootstrap
 
 Read `context.md` first when entering this skill. It pins the canonical
-branch (`claude/stock-market-analysis-skill-9p7lc`), the 33-code
+branch (`claude/stock-market-analysis-skill-9p7lc`), the 36-code
 watchlist with names+industry, snapshot JSON shape, refresh/validate
 commands, fallback rules, and the pre-report checklist. Daily/event
 context belongs in commit messages, not in `context.md`.
@@ -78,7 +78,7 @@ context belongs in commit messages, not in `context.md`.
 
    Treat critical failures as blockers. Warnings can still be analyzed, but the report must list them in "数据缺口".
 
-   For the full 33-code watchlist, prefer the one-shot pipeline instead of
+   For the full 36-code watchlist, prefer the one-shot pipeline instead of
    hand-writing the report. It fetches when appropriate, runs all enrichers,
    validates data, and writes `reports/watchlist_YYYYMMDD.md`.
 

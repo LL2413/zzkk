@@ -1422,6 +1422,9 @@ def fetch_sector(symbol: str, _force: bool = False) -> dict:
         "688981": "半导体",    # 中芯国际 - 晶圆代工
         "688347": "半导体",    # 华虹公司 - 晶圆代工
         "601138": "通信设备",  # 工业富联 - 服务器/AI 算力硬件
+        "600118": "航天航空",  # 中国卫星 - 航天器制造
+        "600879": "航天航空",  # 航天电子 - 航天电子设备
+        "001270": "半导体",    # 铖昌科技 - 相控阵 T/R 芯片
     }
     if not industry and symbol in WATCHLIST_INDUSTRY_FALLBACK:
         industry = WATCHLIST_INDUSTRY_FALLBACK[symbol]

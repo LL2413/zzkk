@@ -38,7 +38,7 @@ import sys
 from datetime import date
 
 
-# Industry assignment for the 20 watchlist symbols. Mirrors
+# Industry assignment for watchlist symbols. Mirrors
 # WATCHLIST_INDUSTRY_FALLBACK in scripts/stock.py — keep in sync.
 WATCHLIST_INDUSTRY = {
     "002281": "通信设备",  "000988": "通信设备",
@@ -69,6 +69,9 @@ WATCHLIST_INDUSTRY = {
     "688981": "半导体",
     "688347": "半导体",
     "601138": "通信设备",
+    "600118": "航天航空",
+    "600879": "航天航空",
+    "001270": "半导体",
 }
 
 

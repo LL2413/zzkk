@@ -12,9 +12,17 @@ import os
 import signal
 import subprocess
 import sys
+import threading
 
 
 TIMEOUT_EXIT = 124
+
+
+def kill_process_group(pid: int) -> None:
+    try:
+        os.killpg(pid, signal.SIGTERM)
+    except Exception:
+        return
 
 
 def main() -> int:
@@ -31,22 +39,38 @@ def main() -> int:
         return 2
 
     proc = subprocess.Popen(args.command, start_new_session=True)
-    try:
-        return proc.wait(timeout=args.seconds)
-    except subprocess.TimeoutExpired:
+    timed_out = False
+
+    def watchdog() -> None:
+        nonlocal timed_out
+        timer.wait(args.seconds)
+        if proc.poll() is not None:
+            return
+        timed_out = True
         print(
             f"TIMEOUT: command exceeded {args.seconds:.0f}s: {' '.join(args.command)}",
             file=sys.stderr,
+            flush=True,
         )
+        kill_process_group(proc.pid)
         try:
-            os.killpg(proc.pid, signal.SIGTERM)
             proc.wait(timeout=3)
-        except Exception:
+        except subprocess.TimeoutExpired:
             try:
                 os.killpg(proc.pid, signal.SIGKILL)
             except Exception:
                 pass
+
+    timer = threading.Event()
+    thread = threading.Thread(target=watchdog, daemon=True)
+    thread.start()
+    try:
+        rc = proc.wait()
+    finally:
+        timer.set()
+    if timed_out:
         return TIMEOUT_EXIT
+    return rc
 
 
 if __name__ == "__main__":

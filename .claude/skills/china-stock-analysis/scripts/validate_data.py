@@ -26,10 +26,13 @@ REQUIRED_NESTED = (
 def inferred_expected_count(data_dir: Path) -> int:
     """Infer watchlist size for normal daily data dirs.
 
-    The watchlist expanded to 33 names on 2026-05-13. Older historical dirs can
+    The watchlist expanded to 33 names on 2026-05-13 and 36 names on
+    2026-05-28. Older historical dirs can
     still be validated structurally, but current dirs should fail if partial.
     """
     tag = data_dir.name
+    if tag.isdigit() and len(tag) == 8 and tag >= "20260528":
+        return 36
     if tag.isdigit() and len(tag) == 8 and tag >= "20260513":
         return 33
     return 0
@@ -185,7 +188,7 @@ def main() -> int:
     )
 
     # Snapshot-count guard: validator previously only checked >0 snapshots, so a
-    # partial fetch (4 of 33) passed silently. With --expected-count N, anything
+    # partial fetch (4 of 36) passed silently. With --expected-count N, anything
     # less than N is a critical finding.
     if expected_count > 0 and result["snapshot_count"] < expected_count:
         result["findings"].append({

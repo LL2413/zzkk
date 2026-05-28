@@ -1,15 +1,15 @@
-[19:27:49] python: .venv/bin/python
-[19:27:49] out_dir: data/20260528
-[19:27:49] refresh: 1
-[19:27:49] date_tag: 20260528
-[19:27:49] stock_date_tag: 20260528
-[19:27:49] financials_mode: auto
-[19:27:49] skip_em_rank: 1
-[19:27:49] snapshot_timeout: 240s fast_timeout: 90s
-[19:27:49] fetch_jobs: 4
-[19:27:49] market: ok 20349 bytes
-[19:27:49] snapshots: ok=33 fail=0 total=33
-[19:27:49] note: first 4 snapshots were collected before switching from sequential to parallel; remaining 29 were collected with the same stock.py snapshot path via 4 parallel workers.
-[19:27:49] enrich_all: ok
-[19:27:49] validation: snapshots=33 parsed=33 market_ok=True critical=0 warnings=13
-[19:27:49] report: reports/watchlist_20260528.md
+[21:32:25] python: .venv/bin/python
+[21:32:25] out_dir: data/20260528
+[21:32:25] refresh: 1
+[21:32:25] date_tag: 20260528
+[21:32:25] stock_date_tag: 20260528
+[21:32:25] financials_mode: auto
+[21:32:25] skip_em_rank: 1
+[21:32:25] snapshot_timeout: 240s fast_timeout: 90s
+[21:32:25] fetch_jobs: 4
+[21:32:25] market: ok 20349 bytes
+[21:32:25] snapshots: ok=36 fail=0 total=36
+[21:32:25] note: 33 existing snapshots plus newly added 600118, 600879, 001270.
+[21:32:25] enrich_all: ok
+[21:32:25] validation: snapshots=36 parsed=36 market_ok=True critical=0 warnings=21
+[21:32:25] report: reports/watchlist_20260528.md

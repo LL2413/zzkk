@@ -15,12 +15,13 @@ evergreen. Daily commentary belongs in commit messages or chat replies.
   from "today's date" — Chinese market holidays mean the latest snapshot
   may lag the calendar by several days.
 
-## Watchlist (33 codes)
+## Watchlist (36 codes)
 
 | Code   | 名称      | 行业（基本面快照口径） |
 |--------|-----------|------------------------|
 | 000021 | 深科技    | 半导体                 |
 | 000988 | 华工科技  | 通信设备               |
+| 001270 | 铖昌科技  | 半导体                 |
 | 002156 | 通富微电  | 半导体                 |
 | 002281 | 光迅科技  | 通信设备               |
 | 002475 | 立讯精密  | 消费电子               |
@@ -29,10 +30,12 @@ evergreen. Daily commentary belongs in commit messages or chat replies.
 | 300408 | 三环集团  | 元件                   |
 | 300458 | 全志科技  | 半导体                 |
 | 300499 | 高澜股份  | 电源设备               |
+| 600118 | 中国卫星  | 航天航空               |
 | 600487 | 亨通光电  | 通信设备               |
 | 600522 | 中天科技  | 通信设备               |
 | 600584 | 长电科技  | 半导体                 |
 | 600845 | 宝信软件  | 软件开发               |
+| 600879 | 航天电子  | 航天航空               |
 | 601138 | 工业富联  | 通信设备               |
 | 601869 | 长飞光纤  | 通信设备               |
 | 603256 | 宏和科技  | 电子元件               |
@@ -61,7 +64,7 @@ evergreen. Daily commentary belongs in commit messages or chat replies.
 每个交易日 `data/YYYYMMDD/` 目录下应含：
 
 - `market.json`             — 大盘/赚钱效应/涨跌停统计
-- `<code>_snapshot.json`    — 单股快照（33 份，全 watchlist）
+- `<code>_snapshot.json`    — 单股快照（36 份，全 watchlist）
 - `sector_flow_aggregated.json` — 板块资金（5-13 后引入）
 - `_manifest.txt`           — 当日产物清单
 
@@ -211,7 +214,7 @@ divergence → alpha → score。
 
 ## Watchlist 扫描输出格式（默认）
 
-收到 "watchlist 全扫 / 全 33 只" 类请求时，**默认按主力净流入 desc 排序**
+收到 "watchlist 全扫 / 全 36 只" 类请求时，**默认按主力净流入 desc 排序**
 （用户若说"按评分排"则改 `_signal_score` desc）。表头固定如下：
 
 | 代码 | 名称 | 区间% | 主力(亿) | 净占% | streak | 背离 | 标签 | 估值 | 评分 | 新 |
@@ -250,11 +253,15 @@ N 一般取 5~6，可按个股密度调整。"价涨主力跑" 一节列每只�
 `000021 002156 002837 300499 600584 600845 601138 603256 603773
 688047 688206 688347 688521 688627 688981`
 
+## Watchlist 新增航天链 3 只（5-28 扩展引入）
+
+`001270 600118 600879`
+
 ## 进入分析模式的典型触发语
 
 - "看 <code/名称> 今天怎么样" → 取最新 `data/` 目录里的 snapshot，
   跑三卡分析。
 - "做 X 月 X 日完整分析" → 用 `data/YYYYMMDD/` 对应目录；缺则按
   Windows 命令 force 刷新后再做。
-- "watchlist 全扫" → 读 33 只全部 snapshot + market.json +
+- "watchlist 全扫" → 读 36 只全部 snapshot + market.json +
   sector_flow_aggregated.json，按 `_signal_score` 排序后给 5-10 条要点。

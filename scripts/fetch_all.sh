@@ -67,6 +67,9 @@ DEFAULT_WATCHLIST=(
   "688981"   # 中芯国际   SMIC (晶圆代工)
   "688347"   # 华虹公司   HuaHong (晶圆代工)
   "601138"   # 工业富联   FII (服务器/AI 算力硬件)
+  "600118"   # 中国卫星   China Spacesat (航天器制造)
+  "600879"   # 航天电子   Aerospace Electronics (航天电子)
+  "001270"   # 铖昌科技   Chengchang Tech (相控阵 T/R 芯片)
 )
 
 if [[ $# -gt 0 ]]; then
