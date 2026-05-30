@@ -4,7 +4,7 @@
 #   - catch up if missed (e.g. machine was off)
 #   - auto-retry 3 times on failure, 15 min apart
 #   - work on battery (laptops)
-#   - 2 hour execution limit (covers 13 stocks even on slow networks)
+#   - configurable execution limit (covers the full watchlist on slow networks)
 #
 # Re-run safe: unregisters and recreates.
 #
@@ -63,7 +63,7 @@ Register-ScheduledTask `
   -Trigger $trigger `
   -Settings $settings `
   -Principal $principal `
-  -Description "Daily A-share data refresh — 13 stocks + market" `
+  -Description "Daily A-share data refresh — full watchlist + market + report" `
   | Out-Null
 
 $info = Get-ScheduledTask -TaskName $TaskName | Get-ScheduledTaskInfo

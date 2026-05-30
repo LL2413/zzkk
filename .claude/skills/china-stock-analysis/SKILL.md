@@ -23,6 +23,8 @@ context belongs in commit messages, not in `context.md`.
 - One-shot collection+analysis: `scripts/run_watchlist_analysis.ps1`, `scripts/run_watchlist_analysis.sh`
 - Watchlist report generator: `scripts/analyze_watchlist.py`
 - Scheduled refresh: `scripts/daily_refresh.ps1`
+- Deterministic post-fetch finalizer: `scripts/finalize_refresh.ps1`
+- Partial-run repair: `scripts/repair_refresh.ps1`
 - Daily snapshots: `data/YYYYMMDD/*.json`
 - Daily reports: `reports/watchlist_YYYYMMDD.md`
 - Cache: `.cache/stock/*.json`
@@ -80,8 +82,17 @@ context belongs in commit messages, not in `context.md`.
    hand-writing the report. It fetches when appropriate, runs all enrichers,
    validates data, and writes `reports/watchlist_YYYYMMDD.md`.
 
+   For scheduled daily collection, use `scripts/daily_refresh.ps1`. For a
+   partial current-day run, use `scripts/repair_refresh.ps1`: it detects
+   missing or unreadable snapshots and refetches only those symbols before
+   running the same deterministic finalizer.
+
    Windows:
    ```powershell
+   powershell -ExecutionPolicy Bypass -File scripts\daily_refresh.ps1
+   powershell -ExecutionPolicy Bypass -File scripts\repair_refresh.ps1 -DryRun
+   powershell -ExecutionPolicy Bypass -File scripts\repair_refresh.ps1
+   powershell -ExecutionPolicy Bypass -File scripts\repair_refresh.ps1 688981 601138
    powershell -ExecutionPolicy Bypass -File scripts\run_watchlist_analysis.ps1
    powershell -ExecutionPolicy Bypass -File scripts\run_watchlist_analysis.ps1 -NoFetch -DateTag 20260522
    powershell -ExecutionPolicy Bypass -File scripts\run_watchlist_analysis.ps1 -NoFetch -DateTag 20260522 -RequireStrongFundFlow
@@ -116,7 +127,9 @@ context belongs in commit messages, not in `context.md`.
 - After validation, generate `reports/watchlist_YYYYMMDD.md`; scheduled refresh should commit the report together with the data.
 - Treat EastMoney `em_individual` / `em_rank_today_order_split` as the strong fund-flow口径. THS fallback is weak救场; when the user asks for a strong conclusion, require `--require-strong-fund-flow` or `-RequireStrongFundFlow`.
 - Do not stage scratch files such as ad hoc audits unless the user asks.
-- `daily_refresh.ps1` can silently skip enrichers (observed 2026-05-20: `_signal_score` missing from snapshots, required manual backfill). After every refresh, post-flight check: open the latest `data/YYYYMMDD/<code>_snapshot.json` and confirm `_signal_score` is present. If absent, re-run the enricher chain (`basic_info → valuation → margin_net → sector_flow → streak → divergence → alpha → score`) and tail the log for the enricher's `WARN` / `exit` lines before declaring the day complete.
+- `finalize_refresh.ps1` is the single post-fetch gate. It runs all enrichers, validates the full watchlist, confirms every snapshot has `_signal_score`, then generates the report. Both daily refresh and repair must call it.
+- When a scheduled run is partial, preview with `repair_refresh.ps1 -DryRun`, then run `repair_refresh.ps1`. It refetches only missing/unreadable current-day snapshots and never stages scratch files.
+- Repair refuses weekend live refetch by default. Use `-Force` only when a weekend refresh is intentional.
 
 ## Report Template
 

@@ -103,9 +103,22 @@ C:\Users\computer\.venv\Scripts\python.exe scripts\stock.py market --json
 # 批量全 watchlist 刷新
 powershell -ExecutionPolicy Bypass -File scripts\fetch_all.ps1 -Refresh
 
-# 每日刷新（一条全包：git pull --rebase → fetch_all → 8 个 enricher
-#   含 enrich_score → validate → commit → git push。不要再手动 git add/push）
+# 每日刷新（一条全包：git pull --rebase → fetch_all → 10 个 enricher
+#   含 enrich_score → validate → _signal_score post-flight → report
+#   → commit → git push。不要再手动 git add/push）
 powershell -ExecutionPolicy Bypass -File scripts\daily_refresh.ps1
+
+# 计划任务中断后，先预览今天缺失/损坏的 snapshot，再只补抓这些文件
+powershell -ExecutionPolicy Bypass -File scripts\repair_refresh.ps1 -DryRun
+powershell -ExecutionPolicy Bypass -File scripts\repair_refresh.ps1
+# 周末默认拒绝实时补抓；确实需要时显式加 -Force
+
+# 只补抓指定股票
+powershell -ExecutionPolicy Bypass -File scripts\repair_refresh.ps1 688981 601138
+
+# 只对现有数据重跑富集、校验和报告，不抓取、不拉代码、不提交
+powershell -ExecutionPolicy Bypass -File scripts\repair_refresh.ps1 `
+  -NoFetch -NoPull -NoCommit
 
 # 数据健康检查
 C:\Users\computer\.venv\Scripts\python.exe `
@@ -130,9 +143,12 @@ python .claude/skills/china-stock-analysis/scripts/validate_data.py \
   --data-dir data/<YYYYMMDD>
 ```
 
-`daily_refresh.ps1` 自动按顺序跑：fetch_all → 7 个 enrich_*.py → validate_data。
-若手动重跑某一步，注意维持顺序：basic_info → valuation → margin_net →
-sector_flow → streak → divergence → alpha → score。
+`daily_refresh.ps1` 自动按顺序跑：fetch_all → `finalize_refresh.ps1` →
+10 个 enrich_*.py → validate_data → `_signal_score` post-flight → report。
+`repair_refresh.ps1` 与它共用同一个 finalizer，只补缺失/损坏的当日 snapshot。
+若手动重跑某一步，注意维持顺序：basic_info → margin_net →
+em_fund_flow → fund_flow_fallback → sector_flow → valuation → streak →
+divergence → alpha → score。
 
 ## 已知 fallback 与口径约定
 

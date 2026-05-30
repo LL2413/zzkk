@@ -5,9 +5,8 @@
 #   1. cd to repo, git pull (retry 4x on transient network failures)
 #   2. Skip weekends (A-share markets closed; data unchanged)
 #   3. Run fetch_all.ps1 -Refresh for all watchlist symbols
-#   4. Run post-fetch enrichers (basic_info / SZ margin net / sector
-#      aggregation / valuation triage) — failures are logged but
-#      non-fatal so fresh fetch data still ships
+#   4. Run deterministic finalize_refresh.ps1:
+#      enrich -> validate -> _signal_score post-flight -> report
 #   5. Generate reports/watchlist_<today>.md from the validated snapshots
 #   6. If any data/<today> or report file changed, commit and push to the tracked branch
 #   7. Log everything to logs/daily_refresh_<date>.log (under .gitignore)
@@ -28,12 +27,14 @@ param(
   [switch]$Force,             # run even on weekends
   [switch]$NoPush,            # commit locally only
   [string]$Branch = 'claude/stock-market-analysis-skill-9p7lc',
-  [string]$Python = $null
+  [string]$Python = $null,
+  [int]$CommandTimeoutSeconds = 600
 )
 
 $ErrorActionPreference = 'Continue'  # don't abort on single-source network flakes
 $root = Split-Path -Parent $PSScriptRoot
 Set-Location $root
+. (Join-Path $PSScriptRoot 'workflow_common.ps1')
 
 # --- logging ---
 $logDir = Join-Path $root 'logs'
@@ -48,21 +49,7 @@ function Log([string]$msg) {
 Log "=== daily_refresh start ==="
 Log "cwd: $root"
 
-function Resolve-Python {
-  param([string]$explicit)
-  if ($explicit -and (Test-Path $explicit)) { return $explicit }
-  $candidates = @(
-    (Join-Path $root '.venv\Scripts\python.exe'),
-    "$env:USERPROFILE\.venv\Scripts\python.exe",
-    "$env:USERPROFILE\.venv\Scripts\python"
-  )
-  foreach ($p in $candidates) { if (Test-Path $p) { return $p } }
-  $which = Get-Command python -ErrorAction SilentlyContinue
-  if ($which) { return $which.Source }
-  throw "No Python interpreter found. Create a venv: python -m venv .venv; .venv\Scripts\pip install akshare pandas"
-}
-
-$py = Resolve-Python -explicit $Python
+$py = Resolve-WorkflowPython -Explicit $Python
 Log "python: $py"
 
 # --- weekend skip ---
@@ -105,7 +92,7 @@ Log "running fetch_all.ps1 -Refresh ..."
 # Use hashtable splat so the [switch] -Refresh parameter binds correctly.
 # Array splat `@('-Refresh')` would bind '-Refresh' as a positional string
 # (to $Symbols), leaving $Refresh = $false and stock.py reading today's cache.
-$fetchArgs = @{ Refresh = $true }
+$fetchArgs = @{ Refresh = $true; CommandTimeoutSeconds = $CommandTimeoutSeconds }
 if ($py) { $fetchArgs.Python = $py }
 & (Join-Path $PSScriptRoot 'fetch_all.ps1') @fetchArgs
 $fetchExit = $LASTEXITCODE
@@ -115,86 +102,22 @@ if ($fetchExit -ne 0) {
   exit 5
 }
 
-# --- commit changed data ---
+# --- deterministic finalize ---
 $dateTag = Get-Date -Format 'yyyyMMdd'
 $dataDir = "data\$dateTag"
-
-# --- post-fetch enrichments (idempotent, additive) ---
-# MUST run BEFORE validation: enrichers fill basic_info (historical/hardcoded)
-# and other fields whose absence the validator would otherwise flag. Running
-# validate first would abort on exactly the gaps enrichment is designed to
-# close. Enricher failures are non-fatal — we still proceed to validate+commit.
-$enrichScripts = @(
-  'scripts\enrich_basic_info.py',
-  'scripts\enrich_margin_net.py',
-  'scripts\enrich_em_fund_flow.py',
-  'scripts\enrich_fund_flow_fallback.py',
-  'scripts\enrich_sector_flow.py',
-  'scripts\enrich_valuation.py',
-  'scripts\enrich_streak.py',
-  'scripts\enrich_divergence.py',
-  'scripts\enrich_alpha.py',
-  'scripts\enrich_score.py'
-)
-foreach ($script in $enrichScripts) {
-  $fullPath = Join-Path $root $script
-  if (-not (Test-Path $fullPath)) {
-    Log "WARN: enricher missing: $script (skipped)"
-    continue
-  }
-  Log "enrich: $script --date $dateTag"
-  & $py $fullPath --date $dateTag 2>&1 | ForEach-Object { Log "  $_" }
-  if ($LASTEXITCODE -ne 0) {
-    Log "  WARN: enricher exit=$LASTEXITCODE (non-fatal, continuing)"
-  }
+Log "running finalize_refresh.ps1 ..."
+& (Join-Path $PSScriptRoot 'finalize_refresh.ps1') -DateTag $dateTag -Python $py 2>&1 |
+  ForEach-Object { Log "  $_" }
+$finalizeExit = $LASTEXITCODE
+if ($finalizeExit -ne 0) {
+  Log "abort: finalize_refresh failed (exit=$finalizeExit). Not committing incomplete data."
+  exit 6
 }
 
-# --- validate (after enrichment, so basic_info gaps are already filled) ---
-# Pass --expected-count so the validator fails when fetch was partial. The
-# count is parsed dynamically from fetch_all.ps1's $default array so it stays
-# in sync as the watchlist grows.
-$expectedCount = 0
-$fetchScript = Join-Path $root 'scripts\fetch_all.ps1'
-if (Test-Path $fetchScript) {
-  try {
-    $content = Get-Content $fetchScript -Raw
-    if ($content -match '(?s)\$default\s*=\s*@\((.*?)\)') {
-      $expectedCount = ([regex]::Matches($matches[1], "'\d{6}'")).Count
-    }
-  } catch { $expectedCount = 0 }
-}
-
-$validator = Join-Path $root '.claude\skills\china-stock-analysis\scripts\validate_data.py'
-if (Test-Path $validator) {
-  Log "validating $dataDir (expected-count=$expectedCount) ..."
-  $validateArgs = @($validator, '--data-dir', $dataDir)
-  if ($expectedCount -gt 0) { $validateArgs += @('--expected-count', $expectedCount) }
-  & $py @validateArgs 2>&1 | ForEach-Object { Log "  $_" }
-  if ($LASTEXITCODE -ne 0) {
-    Log "abort: data validation failed (critical). Not committing bad snapshots."
-    exit 6
-  }
-} else {
-  Log "WARN: data validator missing: $validator"
-}
-
-# --- generate Markdown watchlist report ---
+# Stage the target data directory explicitly, then inspect only this run's
+# index entries so scratch files and partial historical dirs stay untouched.
 $reportRel = "reports\watchlist_{0}.md" -f $dateTag
 $reportPath = Join-Path $root $reportRel
-$analyzer = Join-Path $root 'scripts\analyze_watchlist.py'
-if (Test-Path $analyzer) {
-  Log "generating report $reportPath ..."
-  & $py $analyzer --date $dateTag --output $reportPath 2>&1 | ForEach-Object { Log "  $_" }
-  if ($LASTEXITCODE -ne 0) {
-    Log "abort: report generation failed. Not committing incomplete refresh."
-    exit 7
-  }
-} else {
-  Log "WARN: report generator missing: $analyzer"
-}
-
-# data/ is in .gitignore, so `git status --porcelain` won't list changes there
-# unless we stage with -f first. Stage, then inspect the index.
 git add -f $dataDir 2>&1 | Out-Null
 if (Test-Path $reportPath) {
   git add $reportRel 2>&1 | Out-Null

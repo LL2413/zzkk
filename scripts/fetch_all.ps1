@@ -4,6 +4,7 @@
 #   pwsh scripts\fetch_all.ps1                       # default watchlist
 #   pwsh scripts\fetch_all.ps1 002281 000988         # custom symbols
 #   pwsh scripts\fetch_all.ps1 -Refresh              # bypass daily cache
+#   pwsh scripts\fetch_all.ps1 -MarketOnly           # refresh market.json only
 #   pwsh scripts\fetch_all.ps1 -Python "C:\path\to\python.exe"
 #
 # Output layout:
@@ -22,6 +23,7 @@
 [CmdletBinding(PositionalBinding=$false)]
 param(
   [switch]$Refresh,
+  [switch]$MarketOnly,
   [string]$Python = $null,
   [string]$WatchlistFile = $null,
   [int]$CommandTimeoutSeconds = 600,
@@ -100,6 +102,9 @@ if ($Symbols.Count -gt 0) {
 } else {
   $watchlist = $default
 }
+if ($MarketOnly) {
+  $watchlist = @()
+}
 
 $dateTag = Get-Date -Format 'yyyyMMdd'
 $outDir  = Join-Path $root "data\$dateTag"
@@ -175,6 +180,7 @@ function Invoke-StockJson {
 Log "python:  $py"
 Log "out_dir: $outDir"
 Log "refresh: $([bool]$Refresh)"
+Log "market_only: $([bool]$MarketOnly)"
 Log "symbols: $($watchlist -join ' ')"
 Log ""
 

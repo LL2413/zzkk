@@ -18,6 +18,8 @@
 - 一键收集+分析：`scripts/run_watchlist_analysis.ps1` / `scripts/run_watchlist_analysis.sh`
 - Watchlist 报告生成：`scripts/analyze_watchlist.py`
 - 每日自动刷新：`scripts/daily_refresh.ps1`
+- 刷新收尾器：`scripts/finalize_refresh.ps1`
+- 异常补抓修复：`scripts/repair_refresh.ps1`
 - 数据体检：`.claude/skills/china-stock-analysis/scripts/validate_data.py`
 - 每日快照：`data/YYYYMMDD/*.json`
 - 每日报告：`reports/watchlist_YYYYMMDD.md`
@@ -34,6 +36,38 @@ C:\Users\computer\.venv\Scripts\python.exe scripts\stock.py snapshot 002281 --js
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\fetch_all.ps1 -Refresh
+```
+
+每日自动流水线：拉取最新代码、刷新全观察池、跑富集、校验 `_signal_score`、生成报告、提交并推送：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\daily_refresh.ps1
+```
+
+预览今天缺失或损坏的数据，不修改文件：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\repair_refresh.ps1 -DryRun
+```
+
+只补抓今天缺失或损坏的数据，成功后重新富集、校验、生成报告、提交并推送：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\repair_refresh.ps1
+```
+
+周末默认拒绝实时补抓；确实需要时显式加 `-Force`。
+
+只补抓指定股票：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\repair_refresh.ps1 688981 601138
+```
+
+只基于已有数据重跑收尾，不抓取、不拉代码、不提交：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\repair_refresh.ps1 -NoFetch -NoPull -NoCommit
 ```
 
 一键完成“抓取/补齐/校验/生成报告”（周末默认跳过抓取，分析最新已有交易日）：
