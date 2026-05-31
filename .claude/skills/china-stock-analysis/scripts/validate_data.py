@@ -78,6 +78,71 @@ def add(findings: list[dict[str, str]], level: str, path: Path, message: str) ->
     findings.append({"level": level, "file": str(path), "message": message})
 
 
+def date_text(value: Any) -> str:
+    return str(value or "")[:10]
+
+
+def number(value: Any) -> float | None:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def warn_fund_flow_price_mismatch(
+    path: Path,
+    data: dict[str, Any],
+    findings: list[dict[str, str]],
+) -> None:
+    """Catch stale or cross-day fund-flow rows without blocking daily refresh."""
+    tag = path.parent.name
+    if not (tag.isdigit() and len(tag) == 8):
+        return
+    target_date = f"{tag[:4]}-{tag[4:6]}-{tag[6:]}"
+    sentiment = data.get("sentiment")
+    if not isinstance(sentiment, dict):
+        return
+
+    prices = sentiment.get("price_recent")
+    if not isinstance(prices, list):
+        return
+    price_rows: list[tuple[str, float]] = []
+    for row in prices:
+        if not isinstance(row, dict):
+            continue
+        close = number(row.get("close", row.get("收盘")))
+        if close is not None:
+            price_rows.append((date_text(row.get("date", row.get("日期"))), close))
+
+    price_chg: float | None = None
+    for index, (row_date, close) in enumerate(price_rows):
+        if row_date == target_date and index > 0 and price_rows[index - 1][1]:
+            price_chg = (close / price_rows[index - 1][1] - 1) * 100
+            break
+
+    flows = sentiment.get("fund_flow_recent_20d")
+    if price_chg is None or not isinstance(flows, list):
+        return
+    matching_flows = [
+        row for row in flows
+        if isinstance(row, dict) and date_text(row.get("日期")) == target_date
+    ]
+    if not matching_flows:
+        return
+    flow_chg = number(matching_flows[-1].get("涨跌幅"))
+    if flow_chg is not None and abs(flow_chg - price_chg) > 0.08:
+        add(
+            findings,
+            "warning",
+            path,
+            (
+                "fund-flow price mismatch: "
+                f"flow_chg={flow_chg:.2f}% price_chg={price_chg:.2f}%; "
+                "possible stale or cross-day fund-flow row"
+            ),
+        )
+
+
 def validate_snapshot(path: Path, findings: list[dict[str, str]]) -> bool:
     data, encoding, error = load_json(path)
     if error:
@@ -111,6 +176,8 @@ def validate_snapshot(path: Path, findings: list[dict[str, str]]) -> bool:
         errors = part.get("errors")
         if isinstance(errors, dict) and errors:
             add(findings, "warning", path, f"{part_name}.errors present: {', '.join(errors.keys())}")
+
+    warn_fund_flow_price_mismatch(path, data, findings)
 
     return True
 

@@ -185,6 +185,10 @@ divergence → alpha → score。
   `market_breadth_fallback`（up/down/flat/median_pct）。有这个字段就用它，
   缺的只是 legu 的综合活跃度指数。
 - `northbound`（个别股）：真缺但影响小，可能非沪深港通标的。
+- `fund-flow price mismatch`：**真告警但不阻断采集**。表示资金行涨跌幅与
+  `price_recent` 当日涨跌幅不一致，通常是慢采集跨午夜后混入下一交易日资金，
+  或 fallback 返回了不同交易日数据。受影响日期的资金金额、自动信号验收和累计
+  资金必须降级或排除；仍可使用独立核对后的价格历史。
 - `price_recent` schema：2026-05-21 起统一为英文键（`date/open/close/high/
   low/amount`），EM 源（中文键）已在 stock.py 里 rename。读历史旧 snapshot
   时仍可能遇到中文键（`日期/收盘`），分析脚本两套键都要认。
