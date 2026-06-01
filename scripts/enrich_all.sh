@@ -49,23 +49,27 @@ echo "=== 5. 板块资金流 (watchlist aggregation) ==="
 "$PY" scripts/enrich_sector_flow.py "${ARGS[@]}"
 
 echo ""
-echo "=== 6. 估值口径 (PE / PB / PS) ==="
+echo "=== 6. 日频估值 fallback (price-adjusted + explicit source) ==="
+"$PY" scripts/enrich_daily_valuation_fallback.py "${ARGS[@]}"
+
+echo ""
+echo "=== 7. 估值口径 (PE / PB / PS) ==="
 "$PY" scripts/enrich_valuation.py "${ARGS[@]}"
 
 echo ""
-echo "=== 7. 主力流向连续天数 (streak) ==="
+echo "=== 8. 主力流向连续天数 (streak) ==="
 "$PY" scripts/enrich_streak.py "${ARGS[@]}"
 
 echo ""
-echo "=== 8. 价主背离 (divergence) ==="
+echo "=== 9. 价主背离 (divergence) ==="
 "$PY" scripts/enrich_divergence.py "${ARGS[@]}"
 
 echo ""
-echo "=== 9. 个股 vs 板块 (alpha) ==="
+echo "=== 10. 个股 vs 板块 (alpha) ==="
 "$PY" scripts/enrich_alpha.py "${ARGS[@]}"
 
 echo ""
-echo "=== 10. 三维信号评分 (score) ==="
+echo "=== 11. 三维信号评分 (score) ==="
 "$PY" scripts/enrich_score.py "${ARGS[@]}"
 
 echo ""

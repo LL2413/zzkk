@@ -1056,6 +1056,8 @@ def fetch_fundamentals(symbol: str, _force: bool = False) -> dict:
             out["financials_source_date"] = source_tag
             if STOCK_SKIP_VALUATION:
                 out["valuation_source"] = "skipped_fast_daily"
+                out.pop("valuation_recent", None)
+                out.pop("valuation_latest", None)
             else:
                 val, err = safe_retry(ak.stock_value_em, symbol=symbol)
                 if isinstance(val, pd.DataFrame):
@@ -1085,6 +1087,8 @@ def fetch_fundamentals(symbol: str, _force: bool = False) -> dict:
             out["financials_absolute_recent"] = []
             if STOCK_SKIP_VALUATION:
                 out["valuation_source"] = "skipped_fast_daily"
+                out.pop("valuation_recent", None)
+                out.pop("valuation_latest", None)
             else:
                 val, err = safe_retry(ak.stock_value_em, symbol=symbol)
                 if isinstance(val, pd.DataFrame):
@@ -1152,6 +1156,8 @@ def fetch_fundamentals(symbol: str, _force: bool = False) -> dict:
     # Valuation BEFORE total_shares so it can be a 4th fallback for shares.
     if STOCK_SKIP_VALUATION:
         out["valuation_source"] = "skipped_fast_daily"
+        out.pop("valuation_recent", None)
+        out.pop("valuation_latest", None)
     else:
         val, err = safe_retry(ak.stock_value_em, symbol=symbol)
         if isinstance(val, pd.DataFrame):
