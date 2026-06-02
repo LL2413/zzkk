@@ -35,6 +35,7 @@ $enrichers = @(
   @('EM 分档主力资金 (强口径，超大单+大单)', 'scripts\enrich_em_fund_flow.py'),
   @('个股资金流 fallback (THS same-day net)', 'scripts\enrich_fund_flow_fallback.py'),
   @('板块资金流 (watchlist aggregation)', 'scripts\enrich_sector_flow.py'),
+  @('日频板块价格 fallback (cached Tencent ETF proxy)', 'scripts\enrich_daily_sector_price.py'),
   @('日频估值 fallback (price-adjusted + explicit source)', 'scripts\enrich_daily_valuation_fallback.py'),
   @('估值口径 (PE / PB / PS)', 'scripts\enrich_valuation.py'),
   @('主力流向连续天数 (streak)', 'scripts\enrich_streak.py'),

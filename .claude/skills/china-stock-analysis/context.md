@@ -147,11 +147,11 @@ python .claude/skills/china-stock-analysis/scripts/validate_data.py \
 ```
 
 `daily_refresh.ps1` 自动按顺序跑：fetch_all → `finalize_refresh.ps1` →
-11 个 enrich_*.py → validate_data → `_signal_score` post-flight → report。
+12 个 enrich_*.py → validate_data → `_signal_score` post-flight → report。
 `repair_refresh.ps1` 与它共用同一个 finalizer，只补缺失/损坏的当日 snapshot。
 若手动重跑某一步，注意维持顺序：basic_info → margin_net →
-em_fund_flow → fund_flow_fallback → sector_flow → daily_valuation_fallback →
-valuation → streak → divergence → alpha → score。
+em_fund_flow → fund_flow_fallback → sector_flow → daily_sector_price_fallback →
+daily_valuation_fallback → valuation → streak → divergence → alpha → score。
 
 ## 已知 fallback 与口径约定
 
@@ -190,6 +190,9 @@ valuation → streak → divergence → alpha → score。
   可用于日频评分，但报告中必须保留 warning，不得写成实时接口返回值。
 - `sector.sector_price_recent`：若 fast refresh 后仍缺失，属于可见缺口。板块资金
   聚合仍可使用，但个股相对板块 alpha 必须降级为无法判断，不得伪造板块价格。
+- `daily_sector_price_fallback`：fast refresh 后按代表 ETF 去重请求腾讯 K 线，
+  再补入同板块个股。来源写为 `etf_tencent_<code>_proxy_for_<industry>`；
+  这是透明披露的 ETF 代理比较，不得写成申万或 EM 行业指数。
 - `fund-flow price mismatch`：**真告警但不阻断采集**。表示资金行涨跌幅与
   `price_recent` 当日涨跌幅不一致，通常是慢采集跨午夜后混入下一交易日资金，
   或 fallback 返回了不同交易日数据。受影响日期的资金金额、自动信号验收和累计
