@@ -1,0 +1,59 @@
+[18:29:42] python: .venv/bin/python
+[18:29:42] out_dir: data/20260604
+[18:29:42] refresh: 1
+[18:29:42] date_tag: 20260604
+[18:29:42] stock_date_tag: 20260604
+[18:29:42] financials_mode: reuse
+[18:29:42] skip_em_rank: 1
+[18:29:42] snapshot_timeout: 90s fast_timeout: 60s
+[18:29:42] fetch_jobs: 6 resume_existing: 0
+[18:29:42] symbols: 002281 000988 688008 603986 688728 688332 688046 688380 688123 688550 688208 002475 300458 601869 600522 600487 300395 300408 603256 603773 000021 688627 688206 688521 688047 600845 300499 002837 002156 600584 688981 688347 601138 600118 600879 001270
+[18:29:42]
+[18:29:42] fetch market ...
+/Users/xxx/zzkk/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+[18:29:45]   ok     20353 bytes → data/20260604/market.json
+[18:29:45] fetch snapshots in parallel ...
+[18:29:45] parallel snapshots: jobs=6 force=1 resume=0 total=36
+[18:30:41]   ok   688332 46398 bytes
+[18:30:41]   ok   000988 48187 bytes
+[18:30:41]   ok   002281 48149 bytes
+[18:30:41]   ok   603986 48045 bytes
+[18:30:41]   ok   688008 47310 bytes
+[18:30:42]   ok   688728 46288 bytes
+[18:31:23]   ok   688380 45931 bytes
+[18:31:23]   ok   688550 46954 bytes
+[18:31:23]   ok   688046 46927 bytes
+[18:31:24]   ok   688208 47633 bytes
+[18:31:24]   ok   002475 48189 bytes
+[18:31:25]   ok   688123 47013 bytes
+[18:32:04]   ok   600522 47986 bytes
+[18:32:04]   ok   601869 47677 bytes
+[18:32:06]   ok   300458 47778 bytes
+[18:32:06]   ok   300395 48155 bytes
+[18:32:06]   ok   600487 48146 bytes
+[18:32:07]   ok   300408 47931 bytes
+[18:32:46]   ok   603256 47175 bytes
+[18:32:47]   ok   603773 47555 bytes
+[18:32:48]   ok   688627 45915 bytes
+[18:32:48]   ok   688206 46475 bytes
+[18:32:49]   ok   000021 48026 bytes
+[18:32:50]   ok   688521 46943 bytes
+[18:33:30]   ok   688047 46292 bytes
+[18:33:30]   ok   300499 47813 bytes
+[18:33:30]   ok   600845 47984 bytes
+[18:33:31]   ok   002837 48047 bytes
+[18:33:32]   ok   002156 48031 bytes
+[18:33:32]   ok   600584 47841 bytes
+[18:34:12]   ok   601138 47774 bytes
+[18:34:12]   ok   688981 46577 bytes
+[18:34:12]   ok   600118 48028 bytes
+[18:34:12]   ok   688347 45900 bytes
+[18:34:13]   ok   001270 46173 bytes
+[18:34:14]   ok   600879 48279 bytes
+[18:34:14] done: ok=36 skip=0 fail=0 total=36
+[final] EM order-split flow: strong coverage=36/36
+[final] valuation: derived_price_adjusted=36 failed=0
+[final] daily sector price: Tencent ETF proxy=34 missing_with_warning=2 proxy_requests=7
+[final] alpha: computed=34 skipped=2
+[final] validation: snapshots=36 parsed=36 market_ok=True critical=0 warnings=38
