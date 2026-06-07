@@ -4,7 +4,7 @@
   "note": "Sums 主力净流入-净额 from each watchlist member in the industry. Coverage is limited to industries with watchlist stocks; not a substitute for full-market EM sector_fund_flow_rank.",
   "sectors": {
     "半导体": {
-      "main_net_total_yi": -7.9535,
+      "main_net_total_yi": -0.6872,
       "members": [
         "000021",
         "001270",
@@ -12,6 +12,7 @@
         "300395",
         "300458",
         "600584",
+        "603005",
         "603986",
         "688008",
         "688047",
@@ -25,9 +26,9 @@
         "688728",
         "688981"
       ],
-      "member_count": 18,
-      "main_net_avg_yi": -0.4419,
-      "main_pct_avg": 0.0806
+      "member_count": 19,
+      "main_net_avg_yi": -0.0362,
+      "main_pct_avg": 0.8742
     },
     "通信设备": {
       "main_net_total_yi": -47.3832,

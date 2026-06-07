@@ -1,0 +1,17 @@
+{
+  "as_of": "2026-05-06",
+  "method": "watchlist_aggregation",
+  "note": "Sums 主力净流入-净额 from each watchlist member in the industry. Coverage is limited to industries with watchlist stocks; not a substitute for full-market EM sector_fund_flow_rank.",
+  "sectors": {
+    "半导体": {
+      "main_net_total_yi": -1.7192,
+      "members": [
+        "603005"
+      ],
+      "member_count": 1,
+      "main_net_avg_yi": -1.7192,
+      "main_pct_avg": -10.03
+    }
+  },
+  "missing_symbols": []
+}

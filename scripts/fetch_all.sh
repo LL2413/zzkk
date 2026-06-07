@@ -38,6 +38,7 @@ DEFAULT_WATCHLIST=(
   "000988"   # 华工科技   HGTech (激光+光模块)
   "688008"   # 澜起科技   Montage (DDR 接口芯片)
   "603986"   # 兆易创新   GigaDevice (存储)
+  "603005"   # 晶方科技   WLCSP/CIS 封测
   "688728"   # 格科微     GalaxyCore (CIS 图像传感器)
   "688332"   # 中科蓝讯   Bluetrum (蓝牙 SoC)
   "688046"   # 药康生物   GemPharmatech (模式动物/CRO)

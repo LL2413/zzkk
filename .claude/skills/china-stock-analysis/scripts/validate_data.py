@@ -26,11 +26,13 @@ REQUIRED_NESTED = (
 def inferred_expected_count(data_dir: Path) -> int:
     """Infer watchlist size for normal daily data dirs.
 
-    The watchlist expanded to 33 names on 2026-05-13 and 36 names on
-    2026-05-28. Older historical dirs can
+    The watchlist expanded to 33 names on 2026-05-13, 36 names on
+    2026-05-28, and 37 names after 晶方科技 was added on 2026-06-07. Older historical dirs can
     still be validated structurally, but current dirs should fail if partial.
     """
     tag = data_dir.name
+    if tag.isdigit() and len(tag) == 8 and tag >= "20260607":
+        return 37
     if tag.isdigit() and len(tag) == 8 and tag >= "20260528":
         return 36
     if tag.isdigit() and len(tag) == 8 and tag >= "20260513":

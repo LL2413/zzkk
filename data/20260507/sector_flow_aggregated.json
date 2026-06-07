@@ -1,0 +1,71 @@
+{
+  "as_of": "2026-05-07",
+  "method": "watchlist_aggregation",
+  "note": "Sums 主力净流入-净额 from each watchlist member in the industry. Coverage is limited to industries with watchlist stocks; not a substitute for full-market EM sector_fund_flow_rank.",
+  "sectors": {
+    "通信设备": {
+      "main_net_total_yi": 1.3607,
+      "members": [
+        "002281"
+      ],
+      "member_count": 1,
+      "main_net_avg_yi": 1.3607,
+      "main_pct_avg": 1.21
+    },
+    "消费电子": {
+      "main_net_total_yi": 8.8456,
+      "members": [
+        "002475"
+      ],
+      "member_count": 1,
+      "main_net_avg_yi": 8.8456,
+      "main_pct_avg": 6.03
+    },
+    "半导体": {
+      "main_net_total_yi": -14.8051,
+      "members": [
+        "300458",
+        "603005",
+        "603986",
+        "688123",
+        "688332",
+        "688380",
+        "688728"
+      ],
+      "member_count": 7,
+      "main_net_avg_yi": -2.115,
+      "main_pct_avg": -4.08
+    },
+    "医疗服务": {
+      "main_net_total_yi": -0.0985,
+      "members": [
+        "688046"
+      ],
+      "member_count": 1,
+      "main_net_avg_yi": -0.0985,
+      "main_pct_avg": -7.12
+    },
+    "计算机设备": {
+      "main_net_total_yi": -0.4372,
+      "members": [
+        "688208"
+      ],
+      "member_count": 1,
+      "main_net_avg_yi": -0.4372,
+      "main_pct_avg": -12.24
+    },
+    "电子化学品Ⅱ": {
+      "main_net_total_yi": 0.1385,
+      "members": [
+        "688550"
+      ],
+      "member_count": 1,
+      "main_net_avg_yi": 0.1385,
+      "main_pct_avg": 8.25
+    }
+  },
+  "missing_symbols": [
+    "000988",
+    "688008"
+  ]
+}

@@ -27,6 +27,7 @@ MAIN_NET_KEY = "主力净流入-净额"
 MAIN_PCT_KEY = "主力净流入-净占比"
 STRONG_FUND_FLOW_SOURCES = {
     "em_individual",
+    "em_push2his_history",
     "em_rank_today_order_split",
     "em_rank_today_only",
 }

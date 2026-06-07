@@ -15,7 +15,7 @@ evergreen. Daily commentary belongs in commit messages or chat replies.
   from "today's date" — Chinese market holidays mean the latest snapshot
   may lag the calendar by several days.
 
-## Watchlist (36 codes)
+## Watchlist (37 codes)
 
 | Code   | 名称      | 行业（基本面快照口径） |
 |--------|-----------|------------------------|
@@ -38,6 +38,7 @@ evergreen. Daily commentary belongs in commit messages or chat replies.
 | 600879 | 航天电子  | 航天航空               |
 | 601138 | 工业富联  | 通信设备               |
 | 601869 | 长飞光纤  | 通信设备               |
+| 603005 | 晶方科技  | 半导体                 |
 | 603256 | 宏和科技  | 电子元件               |
 | 603773 | 沃格光电  | 光学光电子             |
 | 603986 | 兆易创新  | 半导体                 |
@@ -64,7 +65,7 @@ evergreen. Daily commentary belongs in commit messages or chat replies.
 每个交易日 `data/YYYYMMDD/` 目录下应含：
 
 - `market.json`             — 大盘/赚钱效应/涨跌停统计
-- `<code>_snapshot.json`    — 单股快照（36 份，全 watchlist）
+- `<code>_snapshot.json`    — 单股快照（37 份，全 watchlist）
 - `sector_flow_aggregated.json` — 板块资金（5-13 后引入）
 - `_manifest.txt`           — 当日产物清单
 

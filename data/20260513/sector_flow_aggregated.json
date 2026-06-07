@@ -26,10 +26,11 @@
       "main_pct_avg": 6.08
     },
     "半导体": {
-      "main_net_total_yi": 11.9314,
+      "main_net_total_yi": 13.2549,
       "members": [
         "300395",
         "300458",
+        "603005",
         "603986",
         "688008",
         "688123",
@@ -37,9 +38,9 @@
         "688380",
         "688728"
       ],
-      "member_count": 8,
-      "main_net_avg_yi": 1.4914,
-      "main_pct_avg": 0.7312
+      "member_count": 9,
+      "main_net_avg_yi": 1.4728,
+      "main_pct_avg": 1.4567
     },
     "电子元件": {
       "main_net_total_yi": -1.3921,

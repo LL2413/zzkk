@@ -1,0 +1,99 @@
+{
+  "as_of": "2026-05-08",
+  "method": "watchlist_aggregation",
+  "note": "Sums 主力净流入-净额 from each watchlist member in the industry. Coverage is limited to industries with watchlist stocks; not a substitute for full-market EM sector_fund_flow_rank.",
+  "sectors": {
+    "自动化设备": {
+      "main_net_total_yi": -5.4945,
+      "members": [
+        "000988"
+      ],
+      "member_count": 1,
+      "main_net_avg_yi": -5.4945,
+      "main_pct_avg": -3.92
+    },
+    "通信设备": {
+      "main_net_total_yi": 0.8681,
+      "members": [
+        "002281",
+        "600487",
+        "600522",
+        "601869"
+      ],
+      "member_count": 4,
+      "main_net_avg_yi": 0.217,
+      "main_pct_avg": 0.33
+    },
+    "消费电子": {
+      "main_net_total_yi": 17.617,
+      "members": [
+        "002475"
+      ],
+      "member_count": 1,
+      "main_net_avg_yi": 17.617,
+      "main_pct_avg": 11.62
+    },
+    "航空装备Ⅱ": {
+      "main_net_total_yi": -0.0946,
+      "members": [
+        "300395"
+      ],
+      "member_count": 1,
+      "main_net_avg_yi": -0.0946,
+      "main_pct_avg": -0.18
+    },
+    "元件": {
+      "main_net_total_yi": -2.987,
+      "members": [
+        "300408"
+      ],
+      "member_count": 1,
+      "main_net_avg_yi": -2.987,
+      "main_pct_avg": -10.3
+    },
+    "半导体": {
+      "main_net_total_yi": -21.4594,
+      "members": [
+        "300458",
+        "603005",
+        "603986",
+        "688008",
+        "688123",
+        "688332",
+        "688380",
+        "688728"
+      ],
+      "member_count": 8,
+      "main_net_avg_yi": -2.6824,
+      "main_pct_avg": -7.16
+    },
+    "医疗服务": {
+      "main_net_total_yi": -0.0601,
+      "members": [
+        "688046"
+      ],
+      "member_count": 1,
+      "main_net_avg_yi": -0.0601,
+      "main_pct_avg": -6.06
+    },
+    "计算机设备": {
+      "main_net_total_yi": -0.0673,
+      "members": [
+        "688208"
+      ],
+      "member_count": 1,
+      "main_net_avg_yi": -0.0673,
+      "main_pct_avg": -2.13
+    },
+    "电子化学品Ⅱ": {
+      "main_net_total_yi": 0.0872,
+      "members": [
+        "688550"
+      ],
+      "member_count": 1,
+      "main_net_avg_yi": 0.0872,
+      "main_pct_avg": 6.5
+    }
+  },
+  "missing_symbols": []
+}

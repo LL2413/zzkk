@@ -1401,7 +1401,8 @@ def fetch_sector(symbol: str, _force: bool = False) -> dict:
     # Names use EM industry vocabulary so stock_board_industry_hist_em can consume them.
     WATCHLIST_INDUSTRY_FALLBACK = {
         "002281": "通信设备", "000988": "通信设备",
-        "688008": "半导体",   "603986": "半导体",   "688728": "半导体",
+        "688008": "半导体",   "603986": "半导体",   "603005": "半导体",
+        "688728": "半导体",
         "688332": "半导体",   "688380": "半导体",   "688123": "半导体",
         "688046": "医疗服务",
         "688550": "化学制品",
