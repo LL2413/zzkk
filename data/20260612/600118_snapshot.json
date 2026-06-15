@@ -1775,6 +1775,32 @@
   },
   "_signal_score": {
     "as_of": "2026-06-12",
+    "model": "daily_v2",
+    "flow_level": 0,
+    "flow_change": 1,
+    "sector_context": -1,
+    "divergence_context": 2,
+    "relative_strength": -1,
+    "volume_confirmation": 0,
+    "total": 1,
+    "tier": "中性",
+    "inputs": {
+      "main_pct": 1.11,
+      "main_pct_delta": 5.88,
+      "chg_pct": -0.04,
+      "industry": "航天航空",
+      "sector_main_net_total_yi": -3.649,
+      "sector_positive_ratio": 0.5,
+      "sector_main_net_delta_yi": -0.4171,
+      "divergence_score": -1.15,
+      "alpha": -2.1557,
+      "amount_ratio_1d_vs_5d": 1.1258398801866414
+    },
+    "note": "日频短线评分，侧重资金改善、板块扩散、背离风险和相对强弱；非投资建议"
+  },
+  "_legacy_signal_score": {
+    "as_of": "2026-06-12",
+    "model": "legacy_v1",
     "streak_score": 1,
     "label_score": 1,
     "valuation_score": -1,
@@ -1785,6 +1811,43 @@
       "label": "🟢",
       "valuation": "🔴"
     },
-    "note": "信号质量评分，非投资建议；streak/label/valuation 三维合成"
+    "note": "旧三维信号质量评分，仅用于历史兼容；未来日报使用 _daily_signal_score"
+  },
+  "_daily_signal_score": {
+    "as_of": "2026-06-12",
+    "model": "daily_v2",
+    "flow_level": 0,
+    "flow_change": 1,
+    "sector_context": -1,
+    "divergence_context": 2,
+    "relative_strength": -1,
+    "volume_confirmation": 0,
+    "total": 1,
+    "tier": "中性",
+    "inputs": {
+      "main_pct": 1.11,
+      "main_pct_delta": 5.88,
+      "chg_pct": -0.04,
+      "industry": "航天航空",
+      "sector_main_net_total_yi": -3.649,
+      "sector_positive_ratio": 0.5,
+      "sector_main_net_delta_yi": -0.4171,
+      "divergence_score": -1.15,
+      "alpha": -2.1557,
+      "amount_ratio_1d_vs_5d": 1.1258398801866414
+    },
+    "note": "日频短线评分，侧重资金改善、板块扩散、背离风险和相对强弱；非投资建议"
+  },
+  "_medium_term_score": {
+    "as_of": "2026-06-12",
+    "model": "medium_term_v1",
+    "valuation_score": -1,
+    "growth_score": 0,
+    "quality_score": -2,
+    "balance_sheet_score": 1,
+    "total": -2,
+    "tier": "风险",
+    "latest_report_period": "2026-03-31",
+    "note": "中期背景评分，来自估值、成长、盈利质量和资产负债；不按日频预测使用"
   }
 }

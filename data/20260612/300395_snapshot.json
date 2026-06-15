@@ -1780,6 +1780,32 @@
   },
   "_signal_score": {
     "as_of": "2026-06-12",
+    "model": "daily_v2",
+    "flow_level": -1,
+    "flow_change": -1,
+    "sector_context": -2,
+    "divergence_context": 1,
+    "relative_strength": -1,
+    "volume_confirmation": 0,
+    "total": -4,
+    "tier": "警示",
+    "inputs": {
+      "main_pct": -3.76,
+      "main_pct_delta": -6.699999999999999,
+      "chg_pct": -4.04,
+      "industry": "航空装备Ⅱ",
+      "sector_main_net_total_yi": -2.1935,
+      "sector_positive_ratio": 0.0,
+      "sector_main_net_delta_yi": -3.6064999999999996,
+      "divergence_score": -0.28,
+      "alpha": -3.327,
+      "amount_ratio_1d_vs_5d": 1.2572582464666038
+    },
+    "note": "日频短线评分，侧重资金改善、板块扩散、背离风险和相对强弱；非投资建议"
+  },
+  "_legacy_signal_score": {
+    "as_of": "2026-06-12",
+    "model": "legacy_v1",
     "streak_score": -1,
     "label_score": 1,
     "valuation_score": -1,
@@ -1790,6 +1816,43 @@
       "label": "🟢",
       "valuation": "🔴"
     },
-    "note": "信号质量评分，非投资建议；streak/label/valuation 三维合成"
+    "note": "旧三维信号质量评分，仅用于历史兼容；未来日报使用 _daily_signal_score"
+  },
+  "_daily_signal_score": {
+    "as_of": "2026-06-12",
+    "model": "daily_v2",
+    "flow_level": -1,
+    "flow_change": -1,
+    "sector_context": -2,
+    "divergence_context": 1,
+    "relative_strength": -1,
+    "volume_confirmation": 0,
+    "total": -4,
+    "tier": "警示",
+    "inputs": {
+      "main_pct": -3.76,
+      "main_pct_delta": -6.699999999999999,
+      "chg_pct": -4.04,
+      "industry": "航空装备Ⅱ",
+      "sector_main_net_total_yi": -2.1935,
+      "sector_positive_ratio": 0.0,
+      "sector_main_net_delta_yi": -3.6064999999999996,
+      "divergence_score": -0.28,
+      "alpha": -3.327,
+      "amount_ratio_1d_vs_5d": 1.2572582464666038
+    },
+    "note": "日频短线评分，侧重资金改善、板块扩散、背离风险和相对强弱；非投资建议"
+  },
+  "_medium_term_score": {
+    "as_of": "2026-06-12",
+    "model": "medium_term_v1",
+    "valuation_score": -1,
+    "growth_score": 2,
+    "quality_score": 1,
+    "balance_sheet_score": 1,
+    "total": 3,
+    "tier": "偏强",
+    "latest_report_period": "2026-03-31",
+    "note": "中期背景评分，来自估值、成长、盈利质量和资产负债；不按日频预测使用"
   }
 }

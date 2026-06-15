@@ -81,7 +81,13 @@ evergreen. Daily commentary belongs in commit messages or chat replies.
 - `fundamentals.errors`（端点抓取错误，必须读）
 - `sentiment.price_recent` / `main_fund_flow` / `margin` / `lhb` / `northbound`
 - `sector.classification`（含 source: em / xueqiu / hardcoded）
-- `_signal_score`（3 维评分，由 enrich_score.py 产出）
+- `_signal_score`（当前日频评分别名；2026-06-15 起指向 `_daily_signal_score`）
+- `_daily_signal_score`（daily_v2：资金净占、资金改善、板块扩散、价主背离、
+  个股相对板块、量能确认；用于日频 watchlist 报告）
+- `_legacy_signal_score`（legacy_v1：旧 streak / divergence / valuation 三维评分；
+  只用于历史追溯，不再作为未来日频预测核心）
+- `_medium_term_score`（medium_term_v1：估值、成长、盈利质量、资产负债；
+  只作中期背景，不参与日频短线评分）
 
 ## 刷新与校验命令
 
@@ -153,6 +159,8 @@ python .claude/skills/china-stock-analysis/scripts/validate_data.py \
 若手动重跑某一步，注意维持顺序：basic_info → margin_net →
 em_fund_flow → fund_flow_fallback → sector_flow → daily_sector_price_fallback →
 daily_valuation_fallback → valuation → streak → divergence → alpha → score。
+`score` 会同时产出 `_daily_signal_score`、`_legacy_signal_score`、
+`_medium_term_score`，并把 `_signal_score` 指向日频评分。
 
 ## 已知 fallback 与口径约定
 
@@ -241,6 +249,8 @@ daily_valuation_fallback → valuation → streak → divergence → alpha → s
 - 标签 — 漂移 / 均衡 / 共振 等分类标签（来自 alpha 或 divergence 枚举）。
 - 估值 — `valuation_latest.pe` 取整，前缀 `PE`；缺数据写 "—"。
 - 评分 — `_signal_score` 总分 + 分档（如 `+1 中` / `+3 偏多` / `-2 偏空`）。
+  2026-06-15 起优先读取 `_daily_signal_score`；只有旧 snapshot 缺该字段时才
+  回退旧 `_signal_score`。
 - 新 — 5-13 扩展进来的 15 只标 `★`，老 18 只留空。
 
 不要把"今天"硬编码进表里；按 `data/` 里的最大日期决定。

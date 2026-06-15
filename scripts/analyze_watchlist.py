@@ -54,6 +54,7 @@ class StockRow:
     alpha: float | None
     sector_chg: float | None
     new_symbol: bool
+    score_model: str = "legacy_v1"
     score_delta: float | None = None
     main_delta_yi: float | None = None
 
@@ -269,6 +270,21 @@ def valuation_label(data: dict[str, Any]) -> str:
     return f"{metric}{value:.1f}"
 
 
+def active_signal_score(data: dict[str, Any]) -> dict[str, Any]:
+    """Prefer the daily factor model, falling back to legacy snapshots."""
+    daily = data.get("_daily_signal_score")
+    if isinstance(daily, dict):
+        return daily
+    signal = data.get("_signal_score")
+    if isinstance(signal, dict):
+        return signal
+    return {}
+
+
+def signal_model(score: dict[str, Any]) -> str:
+    return str(score.get("model") or "legacy_v1")
+
+
 def load_snapshots(data_dir: Path) -> dict[str, dict[str, Any]]:
     out: dict[str, dict[str, Any]] = {}
     for path in sorted(data_dir.glob("*_snapshot.json")):
@@ -353,7 +369,7 @@ def stock_row(
     main_net = number((flow or {}).get(MAIN_NET_KEY))
     main_yi = main_net / 1e8 if main_net is not None else None
     main_pct = number((flow or {}).get(MAIN_PCT_KEY))
-    sig = data.get("_signal_score") or {}
+    sig = active_signal_score(data)
     div = data.get("sentiment", {}).get("_divergence") or {}
     alpha = data.get("sector", {}).get("_alpha_vs_sector") or {}
     streak_dir, streak_days, streak_yi = compute_cross_day_streak(history.get(symbol, []), target_tag)
@@ -377,10 +393,15 @@ def stock_row(
         alpha=number(alpha.get("alpha")),
         sector_chg=number(alpha.get("sector_chg")),
         new_symbol=symbol not in prev_rows,
+        score_model=signal_model(sig),
     )
     prev = prev_rows.get(symbol)
     if prev:
-        if row.signal_total is not None and prev.signal_total is not None:
+        if (
+            row.signal_total is not None
+            and prev.signal_total is not None
+            and row.score_model == prev.score_model
+        ):
             row.score_delta = row.signal_total - prev.signal_total
         if row.main_yi is not None and prev.main_yi is not None:
             row.main_delta_yi = row.main_yi - prev.main_yi
@@ -412,6 +433,13 @@ def source_counts(rows: list[StockRow]) -> Counter[str]:
     c: Counter[str] = Counter()
     for row in rows:
         c[row.source] += 1
+    return c
+
+
+def score_model_counts(rows: list[StockRow]) -> Counter[str]:
+    c: Counter[str] = Counter()
+    for row in rows:
+        c[row.score_model] += 1
     return c
 
 
@@ -679,15 +707,16 @@ def signal_status(prev: StockRow, current: StockRow) -> str:
     prev_score = prev.signal_total
     cur_score = current.signal_total
     cur_flow = current.main_yi or 0
+    comparable_score = prev.score_model == current.score_model
 
-    if prev_score is not None and prev_score >= 2:
+    if comparable_score and prev_score is not None and prev_score >= 2:
         if cur_score is not None and cur_score >= 2 and cur_flow > 0:
             return "偏多延续"
         if cur_score is not None and cur_score >= 0 and cur_flow > 0:
             return "部分延续"
         return "偏多未延续"
 
-    if prev_score is not None and prev_score <= -2:
+    if comparable_score and prev_score is not None and prev_score <= -2:
         if cur_score is not None and cur_score <= -2:
             return "风险延续"
         if cur_score is not None and cur_score >= 0 and cur_flow > 0:
@@ -913,6 +942,7 @@ def build_report(
     sectors = sector_rows(repo_root, target_tag, prev_tag)
     counts = tier_counts(rows)
     sources = source_counts(rows)
+    score_models = score_model_counts(rows)
     errors = error_counts(snapshots)
     prev_rows = prev_rows or {}
 
@@ -956,6 +986,7 @@ def build_report(
         f"- snapshot：{len(snapshots)} 只；资金流可用：{len(valid_flows)} 只；缺失：{missing_flow} 只。",
         f"- 结论强度：{conclusion_strength}；EastMoney 超大单+大单强口径覆盖 {len(strong_flows)}/{len(rows)}（{strong_coverage:.0f}%）。",
         f"- 资金流来源：{', '.join(f'{k}={v}' for k, v in sources.items()) or '无'}。",
+        f"- 评分模型：{', '.join(f'{k}={v}' for k, v in score_models.items()) or '无'}。",
         f"- 剩余接口 warning：{', '.join(f'{k}={v}' for k, v in errors.items()) or '无'}。",
     ]
 
