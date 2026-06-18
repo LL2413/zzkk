@@ -1,0 +1,133 @@
+{
+  "as_of": "2026-06-17",
+  "method": "watchlist_aggregation",
+  "note": "Sums 主力净流入-净额 from each watchlist member in the industry. Coverage is limited to industries with watchlist stocks; not a substitute for full-market EM sector_fund_flow_rank.",
+  "sectors": {
+    "半导体": {
+      "main_net_total_yi": 75.1053,
+      "members": [
+        "000021",
+        "001270",
+        "002156",
+        "300395",
+        "300458",
+        "600584",
+        "603005",
+        "603986",
+        "688008",
+        "688047",
+        "688123",
+        "688206",
+        "688332",
+        "688347",
+        "688380",
+        "688521",
+        "688627",
+        "688728",
+        "688981"
+      ],
+      "member_count": 19,
+      "main_net_avg_yi": 3.9529,
+      "main_pct_avg": 4.7705
+    },
+    "通信设备": {
+      "main_net_total_yi": -16.348,
+      "members": [
+        "000988",
+        "002281",
+        "600487",
+        "600522",
+        "601138",
+        "601869"
+      ],
+      "member_count": 6,
+      "main_net_avg_yi": -2.7247,
+      "main_pct_avg": -3.0517
+    },
+    "消费电子": {
+      "main_net_total_yi": -2.0725,
+      "members": [
+        "002475"
+      ],
+      "member_count": 1,
+      "main_net_avg_yi": -2.0725,
+      "main_pct_avg": -2.06
+    },
+    "电源设备": {
+      "main_net_total_yi": 0.2546,
+      "members": [
+        "002837",
+        "300499"
+      ],
+      "member_count": 2,
+      "main_net_avg_yi": 0.1273,
+      "main_pct_avg": -3.355
+    },
+    "电子元件": {
+      "main_net_total_yi": 0.5718,
+      "members": [
+        "300408",
+        "603256"
+      ],
+      "member_count": 2,
+      "main_net_avg_yi": 0.2859,
+      "main_pct_avg": -2.42
+    },
+    "航天航空": {
+      "main_net_total_yi": -0.1065,
+      "members": [
+        "600118",
+        "600879"
+      ],
+      "member_count": 2,
+      "main_net_avg_yi": -0.0532,
+      "main_pct_avg": -0.285
+    },
+    "软件开发": {
+      "main_net_total_yi": -0.6975,
+      "members": [
+        "600845"
+      ],
+      "member_count": 1,
+      "main_net_avg_yi": -0.6975,
+      "main_pct_avg": -19.03
+    },
+    "光学光电子": {
+      "main_net_total_yi": 1.6658,
+      "members": [
+        "603773"
+      ],
+      "member_count": 1,
+      "main_net_avg_yi": 1.6658,
+      "main_pct_avg": 8.54
+    },
+    "医疗服务": {
+      "main_net_total_yi": 0.0205,
+      "members": [
+        "688046"
+      ],
+      "member_count": 1,
+      "main_net_avg_yi": 0.0205,
+      "main_pct_avg": 4.11
+    },
+    "计算机设备": {
+      "main_net_total_yi": -0.1551,
+      "members": [
+        "688208"
+      ],
+      "member_count": 1,
+      "main_net_avg_yi": -0.1551,
+      "main_pct_avg": -6.43
+    },
+    "化学制品": {
+      "main_net_total_yi": 0.5486,
+      "members": [
+        "688550"
+      ],
+      "member_count": 1,
+      "main_net_avg_yi": 0.5486,
+      "main_pct_avg": 10.79
+    }
+  },
+  "missing_symbols": []
+}
