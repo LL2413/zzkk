@@ -1,0 +1,56 @@
+[21:30:42] python: .venv/bin/python
+[21:30:42] out_dir: data/20260622
+[21:30:42] refresh: 1
+[21:30:42] date_tag: 20260622
+[21:30:42] stock_date_tag: 20260622
+[21:30:42] financials_mode: auto
+[21:30:42] skip_em_rank: 1
+[21:30:42] snapshot_timeout: 240s fast_timeout: 90s
+[21:30:42] fetch_jobs: 4 resume_existing: 0
+[21:30:42] macos_caffeinate: 1
+[21:30:42] symbols: 002281 000988 688008 603986 603005 688728 688332 688046 688380 688123 688550 688208 002475 300458 601869 600522 600487 300395 300408 603256 603773 000021 688627 688206 688521 688047 600845 300499 002837 002156 600584 688981 688347 601138 600118 600879 001270
+[21:30:42]
+[21:30:42] fetch market ...
+/Users/xxx/zzkk/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+[21:30:45]   ok     20407 bytes → data/20260622/market.json
+[21:30:45] fetch snapshots in parallel ...
+[21:30:45] parallel snapshots: jobs=4 force=1 resume=0 total=37
+[21:34:38]   ok   603986 80412 bytes
+[21:35:31]   ok   000988 48217 bytes
+[21:35:40]   ok   688008 47308 bytes
+[21:36:06]   ok   002281 48153 bytes
+[21:39:19]   ok   603005 47877 bytes
+[21:39:25]   ok   688728 76983 bytes
+[21:39:38]   ok   688332 76696 bytes
+[21:40:02]   ok   688046 77077 bytes
+[21:42:33]   ok   688123 77393 bytes
+[21:42:34]   ok   688550 77154 bytes
+[21:42:38]   ok   688380 76112 bytes
+[21:43:12]   ok   688208 77969 bytes
+[21:45:39]   ok   002475 80500 bytes
+[21:45:41]   ok   601869 80107 bytes
+[21:45:49]   ok   300458 78237 bytes
+[21:46:11]   ok   600522 80457 bytes
+[21:48:43]   ok   600487 79658 bytes
+[21:48:47]   ok   300395 78566 bytes
+[21:49:07]   ok   300408 78533 bytes
+[21:49:11]   ok   603256 81808 bytes
+[21:51:40]   ok   603773 87806 bytes
+[21:52:12]   ok   000021 80220 bytes
+[21:52:19]   ok   688627 68734 bytes
+[21:52:27]   ok   688206 76750 bytes
+[21:54:36]   ok   688521 78350 bytes
+[21:55:08]   ok   600845 75065 bytes
+[21:55:15]   ok   688047 76663 bytes
+[21:55:32]   ok   300499 66966 bytes
+[21:57:45]   ok   002837 77095 bytes
+[21:58:19]   ok   600584 80271 bytes
+[21:58:24]   ok   002156 80224 bytes
+[21:58:44]   ok   688981 78142 bytes
+[22:00:57]   ok   600118 76788 bytes
+[22:01:10]   ok   600879 75333 bytes
+[22:01:15]   ok   688347 71485 bytes
+[22:01:39]   ok   601138 78478 bytes
+[22:04:20]   ok   001270 79972 bytes
+[22:04:20] done: ok=37 skip=0 fail=0 total=37
