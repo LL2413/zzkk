@@ -19,6 +19,14 @@
 set -u -o pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
+# Long endpoint calls are paused when macOS enters idle sleep, including the
+# watchdog timers that enforce per-symbol timeouts. Keep the machine awake for
+# the lifetime of this script so manifest durations reflect active run time.
+if [[ "$(uname -s)" == "Darwin" && "${STOCK_CAFFEINATED:-0}" != "1" && -x /usr/bin/caffeinate ]]; then
+  exec env STOCK_CAFFEINATED=1 /usr/bin/caffeinate -i "$ROOT/scripts/fetch_all.sh" "$@"
+fi
+
 cd "$ROOT"
 
 # --- pick python ---
@@ -120,6 +128,7 @@ log "financials_mode: $STOCK_FINANCIALS_MODE"
 log "skip_em_rank: $STOCK_SKIP_EM_FUND_FLOW_RANK"
 log "snapshot_timeout: ${SNAPSHOT_TIMEOUT}s fast_timeout: ${SNAPSHOT_FAST_TIMEOUT}s"
 log "fetch_jobs: $STOCK_FETCH_JOBS resume_existing: $STOCK_RESUME_EXISTING"
+log "macos_caffeinate: ${STOCK_CAFFEINATED:-0}"
 log "symbols: ${WATCHLIST[*]}"
 log ""
 

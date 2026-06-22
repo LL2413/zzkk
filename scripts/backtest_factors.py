@@ -67,12 +67,14 @@ def iso_date(tag: str) -> str:
     return f"{tag[:4]}-{tag[4:6]}-{tag[6:8]}"
 
 
-def data_dirs(repo_root: Path, from_date: str, min_snapshots: int) -> list[Path]:
+def data_dirs(repo_root: Path, from_date: str, to_date: str | None, min_snapshots: int) -> list[Path]:
     out = []
     for path in sorted((repo_root / "data").iterdir()):
         if not path.is_dir() or not path.name.isdigit() or len(path.name) != 8:
             continue
         if path.name < from_date:
+            continue
+        if to_date and path.name > to_date:
             continue
         if len(list(path.glob("*_snapshot.json"))) < min_snapshots:
             continue
@@ -184,9 +186,14 @@ def table(headers: list[str], body: list[list[str]]) -> str:
     return "\n".join(lines)
 
 
-def build_rows(repo_root: Path, from_date: str, min_snapshots: int) -> tuple[list[dict[str, Any]], list[str]]:
+def build_rows(
+    repo_root: Path,
+    from_date: str,
+    to_date: str | None,
+    min_snapshots: int,
+) -> tuple[list[dict[str, Any]], list[str]]:
     enrich = load_enrich_score(repo_root)
-    dirs = data_dirs(repo_root, from_date, min_snapshots)
+    dirs = data_dirs(repo_root, from_date, to_date, min_snapshots)
     tags = [d.name for d in dirs]
     snapshots = {d.name: load_snapshots(d) for d in dirs}
     sector_stats = {
@@ -305,7 +312,13 @@ def rule_summary(rows: list[dict[str, Any]]) -> list[list[str]]:
     return body
 
 
-def build_report(rows: list[dict[str, Any]], tags: list[str], from_date: str, min_snapshots: int) -> str:
+def build_report(
+    rows: list[dict[str, Any]],
+    tags: list[str],
+    from_date: str,
+    min_snapshots: int,
+    recent_from: str | None,
+) -> str:
     targets = ["next_excess", "next_main_pct", "next_confirm"]
     target_labels = {
         "next_excess": "次日超额收益IC",
@@ -351,7 +364,7 @@ def build_report(rows: list[dict[str, Any]], tags: list[str], from_date: str, mi
 
     best = sorted(validate, key=lambda r: abs(r["ic_flow"] or 0), reverse=True)[:4]
     summary = [
-        "# Watchlist 因子回测 - 2026-06-15",
+        f"# Watchlist 因子回测 - 截至 {iso_date(tags[-1])}",
         "",
         "> 数据源：本地 snapshots。目标是检查报告因子是否仍有用，不构成投资建议。",
         "",
@@ -380,9 +393,40 @@ def build_report(rows: list[dict[str, Any]], tags: list[str], from_date: str, mi
         "",
         table(["规则", "样本", "次日超额", "次日资金", "次日价资共振率"], rule_summary(rows)),
         "",
+    ]
+
+    if recent_from:
+        recent_rows = [r for r in rows if r["date"] >= recent_from]
+        recent_factors = ["daily_total", "legacy_total", "main_pct", "main_pct_delta", "sector_context", "div_score"]
+        recent_body = []
+        for factor in recent_factors:
+            recent_body.append([
+                factor,
+                signed(by_date_ic(rows, factor, "next_excess"), 3),
+                signed(by_date_ic(recent_rows, factor, "next_excess"), 3),
+                signed(by_date_ic(rows, factor, "next_main_pct"), 3),
+                signed(by_date_ic(recent_rows, factor, "next_main_pct"), 3),
+            ])
+        summary.extend([
+            "## 近期窗口稳定性",
+            "",
+            (
+                f"- 近期窗口从 {iso_date(recent_from)} 的因子日开始，"
+                f"共 {len(recent_rows)} 条“当日因子 -> 下一交易日”样本。"
+            ),
+            "- 短窗口 IC 只用来观察因子是否漂移，不单独用于调参或得出稳定性结论。",
+            "",
+            table(
+                ["因子", "全样本超额IC", "近期超额IC", "全样本资金IC", "近期资金IC"],
+                recent_body,
+            ),
+            "",
+        ])
+
+    summary.extend([
         "## 目前最有效的方向",
         "",
-    ]
+    ])
     for item in best:
         summary.append(
             f"- {item['factor']}: 次日资金IC {signed(item['ic_flow'], 3)}，"
@@ -405,7 +449,9 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=ROOT)
     parser.add_argument("--from-date", default="20260519")
+    parser.add_argument("--to-date", help="Optional YYYYMMDD upper bound for source-consistent tests")
     parser.add_argument("--min-snapshots", type=int, default=34)
+    parser.add_argument("--recent-from", help="Optional YYYYMMDD factor-date window for drift comparison")
     parser.add_argument("--output", type=Path)
     return parser.parse_args()
 
@@ -413,10 +459,10 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
     repo_root = args.repo_root.resolve()
-    rows, tags = build_rows(repo_root, args.from_date, args.min_snapshots)
+    rows, tags = build_rows(repo_root, args.from_date, args.to_date, args.min_snapshots)
     if not rows:
         raise SystemExit("ERROR: no factor rows built")
-    report = build_report(rows, tags, args.from_date, args.min_snapshots)
+    report = build_report(rows, tags, args.from_date, args.min_snapshots, args.recent_from)
     if args.output:
         out = args.output if args.output.is_absolute() else repo_root / args.output
         out.parent.mkdir(parents=True, exist_ok=True)

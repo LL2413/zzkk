@@ -206,6 +206,11 @@ daily_valuation_fallback → valuation → streak → divergence → alpha → s
   `price_recent` 当日涨跌幅不一致，通常是慢采集跨午夜后混入下一交易日资金，
   或 fallback 返回了不同交易日数据。受影响日期的资金金额、自动信号验收和累计
   资金必须降级或排除；仍可使用独立核对后的价格历史。
+- EastMoney 分档榜的 `em_update_time` 必须与目标交易日一致。周末/节假日补采时，
+  若分档榜已滚动到下一交易日，禁止把“今日榜”强行改写为目标日期；应改用
+  指定日期的 EastMoney 历史行，或保留价格一致的 THS 弱口径并明确降级。
+- macOS 上 `fetch_all.sh` 会自动用 `caffeinate -i` 防止空闲睡眠。电脑睡眠会同时
+  暂停采集子进程和超时看门狗，导致 manifest 墙上时间看似增加数小时。
 - `price_recent` schema：2026-05-21 起统一为英文键（`date/open/close/high/
   low/amount`），EM 源（中文键）已在 stock.py 里 rename。读历史旧 snapshot
   时仍可能遇到中文键（`日期/收盘`），分析脚本两套键都要认。
