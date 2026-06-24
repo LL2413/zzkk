@@ -2,14 +2,17 @@
 """Upgrade snapshots to EastMoney order-split fund-flow口径 when available.
 
 This enricher is intentionally placed before the THS fallback. It tries to
-patch the target day's `fund_flow_recent_20d` with EastMoney's strong same-day
-rank data:
+patch the target day's `fund_flow_recent_20d` with EastMoney's strong order-
+split data:
 
     主力 = 超大单 + 大单
 
-If EastMoney is still blocked/rate-limited, it exits successfully by default so
-the rest of the pipeline can continue with the weaker THS fallback. Pass
-`--require` when a report must not be generated without strong EM口径.
+It first tries the small batched quote/rank table and only accepts rows whose
+EastMoney update date matches the requested snapshot date. If that table has
+rolled to another date, the default path fails fast so the rest of the pipeline
+can continue with the weaker THS fallback. Use `--historical` explicitly to try
+EastMoney's slower exact historical endpoint. Pass `--require` when a report
+must not be generated without strong EM口径.
 """
 from __future__ import annotations
 
@@ -146,7 +149,7 @@ def main() -> int:
             f"update_dates={sorted(batch_dates) or ['unknown']}"
         )
         if not batch_matches_target:
-            print(f"EM ulist batch is not for {target_iso}; using exact historical rows")
+            print(f"EM ulist batch is not for {target_iso}; use --historical to try exact historical rows")
     elif batch_error:
         print(f"EM ulist batch unavailable: {batch_error}")
 
@@ -172,6 +175,11 @@ def main() -> int:
         if rec is None and args.historical:
             rec, err = fetch_historical_record(stock, symbol, target_iso)
             source = "em_individual"
+        elif rec is None and batch_records and not batch_matches_target:
+            err = (
+                f"EM ulist update_dates={sorted(batch_dates) or ['unknown']} "
+                f"not target {target_iso}; historical endpoint not tried by default"
+            )
         elif rec is None and not err:
             err = f"same-day rank is not for {target_iso}"
         if not rec:

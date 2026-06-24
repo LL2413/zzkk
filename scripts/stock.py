@@ -420,7 +420,7 @@ def _em_rank_row_to_flow(row: dict[str, Any], as_of: str | None = None) -> dict 
     main_net = _em_num(row.get("f62"))
     if not symbol or main_net is None:
         return None
-    source_date = as_of or _em_timestamp_date(row.get("f124")) or today_iso()
+    source_date = _em_timestamp_date(row.get("f124")) or as_of or today_iso()
     return {
         "日期": source_date,
         "股票代码": symbol,
@@ -502,6 +502,18 @@ def fetch_em_ulist_fund_flow_today(symbols: list[str], as_of: str | None = None)
             _EM_FUND_FLOW_ULIST_RECORDS = raw_by_symbol
         except Exception:
             raw_by_symbol = {}
+
+    if as_of and raw_by_symbol:
+        cached_dates = {
+            _em_timestamp_date(row.get("f124"))
+            for symbol, row in raw_by_symbol.items()
+            if symbol in wanted
+        }
+        cached_dates.discard(None)
+        if cached_dates and cached_dates != {as_of}:
+            errors.append(f"ignored stale EM ulist cache update_dates={sorted(cached_dates)} target={as_of}")
+            raw_by_symbol = {}
+            _EM_FUND_FLOW_ULIST_RECORDS = {}
 
     missing = [symbol for symbol in wanted if symbol not in raw_by_symbol]
     if missing:
